@@ -12,23 +12,29 @@ import VCverify from '../screens/VCverify'
 import Main from '../screens/Main'
 import Signup from '../screens/Signup'
 import Recovery from '../screens/Recovery'
+import WebRequest from '../screens/WebRequest';
 const AppNavigator = createStackNavigator(
   {
-    VCcontrol: { screen: VCcontrol,
-                  navigationOptions: {
-                    headerTitle: 'VCcontrol'
-                  },
-                  path: 'VCcontrol' },
+    VCcontrol: { screen: VCcontrol},
     ScanScreen: { screen: ScanScreen},
     VCverify: { screen: VCverify},
     QRInfoScreen: { screen: QRInfoScreen},
     QRscreenVP: {screen: QRscreenVP},
     CompleteSubmit: { screen: CompleteSubmit},
     VCselect: {screen: VCselect},
-    Main: { screen: Main },
+    Main: { screen: Main,
+            navigationOptions: {
+              headerTitle: 'Main'
+            },
+          path: 'Main' },
     Signup: { screen: Signup },
     Recovery: { screen: Recovery},
-    ScanScreen: { screen: ScanScreen}
+    ScanScreen: { screen: ScanScreen},
+    WebRequest: {screen: WebRequest,
+                  navigationOptions: {
+                    headerTitle: 'WebRequest'
+                  },
+                path: 'WebRequest'}
   },
   {
     initialRouteName: 'Main',

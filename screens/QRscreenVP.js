@@ -82,7 +82,7 @@ export default class QRscreenVP extends React.Component {
     this.close()
   }
   close = ()=> {
-    ws.send('{"type":"exit"}')
+    
     this.props.navigation.navigate('VCselect',{password:this.state.password});
   }
 

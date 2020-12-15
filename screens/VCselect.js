@@ -1,13 +1,43 @@
 import React from 'react'
-import { StyleSheet, View, Button,Text,TouchableOpacity, ScrollView} from 'react-native'
+import { StyleSheet, View, Button,Text,TouchableOpacity, ScrollView, Image} from 'react-native'
 import jwt_decode from "jwt-decode";
 import CryptoJS from 'react-native-crypto-js';
 
 import SecureStorage from 'react-native-secure-storage'
 var AES = require("react-native-crypto-js").AES;
 
+var estormLogo = require ('./estormLogo.png');
 var passwordInMobile = '';
 
+function VC({vc}){
+  console.log(vc)
+  if(JSON.stringify(vc.vc.type) == '["VerifiableCredential","certificate"]'){
+    return (
+    <View>
+      <View style={styles.certificateCard}>
+              <Text style={styles.vcText}>증명서</Text>
+              <Text>이름 : {vc.vc.credentialSubject.name}</Text>
+              <Text>Email: {vc.vc.credentialSubject.email}</Text>
+              <Text>생일 : {vc.vc.credentialSubject.birthday}</Text>
+      </View>
+
+    </View>
+    )
+  } else {
+  return (
+    <View>
+      <View style={styles.vcCard}>
+              <Text style={styles.vcText}>운전 면허증</Text>
+              <Text>이름 : {vc.vc.credentialSubject.name}</Text>
+              <Text>발급 기관: {vc.vc.credentialSubject.issueAgency}</Text>
+              <Text>발급 날짜: {vc.vc.credentialSubject.issueDate}</Text>
+              <Text>ID : {vc.vc.credentialSubject.idNo}</Text>
+      </View>
+
+    </View>
+  )
+  }
+}
 export default class VCselect extends React.Component {
   
   state = {
@@ -90,29 +120,28 @@ export default class VCselect extends React.Component {
 
   }
 
+  
+
   render() {
     
     return (
       <View style={styles.container}>
-        <View><View>{this.state.VCarray.map((vc)=>
+      <Text style={styles.textTop}><Image style={{height:40,width:40}} source = {estormLogo}></Image>VC 관리</Text>
+        <View style={styles.vcContainter}>
+          <ScrollView>{this.state.VCarray.map((vc)=>
           <View>
-          <View key={vc.exp} style={styles.vcCard}>
-          
-            <Text>Type: {vc.vc.type}</Text>
-            <Text>Name : {vc.vc.credentialSubject.name}</Text>
-            <Text>ID no :{vc.vc.credentialSubject.idNo}</Text>
-            <Text>Exp : {vc.exp}</Text>
+            <VC vc={vc}/>
           </View>
-          
-          </View>
-        )}</View>
+          )}
+        
+          </ScrollView>
         </View>
         
         
         
         <ScrollView style={styles.bottomFix}>
         
-        <Button title='array clear' onPress={this.clearArray} />
+        <TouchableOpacity style={styles.testButton} title='array clear' onPress={this.clearArray}><Text>Array clear</Text></TouchableOpacity>
         <View style={styles.bottomNav}>
         <TouchableOpacity style={styles.bottomButton} onPress={this.goToVCselect}><Text style={styles.buttonText}>VC 관리</Text></TouchableOpacity>
         <TouchableOpacity style={styles.bottomButton} ><Text style={styles.buttonText}>CVC 관리</Text></TouchableOpacity>
@@ -135,9 +164,26 @@ export default class VCselect extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#00203F',
     alignItems: 'center',
-    justifyContent: 'center'
+  },
+  textTop: {
+    color: '#fff',
+    fontSize:30,
+    fontWeight: 'bold',
+    textAlign:"center",
+    width:'70%',
+    marginTop:'4%',
+    marginBottom:'4%'
+    
+  },
+  vcContainter:{
+    height:600
+  },
+  testButton: {
+    width:40,
+    margin:20,
+    backgroundColor:'#FFF'
   },
   textMarginer: {
     margin:20
@@ -150,10 +196,23 @@ const styles = StyleSheet.create({
     
   },
   vcCard:{
+    
+    borderRadius:12,
     width:300,
     backgroundColor: '#AAF',
     margin:10,
     padding:10
+  },
+  certificateCard:{
+    borderRadius:12,
+    width:300,
+    backgroundColor: '#DFF',
+    margin:10,
+    padding:10
+  },
+  vcText:{
+    fontWeight:'bold',
+    fontSize:20
   },
   
   bottomButton:{

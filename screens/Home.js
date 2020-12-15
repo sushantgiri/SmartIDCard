@@ -4,6 +4,7 @@ import CryptoJS from 'react-native-crypto-js';
 import axios from 'axios';
 
 import SecureStorage from 'react-native-secure-storage'
+import {TouchableHighlight} from 'react-native-gesture-handler';
 var AES = require("react-native-crypto-js").AES;
 
 
@@ -37,27 +38,6 @@ export default class Home extends React.Component {
 
 
 
-  //Web과 QR 데이터를 받아서 원활히 통신이 되는지
-  getDidDataFromWeb = () => {
-    const item = this.props.navigation.getParam('data',{})
-    this.setState({VCdataFromWeb: item})
-    console.log(item)
-
-    axios.get('http://182.162.89.72:30600/rest/connector/' + item)
-    .then(res => {
-      var getSocketURL = res.data.data.url + "/rest/qrdata/" + item;
-      console.log(getSocketURL)
-      alert(getSocketURL)
-      axios.get(getSocketURL).then(response => {
-        
-        roomtest = response.data.data.no;
-        socket = response.data.data.websocketUrl
-
-      })
-    })
-    
-
-  }
 
   
   getDidData = async () => {
@@ -89,9 +69,6 @@ export default class Home extends React.Component {
 
 
 
-
-
-
   //Navigation end
   render() {
     const {navigation} = this.props
@@ -104,17 +81,17 @@ export default class Home extends React.Component {
 
         
         <View style={styles.profileCard}>
-        
+        <Text style={styles.profileTitle}>DID ( 개인용 )</Text>
         <Text>DID : </Text><Text>{this.state.address}</Text>
-        <Text>12시드 : </Text><Text>{this.state.mnemonic}</Text>
+        <Text>시드 : </Text><Text>{this.state.mnemonic}</Text>
          
         </View>
         
-        <Button title='자세히보기' onPress={this.getDidData}/>
+        <TouchableOpacity style={styles.bannerButton}onPress={this.getDidData}><Text>자세히 보기</Text></TouchableOpacity>
 
         <ScrollView style={styles.bottomFix}>
         
-        <Button title='QR 코드 스캔' onPress={this.goToScan} />
+        <TouchableOpacity style={styles.QRbutton} onPress={this.goToScan}><Text>QR 스캔</Text></TouchableOpacity>
         <View style={styles.bottomNav}>
         <TouchableOpacity style={styles.bottomButton} onPress={this.goToVCselect}><Text style={styles.buttonText}>VC 관리</Text></TouchableOpacity>
         <TouchableOpacity style={styles.bottomButton} ><Text style={styles.buttonText}>CVC 관리</Text></TouchableOpacity>
@@ -127,20 +104,55 @@ export default class Home extends React.Component {
     )
   }
   
-  componentDidMount(){
-  }
+  
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#00203F',
-    
+    alignItems:'center'
+  },
+  profileTitle:{
+    textAlign:"center",
+    fontSize:15,
+    fontWeight:"bold",
+    marginBottom:30
+  },
+  bannerButton: {
+    width:'90%',
+    textAlign:"center",
+    alignItems:"center",
+    alignContent:'center',
+    textAlign: 'center',
+    justifyContent: 'center',
+    backgroundColor:'#AAA',
+    paddingTop:'2%',
+    paddingBottom:'2%',
+    borderBottomLeftRadius:12,
+    borderBottomRightRadius:12
+  },
+  QRbutton:{
+    textAlign:"center",
+    alignItems:"center",
+    alignContent:'center',
+    textAlign: 'center',
+    justifyContent: 'center',
+    width:'90%',
+    marginLeft:'5%',
+    marginBottom: '5%',
+    backgroundColor:'white',
+    height:40,
+    borderRadius:12
   },
   profileCard:{
-    width:'100%',
+    width:'90%',
+    marginTop:'5%',
+    padding:10,
     backgroundColor:'white',
-    height:'40%'
+    height:'30%',
+    borderTopLeftRadius:12,
+    borderTopRightRadius:12
   },
   textUpper: {
     color: '#fff',

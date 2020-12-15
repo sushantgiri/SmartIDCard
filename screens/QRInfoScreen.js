@@ -77,7 +77,7 @@ export default class QRInfoScreen extends React.Component {
 
   next = () => {
     ws.send('{"type":"exit"}')
-    this.props.navigation.navigate('VCselect',{VCdata:this.state.VC,password:this.state.password});
+    this.props.navigation.navigate('VCverify',{VCdata:this.state.VC,password:this.state.password});
   }
 
   render() {

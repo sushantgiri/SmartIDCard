@@ -42,15 +42,24 @@ export default class Signup extends React.Component {
       const { password } = this.state
     return (
       <View style={styles.container}>
-        <Text>계정복구</Text>
+        <Text style={styles.textUpper}>복구 비밀번호 입력</Text>
         <View style={{ margin: 10 }}>
           <TextInput
             name='password'
             value={password}
             placeholder='Enter password'
+            style={styles.inputText}
             secureTextEntry
             onChangeText={this.handlePasswordChange}
           />
+          <Text style={styles.textContext}>최초 계정을 생성할 때에 사용되었던 비밀번호를 입력해 주시기 바랍니다.</Text>
+          <TextInput
+            placeholder='Space를 포함한 시드를 입력하여 주시기 바랍니다.'
+            secureTextEntry
+            style={styles.inputSeed}
+          />
+          
+          <Text style={styles.textContext}>최초 제공된 시드 형태의 단어들을 차례대로 입력해 주시기 바랍니다.</Text>
         </View>
         <Button title='복구' onPress={this.getDidData} />
       </View>
@@ -61,8 +70,38 @@ export default class Signup extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#00203F',
     alignItems: 'center',
     justifyContent: 'center'
+  },
+  inputText: {
+    backgroundColor:'white',
+    width: 370,
+    padding:15,
+    margin:20,
+    borderRadius:12,
+    
+  },
+  textUpper: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: 'bold',
+    textAlign:'left',
+    width:'70%'
+  },
+  textContext: {
+    color: '#fff',
+    fontSize: 17,
+    textAlign:'left',
+    width:380,
+    margin:10
+  },inputSeed: {
+    backgroundColor:'white',
+    width: 370,
+    padding:15,
+    margin:20,
+    height:300,
+    borderRadius:12,
+    
   }
 })
