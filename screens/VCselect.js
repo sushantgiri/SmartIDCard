@@ -1,5 +1,5 @@
 import React from 'react'
-import { StyleSheet, View, Button,Text,TouchableOpacity, ScrollView, Image} from 'react-native'
+import { StyleSheet, View, Button,Text,TouchableOpacity, ScrollView, Image, Linking} from 'react-native'
 import jwt_decode from "jwt-decode";
 import CryptoJS from 'react-native-crypto-js';
 
@@ -10,34 +10,37 @@ var estormLogo = require ('./estormLogo.png');
 var passwordInMobile = '';
 
 function VC({vc}){
-  console.log(vc)
-  if(JSON.stringify(vc.vc.type) == '["VerifiableCredential","certificate"]'){
+  //console.log(vc)
+  //if(JSON.stringify(vc.vc.type) == '["VerifiableCredential","certificate"]'){
     return (
     <View>
       <View style={styles.certificateCard}>
-              <Text style={styles.vcText}>증명서</Text>
+              <Text style={styles.vcText}>인증서</Text>
               <Text>이름 : {vc.vc.credentialSubject.name}</Text>
               <Text>Email: {vc.vc.credentialSubject.email}</Text>
               <Text>생일 : {vc.vc.credentialSubject.birthday}</Text>
+              <Text>성별 : {vc.vc.credentialSubject.gender}</Text>
+              <Text>Phone: {vc.vc.credentialSubject.birthday}</Text>
       </View>
 
     </View>
     )
-  } else {
-  return (
-    <View>
-      <View style={styles.vcCard}>
-              <Text style={styles.vcText}>운전 면허증</Text>
-              <Text>이름 : {vc.vc.credentialSubject.name}</Text>
-              <Text>발급 기관: {vc.vc.credentialSubject.issueAgency}</Text>
-              <Text>발급 날짜: {vc.vc.credentialSubject.issueDate}</Text>
-              <Text>ID : {vc.vc.credentialSubject.idNo}</Text>
-      </View>
+  //} //else {
+  //return (
+    //<View>
+      //<View style={styles.vcCard}>
+              //<Text style={styles.vcText}>운전 면허증</Text>
+              //<Text>이름 : {vc.vc.credentialSubject.name}</Text>
+              //<Text>발급 기관: {vc.vc.credentialSubject.issueAgency}</Text>
+              //<Text>발급 날짜: {vc.vc.credentialSubject.issueDate}</Text>
+              //<Text>ID : {vc.vc.credentialSubject.idNo}</Text>
+      //</View>
 
-    </View>
-  )
-  }
+    //</View>
+  //)
+  //}
 }
+var dataforTTA = '';
 export default class VCselect extends React.Component {
   
   state = {
@@ -47,12 +50,7 @@ export default class VCselect extends React.Component {
     privateKey:'',
     mnemonic:'',
     VCarray:[],
-    VCjwtArray:[{"dummy":'data','vc':{
-      'credentialSubject': 'none'
-      }},{"dummy":'data','vc':{
-      'credentialSubject': 'none'
-      }}
-    ]
+    VCjwtArray:[]
   }
   
   //first setting data key for functions
@@ -60,6 +58,7 @@ export default class VCselect extends React.Component {
     const {navigation} = this.props
     const mobileKey = navigation.getParam('password',"value")
     passwordInMobile = mobileKey
+    this.setStateData();
   }
 
   clearArray = () => {
@@ -94,7 +93,9 @@ export default class VCselect extends React.Component {
   setinVCarray = () => {
     const {navigation} = this.props
     const receivedVC = navigation.getParam('VCdata',"VCvalue")
+    
     if(receivedVC != "VCvalue"){
+      console.disableYellowBox = true;
       const decodedVC = JSON.stringify(receivedVC).substring(28,JSON.stringify(receivedVC).length-2)
       const VCform = jwt_decode(decodedVC)
       this.setState({
@@ -104,21 +105,23 @@ export default class VCselect extends React.Component {
         
         let cipherData = CryptoJS.AES.encrypt(JSON.stringify(this.state), this.state.dataKey).toString();
         SecureStorage.setItem(this.state.dataKey, cipherData);
-        
+        let vcData = CryptoJS.AES.encrypt(JSON.stringify(this.state.VCjwtArray), this.state.dataKey);
+        dataforTTA = vcData;
       })
 
     } else {
-      console.log("no receive new vc")
+      console.log('no received vc')
     }
     
                 
               
   }
-
+  goToScan = () => this.props.navigation.navigate('ScanScreen',{password:this.state.password})
   goToMain = () => {
     this.props.navigation.navigate('VCcontrol')
 
   }
+
 
   
 
@@ -126,25 +129,32 @@ export default class VCselect extends React.Component {
     
     return (
       <View style={styles.container}>
-      <Text style={styles.textTop}><Image style={{height:40,width:40}} source = {estormLogo}></Image>VC 관리</Text>
+      <Text style={styles.textTop}>VC 관리</Text>
         <View style={styles.vcContainter}>
+          <Text>현재 보유한 VC</Text>
           <ScrollView>{this.state.VCarray.map((vc)=>
           <View>
-            <VC vc={vc}/>
+            <VC vc={vc} key={vc.exp}/>
           </View>
           )}
         
           </ScrollView>
         </View>
-        
+
+        <View style={styles.vcContainter}>
+          <Text>생성 가능한 VC</Text>
+          <TouchableOpacity style={styles.certificateCard} onPress={this.gotoURL}>
+              <Text style={styles.vcText}>인증서</Text>
+          </TouchableOpacity>
+        </View>
         
         
         <ScrollView style={styles.bottomFix}>
         
-        <TouchableOpacity style={styles.testButton} title='array clear' onPress={this.clearArray}><Text>Array clear</Text></TouchableOpacity>
+        
         <View style={styles.bottomNav}>
         <TouchableOpacity style={styles.bottomButton} onPress={this.goToVCselect}><Text style={styles.buttonText}>VC 관리</Text></TouchableOpacity>
-        <TouchableOpacity style={styles.bottomButton} ><Text style={styles.buttonText}>CVC 관리</Text></TouchableOpacity>
+        
         <TouchableOpacity style={styles.bottomButton} onPress={this.goToMain}><Text style={styles.buttonText}>프로필</Text></TouchableOpacity>
         <TouchableOpacity style={styles.bottomButton} ><Text style={styles.buttonText}>가이드</Text></TouchableOpacity>
         <TouchableOpacity style={styles.bottomButton} ><Text style={styles.buttonText}>설정</Text></TouchableOpacity>
@@ -156,19 +166,21 @@ export default class VCselect extends React.Component {
   }
   componentDidMount(){
     this.setKey();
-    this.setStateData();
-    
   }
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#00203F',
+    backgroundColor: 'white',
     alignItems: 'center',
   },
+  qrText: {
+    color:'white',
+    fontWeight:'bold'
+  },
   textTop: {
-    color: '#fff',
+    color: 'black',
     fontSize:30,
     fontWeight: 'bold',
     textAlign:"center",
@@ -178,7 +190,7 @@ const styles = StyleSheet.create({
     
   },
   vcContainter:{
-    height:600
+    height:320
   },
   testButton: {
     width:40,
@@ -187,6 +199,19 @@ const styles = StyleSheet.create({
   },
   textMarginer: {
     margin:20
+  },
+  QRbutton:{
+    textAlign:"center",
+    alignItems:"center",
+    alignContent:'center',
+    textAlign: 'center',
+    justifyContent: 'center',
+    width:'90%',
+    marginLeft:'5%',
+    marginBottom: '5%',
+    backgroundColor:'#316BFF',
+    height:40,
+    borderRadius:12
   },
   buttonMarginer: {
       margin:10

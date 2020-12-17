@@ -10,15 +10,16 @@ var AES = require("react-native-crypto-js").AES;
 var passwordInMobile = '';
 var VCshow = [];
 function VC({vc}){
-  console.log(vc)
   if(JSON.stringify(vc.vc.type) == '["VerifiableCredential","certificate"]'){
     return (
     <View>
       <View style={styles.certificateCard}>
-              <Text style={styles.vcText}>증명서</Text>
+              <Text style={styles.vcText}>인증서</Text>
               <Text>이름 : {vc.vc.credentialSubject.name}</Text>
               <Text>Email: {vc.vc.credentialSubject.email}</Text>
               <Text>생일 : {vc.vc.credentialSubject.birthday}</Text>
+              <Text>성별 : {vc.vc.credentialSubject.gender}</Text>
+              <Text>Phone: {vc.vc.credentialSubject.birthday}</Text>
       </View>
 
     </View>
@@ -46,11 +47,7 @@ export default class VCverify extends React.Component {
     privateKey:'',
     mnemonic:'',
     VCarray:[],
-    VCjwtArray:[{"dummy":'data','vc':{
-      'credentialSubject': 'none'
-      }},{"dummy":'data','vc':{
-      'credentialSubject': 'none'
-      }}
+    VCjwtArray:[
     ],
     showingData: []
   }
@@ -78,7 +75,6 @@ export default class VCverify extends React.Component {
   }
 
   showVC = () => {
-    console.log("erer")
     const {navigation} = this.props
     const receivedVC = navigation.getParam('VCdata',"VCvalue")
     const decodedVC = JSON.stringify(receivedVC).substring(28,JSON.stringify(receivedVC).length-2)
@@ -87,7 +83,6 @@ export default class VCverify extends React.Component {
     this.setState({
       showingData: this.state.showingData.concat([VCform])
       }, function(){
-      console.log(this.state.showingData)
     })
   }
 
@@ -97,19 +92,30 @@ export default class VCverify extends React.Component {
     this.props.navigation.navigate('VCselect',{VCdata:receivedVC,password:this.state.password})
   }
 
+  test = () => {
+    const {navigation} = this.props
+    const receivedVC = navigation.getParam('VCdata',"VCvalue")
+    var iv = this.state.dataKey;
+    let vcBytes = CryptoJS.AES.encrypt(JSON.stringify(receivedVC),this.state.dataKey,{iv:iv});
+    console.log("this is datakey :" + this.state.dataKey)
+    console.log('saved data :' + vcBytes)
+    console.log('received vc :' + receivedVC)
+  }
+
   render() {
     
 
     return (
       <View style={styles.container}>
       <Text style={styles.textTop}>VC 생성완료</Text>
-      <Text style={styles.textContext}>VC가 성공적으로 발급되었습니다.</Text>
+      <Text style={styles.textContext}>Smart ID Card VC를 성공적으로 생성하였습니다.</Text>
         <View>{this.state.showingData.map((vc) =>
-          <VC vc={vc}/>
+          <VC vc={vc} key={vc.exp}/>
         )}
         </View>
         
       <TouchableOpacity style={styles.nextButton} onPress={this.gotoNext}><Text>다음</Text></TouchableOpacity>
+      <TouchableOpacity onPress={this.test}><Text>test</Text></TouchableOpacity>
       </View>
     )
   }
@@ -123,9 +129,13 @@ export default class VCverify extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#00203F',
+    backgroundColor: 'white',
     alignItems: 'center',
     justifyContent: 'center'
+  },
+  vcText:{
+    fontWeight:'bold',
+    fontSize:20
   },
   vcCard:{
     
@@ -136,10 +146,10 @@ const styles = StyleSheet.create({
     padding:10
   },
   textContext: {
-    color: '#fff',
+    color: 'black',
     fontSize: 17,
-    textAlign:'center',
-    width:380,
+    textAlign:'left',
+    width:'80%',
     margin:10
   },
   certificateCard:{
@@ -150,15 +160,23 @@ const styles = StyleSheet.create({
     padding:10
   },
   nextButton: {
-    backgroundColor:'white',
-    padding: 10,
-    borderRadius:20
+    textAlign:"center",
+    alignItems:"center",
+    alignContent:'center',
+    textAlign: 'center',
+    justifyContent: 'center',
+    width:'85%',
+    marginTop:'30%',
+    marginBottom: '5%',
+    backgroundColor:'#316BFF',
+    height:40,
+    borderRadius:12
   },
   textTop: {
-    color: '#fff',
+    color: 'black',
     fontSize:30,
     fontWeight: 'bold',
-    textAlign:"center",
+    textAlign:"left",
     width:'70%',
     marginTop:'4%',
     marginBottom:'4%'

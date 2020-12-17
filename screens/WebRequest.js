@@ -61,7 +61,7 @@ export default class WebRequest extends React.Component {
                   ws.onopen = () => {
                       ws.send('{"type":"authm", "no":"'+roomNo+'"}')
                       ws.onmessage = (e) => {
-                        alert(e.data)
+                        
                         ws.send('{"type":"did", "data":'+this.state.address+'"}')
                        
                         console.log(this.state.address)

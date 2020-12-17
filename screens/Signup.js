@@ -35,15 +35,11 @@ function address() {
   const extendedPrivateKey = masterKey.derive("m/44'/60'/0'/0").extendedPrivateKey;
 
   //generate key for use in mobile device data exchange
-  //with 32 random bytes ( 256 bit long ) to store data in secure elements
+  //with 16 random bytes ( 128 bit long ) to store data in secure elements
 
-  const mobileBytes = Mnemonic.generate(randomBytes(32));
-  const mobileSeed = mobileBytes.toSeed();
-  const mobileMkey = HDKey.parseMasterSeed(mobileSeed);
-  const extendedMobileKey = mobileMkey.derive("m/44'/60'/0'/0").extendedPrivateKey;
-
-  dataKey = extendedMobileKey;
-
+  const mobileBytes = randomBytes(16);
+  dataKey = Web3Utils.bytesToHex(mobileBytes);
+  
   // Build mobile key end
 
 
@@ -70,9 +66,9 @@ async function did () {
   const privateKey = userPK;
   const ethAccount = web3.eth.accounts.privateKeyToAccount(privateKey)
   const dualDid = new DualDID(ethAccount, 'Issuer(change later)', 'Dualauth.com(change later)',web3,'')
-  console.log(dualDid)
+  
   const did = await dualDid.createDid()
-  console.log(did)
+  
 }
 
 
@@ -85,12 +81,7 @@ export default class Signup extends React.Component {
     mnemonic:'',
     dataKey:'',
     VCarray:[],
-    VCjwtArray:[{"dummy":'data','vc':{
-      'credentialSubject': 'none'
-      }},{"dummy":'data','vc':{
-      'credentialSubject': 'none'
-      }}
-    ],
+    VCjwtArray:[],
     modalVisible: false
   }
   handlePasswordChange = password => {
@@ -101,10 +92,9 @@ export default class Signup extends React.Component {
     did();
     this.setState({ address: userAddress, privateKey: userPK, mnemonic: userMnemonic, dataKey: dataKey}, () => {
       let cipherData = CryptoJS.AES.encrypt(JSON.stringify(this.state), dataKey).toString();
-    
+      
       SecureStorage.setItem(this.state.dataKey, cipherData);
       SecureStorage.setItem(this.state.password,this.state.dataKey);
-      console.log(this.state)
       this.setState({ modalVisible: true })
       
     });
@@ -190,19 +180,19 @@ export default class Signup extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#00203F',
+    backgroundColor: 'white',
     alignItems: 'center',
     justifyContent: 'center'
   },
   textUpper: {
-    color: '#fff',
+    color: 'black',
     fontSize: 20,
     fontWeight: 'bold',
     textAlign:'left',
     width:'70%'
   },
   textContext: {
-    color: '#fff',
+    color: 'black',
     fontSize: 17,
     textAlign:'left',
     width:380,
@@ -214,7 +204,8 @@ const styles = StyleSheet.create({
     padding:15,
     margin:20,
     borderRadius:12,
-    
+    borderColor:'black',
+    borderWidth:1
   },
   bottomButton: {
     backgroundColor: '#316BFF',
