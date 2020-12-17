@@ -8,6 +8,28 @@ target 'backup' do
 
   use_react_native!(:path => config["reactNativePath"])
 
+  pod 'TcpSockets', :path => '../node_modules/react-native-tcp'
+  permission_path = '../node_modules/react-native-permission/ios'
+  pod 'Permission-AppTrackingTransparency', :path => "../node_modules/react-native-permissions/ios/AppTrackingTransparency/Permission-AppTrackingTransparency.podspec"
+  pod 'Permission-BluetoothPeripheral', :path => "../node_modules/react-native-permissions/ios/BluetoothPeripheral/Permission-BluetoothPeripheral.podspec"
+  pod 'Permission-Calendars', :path => "../node_modules/react-native-permissions/ios/Calendars/Permission-Calendars.podspec"
+  pod 'Permission-Camera', :path => "../node_modules/react-native-permissions/ios/Camera/Permission-Camera.podspec"
+  pod 'Permission-Contacts', :path => "../node_modules/react-native-permissions/ios/Contacts/Permission-Contacts.podspec"
+  pod 'Permission-FaceID', :path => "../node_modules/react-native-permissions/ios/FaceID/Permission-FaceID.podspec"
+  pod 'Permission-LocationAccuracy', :path => "../node_modules/react-native-permissions/ios/LocationAccuracy/Permission-LocationAccuracy.podspec"
+  pod 'Permission-LocationAlways', :path => "../node_modules/react-native-permissions/ios/LocationAlways/Permission-LocationAlways.podspec"
+  pod 'Permission-LocationWhenInUse', :path => "../node_modules/react-native-permissions/ios/LocationWhenInUse/Permission-LocationWhenInUse.podspec"
+  pod 'Permission-MediaLibrary', :path => "../node_modules/react-native-permissions/ios/MediaLibrary/Permission-MediaLibrary.podspec"
+  pod 'Permission-Microphone', :path => "../node_modules/react-native-permissions/ios/Microphone/Permission-Microphone.podspec"
+  pod 'Permission-Motion', :path => "../node_modules/react-native-permissions/ios/Motion/Permission-Motion.podspec"
+  pod 'Permission-Notifications', :path => "../node_modules/react-native-permissions/ios/Notifications/Permission-Notifications.podspec"
+  pod 'Permission-PhotoLibrary', :path => "../node_modules/react-native-permissions/ios/PhotoLibrary/Permission-PhotoLibrary.podspec"
+  pod 'Permission-PhotoLibraryAddOnly', :path => "../node_modules/react-native-permissions/ios/PhotoLibraryAddOnly/Permission-PhotoLibraryAddOnly.podspec"
+  pod 'Permission-Reminders', :path => "../node_modules/react-native-permissions/ios/Reminders/Permission-Reminders.podspec"
+  pod 'Permission-Siri', :path => "../node_modules/react-native-permissions/ios/Siri/Permission-Siri.podspec"
+  pod 'Permission-SpeechRecognition', :path => "../node_modules/react-native-permissions/ios/SpeechRecognition/Permission-SpeechRecognition.podspec"
+  pod 'Permission-StoreKit', :path => "../node_modules/react-native-permissions/ios/StoreKit/Permission-StoreKit.podspec"
+
   target 'backupTests' do
     inherit! :complete
     # Pods for testing
