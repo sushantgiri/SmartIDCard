@@ -68,7 +68,8 @@ export default class Home extends React.Component {
   }
 
 
-
+  //TODO: 테스트로 VP선택지까지 가는 functions
+  
 
   //Navigation end
   render() {

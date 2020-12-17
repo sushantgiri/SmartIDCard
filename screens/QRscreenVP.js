@@ -3,7 +3,7 @@ import {DualDID} from '@estorm/dual-did';
 const Web3 = require('web3')
 const web3 = new Web3('http://182.162.89.51:4313')
 import React from 'react'
-import { StyleSheet, View,Text, Button } from 'react-native'
+import { StyleSheet, View,Text, Button, TouchableOpacity } from 'react-native'
 import CryptoJS from 'react-native-crypto-js';
 import SecureStorage from 'react-native-secure-storage'
 var AES = require("react-native-crypto-js").AES;
@@ -12,9 +12,10 @@ var socketURL = '';
 var passwordInMobile = '';
 var nonce = '';
 var ws = '';
+var arr = '';
+
 
 function VC({vc}){
-  if(JSON.stringify(vc.vc.type) == '["VerifiableCredential","certificate"]'){
     return (
     <View>
       <View style={styles.certificateCard}>
@@ -23,25 +24,13 @@ function VC({vc}){
               <Text>Email: {vc.vc.credentialSubject.email}</Text>
               <Text>생일 : {vc.vc.credentialSubject.birthday}</Text>
               <Text>성별 : {vc.vc.credentialSubject.gender}</Text>
-              <Text>Phone: {vc.vc.credentialSubject.birthday}</Text>
+              <Text>Phone: {vc.vc.credentialSubject.phone}</Text>
       </View>
-
     </View>
+
+    
+
     )
-  } else {
-  return (
-    <View>
-      <View style={styles.vcCard}>
-              <Text style={styles.vcText}>운전 면허증</Text>
-              <Text>이름 : {vc.vc.credentialSubject.name}</Text>
-              <Text>발급 기관: {vc.vc.credentialSubject.issueAgency}</Text>
-              <Text>발급 날짜: {vc.vc.credentialSubject.issueDate}</Text>
-              <Text>ID : {vc.vc.credentialSubject.idNo}</Text>
-      </View>
-
-    </View>
-  )
-  }
 }
 
 export default class QRscreenVP extends React.Component {
@@ -52,12 +41,7 @@ export default class QRscreenVP extends React.Component {
     privateKey:'',
     mnemonic:'',
     VCarray:[],
-    VCjwtArray:[{"dummy":'data','vc':{
-      'credentialSubject': 'none'
-      }},{"dummy":'data','vc':{
-      'credentialSubject': 'none'
-      }}
-    ],
+    VCjwtArray:[],
     showingData: ''
   }
   getDidData = async () => {
@@ -86,36 +70,46 @@ export default class QRscreenVP extends React.Component {
     ws.onopen = () => {
       ws.send('{"type":"authm", "no":"'+socketRoom+'"}');
       ws.onmessage = (e) => {
-        alert(e.data)
+        
         
       }
 
     }
-
-  
-
   }
+
   
-  next = async () => {
-    const vcjwtForm = JSON.stringify(this.state.VCjwtArray[this.state.VCjwtArray.length-1])
+  close = () => {
+    
+    this.props.navigation.navigate('VCselect',{password:this.state.password});
+  }
+
+  VCclick = e =>{
+    
+    for (var i=0;this.state.VCarray.length-2;i++){
+      
+      if(e.exp == this.state.VCarray[i].exp){
+        console.disableYellowBox = true;
+        console.log(i)
+        this.next(i)
+        return
+      }
+    }
+  
+  }
+  next = async (i) => {
+    const vcjwtForm = JSON.stringify(this.state.VCjwtArray[i])
     const privateKey = this.state.privateKey;
     const ethAccount = web3.eth.accounts.privateKeyToAccount(privateKey)
     const dualDid = new DualDID(ethAccount, 'Issuer(change later)', 'Dualauth.com(change later)',web3,'')
     const vp = await dualDid.createVP(vcjwtForm.substring(29,vcjwtForm.length-4),nonce)
     ws.send('{"type":"vp", "data":"'+vp+'"}')
     ws.onmessage = (e) => {
-            alert(e.data)
+            
             
     }
     
     this.close()
   }
-  close = ()=> {
-    
-    this.props.navigation.navigate('VCselect',{password:this.state.password});
-  }
-
-
   render() {
     
     const {navigation} = this.props
@@ -129,13 +123,14 @@ export default class QRscreenVP extends React.Component {
     passwordInMobile = userPW;
     return (
       <View style={styles.container}>
-        <Text>VP를 제출하시겠습니까?</Text>
-        <View>{this.state.VCarray.map((vc) =>
-          <VC vc={vc} key={vc.exp}/>
-        )}
+        <Text>VC를 선택해주세요</Text>
+        <View>{this.state.VCarray.map((vc) => {return(
+          <TouchableOpacity onPress={() => this.VCclick(vc)}><VC vc={vc} key={vc.exp}/>
+          </TouchableOpacity>
+        )
+        })}
         </View>
 
-        <Button title="제출" onPress={this.next}></Button>
         
         <Button title="취소" onPress={this.close}></Button>
       </View>

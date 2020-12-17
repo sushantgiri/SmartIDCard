@@ -95,7 +95,7 @@ export default class VCselect extends React.Component {
     const receivedVC = navigation.getParam('VCdata',"VCvalue")
     
     if(receivedVC != "VCvalue"){
-      
+      console.disableYellowBox = true;
       const decodedVC = JSON.stringify(receivedVC).substring(28,JSON.stringify(receivedVC).length-2)
       const VCform = jwt_decode(decodedVC)
       this.setState({

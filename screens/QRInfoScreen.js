@@ -48,10 +48,10 @@ export default class QRInfoScreen extends React.Component {
     ws.onopen = () => {
       ws.send('{"type":"authm", "no":"'+socketRoom+'"}');
       ws.onmessage = (e) => {
-        alert(e.data)
+        
         ws.send('{"type":"did", "data":"'+this.state.address+'"}')
         ws.onmessage = (e) => {
-        alert(e.data)
+        
         this.setState({VC: e.data})
         }
 

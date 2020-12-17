@@ -88,7 +88,7 @@ export default class Signup extends React.Component {
           
           <Text style={styles.textContext}>최초 제공된 시드 형태의 단어들을 차례대로 입력해 주시기 바랍니다.</Text>
         
-        <TouchableOpacity style={styles.bottomButton} onPress={this.getDidData}><Text>계정 복구</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.bottomButton} onPress={this.getDidData}><Text style={{color:'white'}}>계정 복구</Text></TouchableOpacity>
       </View>
     )
   }
@@ -97,7 +97,7 @@ export default class Signup extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#00203F',
+    backgroundColor: 'white',
     alignItems: 'center',
     justifyContent: 'center'
   },
@@ -107,7 +107,8 @@ const styles = StyleSheet.create({
     padding:15,
     margin:20,
     borderRadius:12,
-    
+    borderColor:'black',
+    borderWidth:1
   },
   bottomButton: {
     backgroundColor: '#316BFF',
@@ -117,14 +118,14 @@ const styles = StyleSheet.create({
 
   },
   textUpper: {
-    color: '#fff',
+    color: 'black',
     fontSize: 20,
     fontWeight: 'bold',
     textAlign:'left',
     width:'70%'
   },
   textContext: {
-    color: '#fff',
+    color: 'black',
     fontSize: 17,
     textAlign:'left',
     width:'80%',
@@ -136,6 +137,8 @@ const styles = StyleSheet.create({
     margin:20,
     height:300,
     borderRadius:12,
+    borderColor:'black',
+    borderWidth:1
     
   }
 })
