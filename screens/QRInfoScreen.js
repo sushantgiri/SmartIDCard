@@ -1,6 +1,7 @@
 import React from 'react'
-import { StyleSheet, View,Text, Button } from 'react-native'
+import { StyleSheet, View,Text, Buttonm } from 'react-native'
 import CryptoJS from 'react-native-crypto-js';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 import SecureStorage from 'react-native-secure-storage'
 var AES = require("react-native-crypto-js").AES;
 var socketRoom ='';
@@ -18,11 +19,7 @@ export default class QRInfoScreen extends React.Component {
     privateKey:'',
     mnemonic:'',
     VCarray:[],
-    VCjwtArray:[{"dummy":'data','vc':{
-      'credentialSubject': 'none'
-      }},{"dummy":'data','vc':{
-      'credentialSubject': 'none'
-      }}
+    VCjwtArray:[
     ],
     showingData: ''
   }
@@ -32,7 +29,6 @@ export default class QRInfoScreen extends React.Component {
             await SecureStorage.getItem(this.state.dataKey).then((userData) => {
             //console.log(JSON.stringify(userData))
             if( userData != null){
-              console.log(this.state.dataKey)
               let bytes  = CryptoJS.AES.decrypt(userData, this.state.dataKey);
               //console.log(bytes)
               let originalText = bytes.toString(CryptoJS.enc.Utf8);
@@ -91,12 +87,13 @@ export default class QRInfoScreen extends React.Component {
     passwordInMobile = userPW;
     return (
       <View style={styles.container}>
-        <Text>인증 중입니다</Text>
+        <Text>VC 발급 대기중입니다.</Text>
         
-
-        <Button title="다음" onPress={this.next}></Button>
+        <View style={{ flexDirection:"row"}}>
+        <TouchableOpacity title="다음" style={styles.bottomLeftButton} onPress={this.next}><Text style={styles.buttonLeftText}>다음</Text></TouchableOpacity>
         
-        <Button title="취소" onPress={this.close}></Button>
+        <TouchableOpacity title="취소" style={styles.bottomButton} onPress={this.close}><Text style={styles.buttonText}>취소</Text></TouchableOpacity>
+        </View>
       </View>
     )
     
@@ -114,37 +111,35 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center'
   },
-  textMarginer: {
-    margin:20
+  
+  bottomLeftButton:{
+    backgroundColor: '#c3d4ff',
+    paddingTop:10,
+    paddingBottom:10,
+    height:50,
+    marginRight:5,
+
+    borderRadius: 12,
+    width:'100%',
+    alignItems:'center'
   },
-  modalView: {
-    margin: 20,
-    backgroundColor: "white",
-    borderRadius: 20,
-    padding: 35,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5
+  buttonLeftText: {
+    color: '#316BFF',
+    fontWeight:'bold'
   },
-  openButton: {
-    backgroundColor: "#F194FF",
-    borderRadius: 20,
-    padding: 10,
-    elevation: 2
+  bottomButton: {
+    backgroundColor: '#316BFF',
+    paddingTop:10,
+    paddingBottom:10,
+    marginLeft:5,
+    marginBottom:20,
+    height:50,
+    borderRadius: 12,
+    width:'100%',
+    alignItems:'center'
   },
-  textStyle: {
-    color: "white",
-    fontWeight: "bold",
-    textAlign: "center"
+  buttonText: {
+    color: 'white',
+    fontWeight: 'bold'
   },
-  modalText: {
-    marginBottom: 15,
-    textAlign: "center"
-  }
 })

@@ -3,7 +3,6 @@ import {createAppContainer} from 'react-navigation'
 import React from 'react';
 import VCcontrol from '../screens/Home'
 import CompleteSubmit from '../screens/CompleteSubmit'
-import Home from '../screens/Home'
 import QRInfoScreen from '../screens/QRInfoScreen'
 import QRscreenVP from '../screens/QRscreenVP'
 import ScanScreen from '../screens/ScanScreen'

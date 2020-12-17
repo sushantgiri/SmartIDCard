@@ -13,7 +13,36 @@ var passwordInMobile = '';
 var nonce = '';
 var ws = '';
 
+function VC({vc}){
+  if(JSON.stringify(vc.vc.type) == '["VerifiableCredential","certificate"]'){
+    return (
+    <View>
+      <View style={styles.certificateCard}>
+              <Text style={styles.vcText}>인증서</Text>
+              <Text>이름 : {vc.vc.credentialSubject.name}</Text>
+              <Text>Email: {vc.vc.credentialSubject.email}</Text>
+              <Text>생일 : {vc.vc.credentialSubject.birthday}</Text>
+              <Text>성별 : {vc.vc.credentialSubject.gender}</Text>
+              <Text>Phone: {vc.vc.credentialSubject.birthday}</Text>
+      </View>
 
+    </View>
+    )
+  } else {
+  return (
+    <View>
+      <View style={styles.vcCard}>
+              <Text style={styles.vcText}>운전 면허증</Text>
+              <Text>이름 : {vc.vc.credentialSubject.name}</Text>
+              <Text>발급 기관: {vc.vc.credentialSubject.issueAgency}</Text>
+              <Text>발급 날짜: {vc.vc.credentialSubject.issueDate}</Text>
+              <Text>ID : {vc.vc.credentialSubject.idNo}</Text>
+      </View>
+
+    </View>
+  )
+  }
+}
 
 export default class QRscreenVP extends React.Component {
   state = {
@@ -101,7 +130,10 @@ export default class QRscreenVP extends React.Component {
     return (
       <View style={styles.container}>
         <Text>VP를 제출하시겠습니까?</Text>
-        
+        <View>{this.state.VCarray.map((vc) =>
+          <VC vc={vc} key={vc.exp}/>
+        )}
+        </View>
 
         <Button title="제출" onPress={this.next}></Button>
         
@@ -125,6 +157,13 @@ const styles = StyleSheet.create({
   },
   textMarginer: {
     margin:20
+  },
+  certificateCard:{
+    borderRadius:12,
+    width:300,
+    backgroundColor: '#DFF',
+    margin:10,
+    padding:10
   },
   modalView: {
     margin: 20,

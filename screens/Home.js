@@ -8,7 +8,7 @@ import {TouchableHighlight} from 'react-native-gesture-handler';
 var AES = require("react-native-crypto-js").AES;
 
 
-var estormLogo = require ('./estormLogo.png');
+var estormLogo = require ('./emptyprofile.png');
 
 export default class Home extends React.Component {
   state = {
@@ -18,7 +18,8 @@ export default class Home extends React.Component {
     privateKey:'',
     mnemonic:'',
     VCarray:[
-    ]
+    ],
+    VCjwtArray:[]
   }
   goToMain = () => this.props.navigation.navigate('Auth')
   
@@ -62,7 +63,7 @@ export default class Home extends React.Component {
 
   }
   //Navigation
-  goToVCselect = () => {console.log(this.state.password)
+  goToVCselect = () => {
   this.props.navigation.navigate('VCselect',{password:this.state.password})
   }
 
@@ -76,25 +77,39 @@ export default class Home extends React.Component {
     this.state.password = userPassword;
     return (
       <View style={styles.container}>
-        <Text style={styles.textTop}><Image style={{height:40,width:40}} source = {estormLogo}></Image>프로필</Text>
-
-
-        
+        <Text style={styles.textTop}>프로필</Text>
+        <View style={styles.profileCard}>
+          <Image source={estormLogo} style={{height:20,width:20}}></Image>
+          <TextInput
+            placeholder='홍길동'
+            secureTextEntry
+            style={styles.inputProfileText}
+          />
+          <TextInput
+            placeholder='GilDong@estorm.co.kr'
+            secureTextEntry
+            style={styles.inputProfileText}
+          />
+          <TextInput
+            placeholder='010-2345-5678'
+            secureTextEntry
+            style={styles.inputProfileText}
+          />
+        </View>
         <View style={styles.profileCard}>
         <Text style={styles.profileTitle}>DID ( 개인용 )</Text>
-        <Text>DID : </Text><Text>{this.state.address}</Text>
-        <Text>시드 : </Text><Text>{this.state.mnemonic}</Text>
+        <Text>DID : {this.state.address}</Text>
+        <Text>시드 : {this.state.mnemonic}</Text>
          
         </View>
         
         <TouchableOpacity style={styles.bannerButton}onPress={this.getDidData}><Text>자세히 보기</Text></TouchableOpacity>
 
         <ScrollView style={styles.bottomFix}>
-        
-        <TouchableOpacity style={styles.QRbutton} onPress={this.goToScan}><Text>QR 스캔</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.QRbutton} onPress={this.goToScan}><Text style={styles.qrText}>QR코드</Text></TouchableOpacity>
         <View style={styles.bottomNav}>
         <TouchableOpacity style={styles.bottomButton} onPress={this.goToVCselect}><Text style={styles.buttonText}>VC 관리</Text></TouchableOpacity>
-        <TouchableOpacity style={styles.bottomButton} ><Text style={styles.buttonText}>CVC 관리</Text></TouchableOpacity>
+        
         <TouchableOpacity style={styles.bottomButton} ><Text style={styles.buttonText}>프로필</Text></TouchableOpacity>
         <TouchableOpacity style={styles.bottomButton} ><Text style={styles.buttonText}>가이드</Text></TouchableOpacity>
         <TouchableOpacity style={styles.bottomButton} ><Text style={styles.buttonText}>설정</Text></TouchableOpacity>
@@ -106,11 +121,11 @@ export default class Home extends React.Component {
   
   
 }
-
+//<TouchableOpacity style={styles.bottomButton} ><Text style={styles.buttonText}></Text></TouchableOpacity>
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#00203F',
+    backgroundColor: 'white',
     alignItems:'center'
   },
   profileTitle:{
@@ -118,6 +133,23 @@ const styles = StyleSheet.create({
     fontSize:15,
     fontWeight:"bold",
     marginBottom:30
+  },
+  qrText: {
+    color:'white',
+    fontWeight:'bold'
+  },
+  QRbutton:{
+    textAlign:"center",
+    alignItems:"center",
+    alignContent:'center',
+    textAlign: 'center',
+    justifyContent: 'center',
+    width:'90%',
+    marginLeft:'5%',
+    marginBottom: '5%',
+    backgroundColor:'#316BFF',
+    height:40,
+    borderRadius:12
   },
   bannerButton: {
     width:'90%',
@@ -132,37 +164,24 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius:12,
     borderBottomRightRadius:12
   },
-  QRbutton:{
-    textAlign:"center",
-    alignItems:"center",
-    alignContent:'center',
-    textAlign: 'center',
-    justifyContent: 'center',
-    width:'90%',
-    marginLeft:'5%',
-    marginBottom: '5%',
-    backgroundColor:'white',
-    height:40,
-    borderRadius:12
-  },
   profileCard:{
     width:'90%',
     marginTop:'5%',
     padding:10,
-    backgroundColor:'white',
+    backgroundColor:'#f7f7f7',
     height:'30%',
     borderTopLeftRadius:12,
     borderTopRightRadius:12
   },
   textUpper: {
-    color: '#fff',
+    color: 'black',
     fontSize: 20,
     fontWeight: 'bold',
     textAlign:'left',
     width:'70%'
   },
   textTop: {
-    color: '#fff',
+    color: 'black',
     fontSize:30,
     fontWeight: 'bold',
     textAlign:"center",
@@ -186,5 +205,15 @@ const styles = StyleSheet.create({
     width: '100%',
     position: 'absolute', 
     bottom: 0,
+  },
+  inputProfileText: {
+    backgroundColor:'white',
+    width:'90%',
+    padding:10,
+    borderRadius:12,
+    textAlign:"center",
+    margin:20,
+    marginTop:5,
+    marginBottom:5
   }
 })
