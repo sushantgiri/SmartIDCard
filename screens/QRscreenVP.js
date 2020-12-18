@@ -87,7 +87,7 @@ export default class QRscreenVP extends React.Component {
     
     for (var i=0;this.state.VCarray.length-2;i++){
       
-      if(e.exp == this.state.VCarray[i].exp){
+      if(e == this.state.VCarray[i]){
         console.disableYellowBox = true;
         console.log(i)
         this.next(i)

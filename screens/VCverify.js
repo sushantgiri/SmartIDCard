@@ -97,9 +97,11 @@ export default class VCverify extends React.Component {
     const receivedVC = navigation.getParam('VCdata',"VCvalue")
     var iv = this.state.dataKey;
     let vcBytes = CryptoJS.AES.encrypt(JSON.stringify(receivedVC),this.state.dataKey,{iv:iv});
-    console.log("this is datakey :" + this.state.dataKey)
-    console.log('saved data :' + vcBytes)
-    console.log('received vc :' + receivedVC)
+    
+    this.props.navigation.navigate('TestKey',{dataKey:this.state.dataKey,savedData:vcBytes,receivedVC:receivedVC})
+    //alert("this is datakey :" + this.state.dataKey  +'\n' + '\n' +
+    //       'saved data :' + vcBytes +'\n' + '\n'+ 'received vc :' + receivedVC )
+    
   }
 
   render() {
@@ -115,7 +117,7 @@ export default class VCverify extends React.Component {
         </View>
         
       <TouchableOpacity style={styles.nextButton} onPress={this.gotoNext}><Text>다음</Text></TouchableOpacity>
-      <TouchableOpacity onPress={this.test}><Text>test</Text></TouchableOpacity>
+      
       </View>
     )
   }

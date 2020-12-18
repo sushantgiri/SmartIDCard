@@ -122,11 +122,19 @@ export default class VCselect extends React.Component {
 
   }
 
-
+  deleteVC = e => {
+    
+      this.setState(this.state.VCarray.splice(this.state.VCarray.indexOf(e),1), function(){
+        let cipherData = CryptoJS.AES.encrypt(JSON.stringify(this.state), this.state.dataKey).toString();
+        SecureStorage.setItem(this.state.dataKey, cipherData);
+        }
+      )
+        
+  }
   
 
   render() {
-    
+    console.disableYellowBox = true;
     return (
       <View style={styles.container}>
       <Text style={styles.textTop}>VC 관리</Text>
@@ -134,7 +142,8 @@ export default class VCselect extends React.Component {
           <Text>현재 보유한 VC</Text>
           <ScrollView>{this.state.VCarray.map((vc)=>
           <View>
-            <VC vc={vc} key={vc.exp}/>
+            <VC vc={vc} key={vc.exp}></VC>
+            <TouchableOpacity style={styles.deleteVCbutton} onPress={() => this.deleteVC(vc)}><Text style={styles.deleteText}>삭제</Text></TouchableOpacity>
           </View>
           )}
         
@@ -179,6 +188,23 @@ const styles = StyleSheet.create({
     color:'white',
     fontWeight:'bold'
   },
+  deleteText:{
+justifyContent:'center',
+    alignContent:'center',
+    textAlign:'center',
+    color:'white',
+    fontWeight:'bold'
+  },
+  deleteVCbutton:{
+    backgroundColor:'#f89',
+    width:'94%',
+    marginLeft:'3%',
+    borderBottomLeftRadius:12,
+    borderBottomRightRadius:12,
+    justifyContent:'center',
+    alignContent:'center',
+    textAlign:'center'
+  }, 
   textTop: {
     color: 'black',
     fontSize:30,
@@ -229,10 +255,12 @@ const styles = StyleSheet.create({
     padding:10
   },
   certificateCard:{
-    borderRadius:12,
+    borderTopLeftRadius:12,
+    borderTopRightRadius:12,
     width:300,
     backgroundColor: '#DFF',
     margin:10,
+    marginBottom:0,
     padding:10
   },
   vcText:{

@@ -52,14 +52,16 @@ export default class QRInfoScreen extends React.Component {
         ws.send('{"type":"did", "data":"'+this.state.address+'"}')
         ws.onmessage = (e) => {
         
-        this.setState({VC: e.data})
-        }
+        this.setState({VC: e.data}, 
+            this.next()
+          )
 
       
 
         
         
       }
+    }
 
     }
 
@@ -87,13 +89,12 @@ export default class QRInfoScreen extends React.Component {
     passwordInMobile = userPW;
     return (
       <View style={styles.container}>
-        <Text>VC 발급 대기중입니다.</Text>
+        <Text style={styles.actText}>VC 발급 대기중입니다.</Text>
         
-        <View style={{ flexDirection:"row"}}>
-        <TouchableOpacity title="다음" style={styles.bottomLeftButton} onPress={this.next}><Text style={styles.buttonLeftText}>다음</Text></TouchableOpacity>
         
-        <TouchableOpacity title="취소" style={styles.bottomButton} onPress={this.close}><Text style={styles.buttonText}>취소</Text></TouchableOpacity>
-        </View>
+        
+        <TouchableOpacity style={styles.bottomButton} onPress={this.close}><Text style={styles.buttonText}>취소</Text></TouchableOpacity>
+        
       </View>
     )
     
@@ -111,21 +112,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center'
   },
-  
-  bottomLeftButton:{
-    backgroundColor: '#c3d4ff',
-    paddingTop:10,
-    paddingBottom:10,
-    height:50,
-    marginRight:5,
-
-    borderRadius: 12,
-    width:'100%',
-    alignItems:'center'
-  },
-  buttonLeftText: {
-    color: '#316BFF',
+  actText:{
+    fontSize:30,
     fontWeight:'bold'
+  },
+  buttonText:{
+    color:'white'
   },
   bottomButton: {
     backgroundColor: '#316BFF',
@@ -133,13 +125,11 @@ const styles = StyleSheet.create({
     paddingBottom:10,
     marginLeft:5,
     marginBottom:20,
+    marginTop:200,
     height:50,
     borderRadius: 12,
-    width:'100%',
-    alignItems:'center'
-  },
-  buttonText: {
-    color: 'white',
-    fontWeight: 'bold'
+    width:200,
+    alignItems:'center',
+    justifyContent:'center'
   },
 })

@@ -83,17 +83,17 @@ export default class Home extends React.Component {
           <Image source={estormLogo} style={{height:20,width:20}}></Image>
           <TextInput
             placeholder='홍길동'
-            secureTextEntry
+            
             style={styles.inputProfileText}
           />
           <TextInput
             placeholder='GilDong@estorm.co.kr'
-            secureTextEntry
+            
             style={styles.inputProfileText}
           />
           <TextInput
             placeholder='010-2345-5678'
-            secureTextEntry
+            
             style={styles.inputProfileText}
           />
         </View>
