@@ -85,11 +85,11 @@ export default class QRscreenVP extends React.Component {
 
   VCclick = e =>{
     
-    for (var i=0;this.state.VCarray.length-2;i++){
+    for (var i=0;this.state.VCarray.length;i++){
       
       if(e == this.state.VCarray[i]){
-        console.disableYellowBox = true;
-        console.log(i)
+        
+        
         this.next(i)
         return
       }
@@ -97,6 +97,7 @@ export default class QRscreenVP extends React.Component {
   
   }
   next = async (i) => {
+    
     const vcjwtForm = JSON.stringify(this.state.VCjwtArray[i])
     const privateKey = this.state.privateKey;
     const ethAccount = web3.eth.accounts.privateKeyToAccount(privateKey)
@@ -111,7 +112,7 @@ export default class QRscreenVP extends React.Component {
     this.close()
   }
   render() {
-    
+    console.disableYellowBox = true;
     const {navigation} = this.props
     const userRoom = navigation.getParam('roomNo',"value")
     const userSocket = navigation.getParam('socketUrl',"Url")

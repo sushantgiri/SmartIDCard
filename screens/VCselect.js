@@ -124,12 +124,19 @@ export default class VCselect extends React.Component {
 
   deleteVC = e => {
     
-      this.setState(this.state.VCarray.splice(this.state.VCarray.indexOf(e),1), function(){
+    this.setState(this.state.VCarray.splice(this.state.VCarray.indexOf(e),1))
+    this.setState(this.state.VCjwtArray.splice(this.state.VCarray.indexOf(e),1))
+         
+        
+    this.reArrangeState();
+      
+    
+    
+        
+  }
+  reArrangeState = () => {
         let cipherData = CryptoJS.AES.encrypt(JSON.stringify(this.state), this.state.dataKey).toString();
         SecureStorage.setItem(this.state.dataKey, cipherData);
-        }
-      )
-        
   }
   
 
