@@ -1,5 +1,5 @@
 import React from 'react'
-import { StyleSheet, View, Button,Text,TouchableOpacity, ScrollView, Image, Linking} from 'react-native'
+import { StyleSheet, View, Button,Text,TouchableOpacity, ScrollView, Image, Linking, LogBox} from 'react-native'
 import jwt_decode from "jwt-decode";
 import CryptoJS from 'react-native-crypto-js';
 
@@ -20,7 +20,7 @@ function VC({vc}){
               <Text>Email: {vc.vc.credentialSubject.email}</Text>
               <Text>생일 : {vc.vc.credentialSubject.birthday}</Text>
               <Text>성별 : {vc.vc.credentialSubject.gender}</Text>
-              <Text>Phone: {vc.vc.credentialSubject.birthday}</Text>
+              <Text>Phone: {vc.vc.credentialSubject.phone}</Text>
       </View>
 
     </View>
@@ -141,42 +141,53 @@ export default class VCselect extends React.Component {
   
 
   render() {
-    console.disableYellowBox = true;
+    LogBox.ignoreAllLogs
     return (
       <View style={styles.container}>
-      <Text style={styles.textTop}>VC 관리</Text>
-        <View style={styles.vcContainter}>
-          <Text>현재 보유한 VC</Text>
-          <ScrollView>{this.state.VCarray.map((vc)=>
+        
+        <Text style={styles.textTop}>VC 관리</Text>
           <View>
+          <ScrollView>
+          <Text style={{fontWeight:'bold'}}>현재 보유한 VC</Text>
+          <View style={styles.vcContainter}>
+          
+          <ScrollView>
+          {this.state.VCarray.map((vc)=>
+          
+            <View>
             <VC vc={vc} key={vc.exp}></VC>
             <TouchableOpacity style={styles.deleteVCbutton} onPress={() => this.deleteVC(vc)}><Text style={styles.deleteText}>삭제</Text></TouchableOpacity>
-          </View>
+            </View>
           )}
-        
           </ScrollView>
-        </View>
+          
+          </View>
 
-        <View style={styles.vcContainter}>
-          <Text>생성 가능한 VC</Text>
+          <Text style={{fontWeight:'bold'}}>생성 가능한 VC</Text>
+          <View style={styles.vcContainter}>
+          
+          
           <TouchableOpacity style={styles.certificateCard} onPress={this.gotoURL}>
               <Text style={styles.vcText}>인증서</Text>
+              <Text>요구정보: 성명, 생년월일, 이메일, 성별, 휴대폰번호</Text>
           </TouchableOpacity>
-        </View>
         
+          </View>
+          </ScrollView>
+          </View>
+          <ScrollView style={styles.bottomFix}>
         
-        <ScrollView style={styles.bottomFix}>
+            <View style={styles.bottomNav}>
+            <TouchableOpacity style={styles.bottomButton} onPress={this.goToVCselect}><Text style={styles.buttonText}>VC 관리</Text></TouchableOpacity>
         
-        
-        <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.bottomButton} onPress={this.goToVCselect}><Text style={styles.buttonText}>VC 관리</Text></TouchableOpacity>
-        
-        <TouchableOpacity style={styles.bottomButton} onPress={this.goToMain}><Text style={styles.buttonText}>프로필</Text></TouchableOpacity>
-        <TouchableOpacity style={styles.bottomButton} ><Text style={styles.buttonText}>가이드</Text></TouchableOpacity>
-        <TouchableOpacity style={styles.bottomButton} ><Text style={styles.buttonText}>설정</Text></TouchableOpacity>
-        </View>
-        </ScrollView>
+            <TouchableOpacity style={styles.bottomButton} onPress={this.goToMain}><Text style={styles.buttonText}>프로필</Text></TouchableOpacity>
+            <TouchableOpacity style={styles.bottomButton} ><Text style={styles.buttonText}>가이드</Text></TouchableOpacity>
+            <TouchableOpacity style={styles.bottomButton} ><Text style={styles.buttonText}>설정</Text></TouchableOpacity>
+            </View>
+          </ScrollView>
+
       </View>
+      
 
     )
   }
@@ -190,15 +201,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'white',
     alignItems: 'center',
+    textAlign:'left'
   },
   qrText: {
-    color:'white',
-    fontWeight:'bold'
-  },
-  deleteText:{
-justifyContent:'center',
-    alignContent:'center',
-    textAlign:'center',
     color:'white',
     fontWeight:'bold'
   },
@@ -212,6 +217,11 @@ justifyContent:'center',
     alignContent:'center',
     textAlign:'center'
   }, 
+  deleteText:{
+    color:'white',
+    textAlign:'center',
+    fontWeight:'bold'
+  },  
   textTop: {
     color: 'black',
     fontSize:30,
@@ -223,7 +233,8 @@ justifyContent:'center',
     
   },
   vcContainter:{
-    height:320
+    height:320,
+    
   },
   testButton: {
     width:40,

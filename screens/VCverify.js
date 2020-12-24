@@ -19,7 +19,7 @@ function VC({vc}){
               <Text>Email: {vc.vc.credentialSubject.email}</Text>
               <Text>생일 : {vc.vc.credentialSubject.birthday}</Text>
               <Text>성별 : {vc.vc.credentialSubject.gender}</Text>
-              <Text>Phone: {vc.vc.credentialSubject.birthday}</Text>
+              <Text>Phone: {vc.vc.credentialSubject.phone}</Text>
       </View>
 
     </View>

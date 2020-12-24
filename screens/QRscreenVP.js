@@ -1,11 +1,13 @@
 import {DualDID} from '@estorm/dual-did';
-
+const didJWT = require('did-jwt')
 const Web3 = require('web3')
 const web3 = new Web3('http://182.162.89.51:4313')
 import React from 'react'
-import { StyleSheet, View,Text, Button, TouchableOpacity } from 'react-native'
+import { StyleSheet, View,Text, Button, TouchableOpacity, LogBox} from 'react-native'
 import CryptoJS from 'react-native-crypto-js';
+import CheckBox from 'react-native-check-box'
 import SecureStorage from 'react-native-secure-storage'
+
 var AES = require("react-native-crypto-js").AES;
 var socketRoom ='';
 var socketURL = '';
@@ -13,12 +15,12 @@ var passwordInMobile = '';
 var nonce = '';
 var ws = '';
 var arr = '';
-
+var arrChecked= [];
 
 function VC({vc}){
     return (
     <View>
-      <View style={styles.certificateCard}>
+      <View>
               <Text style={styles.vcText}>인증서</Text>
               <Text>이름 : {vc.vc.credentialSubject.name}</Text>
               <Text>Email: {vc.vc.credentialSubject.email}</Text>
@@ -32,7 +34,9 @@ function VC({vc}){
 
     )
 }
-
+function createDualSigner (jwtSigner, ethAccount) {
+  return { jwtSigner, ethAccount }
+}
 export default class QRscreenVP extends React.Component {
   state = {
     password: '',
@@ -42,7 +46,8 @@ export default class QRscreenVP extends React.Component {
     mnemonic:'',
     VCarray:[],
     VCjwtArray:[],
-    showingData: ''
+    showingData: '',
+    checkedArray:[]
   }
   getDidData = async () => {
       await SecureStorage.getItem(passwordInMobile).then((docKey) => {
@@ -50,12 +55,12 @@ export default class QRscreenVP extends React.Component {
             await SecureStorage.getItem(this.state.dataKey).then((userData) => {
             //console.log(JSON.stringify(userData))
             if( userData != null){
-              console.log(this.state.dataKey)
               let bytes  = CryptoJS.AES.decrypt(userData, this.state.dataKey);
               //console.log(bytes)
               let originalText = bytes.toString(CryptoJS.enc.Utf8);
               //console.log(originalText)
               this.setState(JSON.parse(originalText))
+              this.settingCheckArray();
             }
             })
 
@@ -66,6 +71,7 @@ export default class QRscreenVP extends React.Component {
   }
 
   receiveVC = () => {
+    this.setState({checkedArray:[]})
     ws = new WebSocket(socketURL);
     ws.onopen = () => {
       ws.send('{"type":"authm", "no":"'+socketRoom+'"}');
@@ -76,33 +82,60 @@ export default class QRscreenVP extends React.Component {
 
     }
   }
-
+  settingCheckArray = () => {
+    arrChecked = [];
+    for (var i = 1; i<=this.state.VCarray.length;i++){
+      arrChecked = arrChecked.concat([{"checked" : false}])
+      
+      
+    } 
+    this.setState({
+      checkedArray: arrChecked
+    })
+  }
   
   close = () => {
-    
     this.props.navigation.navigate('VCselect',{password:this.state.password});
   }
-
+  checkboxClicked = index => {
+    this.state.checkedArray[index].checked = !this.state.checkedArray[index].checked
+    arrChecked = this.state.checkedArray
+    this.setState({checkedArray: this.state.checkedArray})
+  }
   VCclick = e =>{
     
     for (var i=0;this.state.VCarray.length;i++){
       
       if(e == this.state.VCarray[i]){
+        this.checkboxClicked(i)
         
-        
-        this.next(i)
+        //this.next(i)
         return
       }
     }
   
   }
+  pickVCinArray = () => {
+    var vcSubmitArr = [];
+    for(var i = 0; i<this.state.VCjwtArray.length;i++){
+      if(this.state.checkedArray[i].checked == true){
+        var jwtString = this.state.VCjwtArray[i].split(',')[1].split(':')[1]
+        vcSubmitArr = vcSubmitArr.concat([jwtString.substring(1,jwtString.length-2)])
+      }
+    }
+    this.next(vcSubmitArr)
+
+
+  }
   next = async (i) => {
-    
-    const vcjwtForm = JSON.stringify(this.state.VCjwtArray[i])
     const privateKey = this.state.privateKey;
     const ethAccount = web3.eth.accounts.privateKeyToAccount(privateKey)
-    const dualDid = new DualDID(ethAccount, 'Issuer(change later)', 'Dualauth.com(change later)',web3,'')
-    const vp = await dualDid.createVP(vcjwtForm.substring(29,vcjwtForm.length-4),nonce)
+    const dualSigner = createDualSigner(didJWT.SimpleSigner(privateKey.replace('0x','')), ethAccount)
+    
+    
+    const dualDid = new DualDID(dualSigner, 'Issuer(change later)', 'Dualauth.com(change later)',web3,'0x3CF0CB3cD457b959F6027676dF79200C8EF19907')
+    const vp = await dualDid.createVP(i,nonce)
+    //console.log(vp)
     ws.send('{"type":"vp", "data":"'+vp+'"}')
     ws.onmessage = (e) => {
             
@@ -111,8 +144,32 @@ export default class QRscreenVP extends React.Component {
     
     this.close()
   }
+
+  cardStyle = bool => {
+    
+    if(this.state.checkedArray[bool] != null){
+      if(this.state.checkedArray[bool].checked == true){    
+        return{
+          backgroundColor:'#8FF',
+          borderRadius:12,
+          width:300,
+          margin:10,
+          padding:10
+        }
+      } else {
+        return{
+          backgroundColor:'#eff',
+          borderRadius:12,
+          width:300,
+          margin:10,
+          padding:10
+        }
+      }
+    }
+  }
+
   render() {
-    console.disableYellowBox = true;
+    LogBox.ignoreAllLogs
     const {navigation} = this.props
     const userRoom = navigation.getParam('roomNo',"value")
     const userSocket = navigation.getParam('socketUrl',"Url")
@@ -124,16 +181,22 @@ export default class QRscreenVP extends React.Component {
     passwordInMobile = userPW;
     return (
       <View style={styles.container}>
+        <Text>{userNonce.split(':')[3]}</Text>
+        
         <Text>VC를 선택해주세요</Text>
-        <View>{this.state.VCarray.map((vc) => {return(
-          <TouchableOpacity onPress={() => this.VCclick(vc)}><VC vc={vc} key={vc.exp}/>
-          </TouchableOpacity>
+        
+        <View>{this.state.VCarray.map((vc,index) => {return(
+          <View>
+          <TouchableOpacity  style={this.cardStyle(index)} onPress={() => this.VCclick(vc)}><VC vc={vc} key={vc.exp}/>
+          </TouchableOpacity>   
+          </View>
         )
         })}
+        
         </View>
 
-        
-        <Button title="취소" onPress={this.close}></Button>
+        <TouchableOpacity onPress={this.pickVCinArray}><Text>제출</Text></TouchableOpacity>
+        <TouchableOpacity onPress={this.close}><Text>취소</Text></TouchableOpacity>
       </View>
     )
     
@@ -141,9 +204,20 @@ export default class QRscreenVP extends React.Component {
   componentDidMount() {
     this.getDidData();
     this.receiveVC();
+    
   }
 }
-
+/*
+<View>
+          {this.state.checkedArray.map((vc,index) => {
+            return(
+            <CheckBox onClick={()=>
+            this.checkboxClicked(index)
+            
+            } isChecked={this.state.checkedArray[index].checked}/>
+          )})}
+        </View>
+        */
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -158,6 +232,13 @@ const styles = StyleSheet.create({
     borderRadius:12,
     width:300,
     backgroundColor: '#DFF',
+    margin:10,
+    padding:10
+  },
+  certificateCardClicked:{
+    borderRadius:12,
+    width:300,
+    backgroundColor: '#AAA',
     margin:10,
     padding:10
   },

@@ -79,8 +79,10 @@ export default class Home extends React.Component {
     return (
       <View style={styles.container}>
         <Text style={styles.textTop}>프로필</Text>
+        <View style={styles.scrollCard}>
+        <ScrollView>
         <View style={styles.profileCard}>
-          <Image source={estormLogo} style={{height:20,width:20}}></Image>
+          <Image source={estormLogo} style={{marginLeft:'25%',marginRight:"25%",marginTop:"5%",marginBottom:"5%",height:150 ,width:150}}></Image>
           <TextInput
             placeholder='홍길동'
             
@@ -99,12 +101,12 @@ export default class Home extends React.Component {
         </View>
         <View style={styles.profileCard}>
         <Text style={styles.profileTitle}>DID ( 개인용 )</Text>
-        <Text>DID : {this.state.address}</Text>
-        <Text>시드 : {this.state.mnemonic}</Text>
+        <View style={{flexDirection:"row"}}><Text>DID : {this.state.address}</Text></View>
+        <View style={{flexDirection:"row"}}><Text>시드 : {this.state.mnemonic}</Text></View>
          
         </View>
-        
-        <TouchableOpacity style={styles.bannerButton}onPress={this.getDidData}><Text>자세히 보기</Text></TouchableOpacity>
+        </ScrollView>
+        </View>
 
         <ScrollView style={styles.bottomFix}>
         <TouchableOpacity style={styles.QRbutton} onPress={this.goToScan}><Text style={styles.qrText}>QR코드</Text></TouchableOpacity>
@@ -119,7 +121,9 @@ export default class Home extends React.Component {
       </View>
     )
   }
-  
+  componentDidMount(){
+    this.getDidData();
+  }
   
 }
 //<TouchableOpacity style={styles.bottomButton} ><Text style={styles.buttonText}></Text></TouchableOpacity>
@@ -128,6 +132,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'white',
     alignItems:'center'
+  },
+  scrollCard:{
+    height:'75%',
+    marginLeft:'5%'
   },
   profileTitle:{
     textAlign:"center",
@@ -163,23 +171,22 @@ const styles = StyleSheet.create({
     paddingTop:'2%',
     paddingBottom:'2%',
     borderBottomLeftRadius:12,
-    borderBottomRightRadius:12
+    borderBottomRightRadius:12,
+    
+    alignContent:'center',
+    justifyContent:'center',
+    textAlign:'center'
   },
   profileCard:{
-    width:'90%',
+    width:'95%',
     marginTop:'5%',
-    padding:10,
+    padding:15,
     backgroundColor:'#f7f7f7',
-    height:'30%',
-    borderTopLeftRadius:12,
-    borderTopRightRadius:12
-  },
-  textUpper: {
-    color: 'black',
-    fontSize: 20,
-    fontWeight: 'bold',
-    textAlign:'left',
-    width:'70%'
+    borderRadius:12,
+    alignContent:'center',
+    justifyContent:'center',
+    textAlign:'center',
+
   },
   textTop: {
     color: 'black',
@@ -210,11 +217,15 @@ const styles = StyleSheet.create({
   inputProfileText: {
     backgroundColor:'white',
     width:'90%',
-    padding:10,
     borderRadius:12,
     textAlign:"center",
     margin:20,
     marginTop:5,
-    marginBottom:5
+    padding:0,
+    marginBottom:5,
+    
+    alignContent:'center',
+    justifyContent:'center',
+    textAlign:'center'
   }
 })

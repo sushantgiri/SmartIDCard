@@ -15,6 +15,7 @@ const Web3Utils = require('web3-utils');
 const { DualDID } = require('@estorm/dual-did')
 const Web3 = require('web3')
 const web3 = new Web3('http://182.162.89.51:4313') // TODO: geth url
+const smartContractAddress = '0x3CF0CB3cD457b959F6027676dF79200C8EF19907'
 
 var userAddress = '';
 var userMnemonic = '';
@@ -59,22 +60,31 @@ function address() {
 
 }
 
-
+function createDualSigner (jwtSigner, ethAccount) {
+  return { jwtSigner, ethAccount }
+}
 async function did () {
   address()
   
   const privateKey = userPK;
   const ethAccount = web3.eth.accounts.privateKeyToAccount(privateKey)
-  const dualDid = new DualDID(ethAccount, 'Issuer(change later)', 'Dualauth.com(change later)',web3,'')
+  const dualSigner = createDualSigner(didJWT.SimpleSigner(privateKey.replace('0x','')), ethAccount)
+
+  const dualDid = new DualDID(dualSigner, 'Issuer(change later)', 'Dualauth.com(change later)',web3,smartContractAddress)
   
   const did = await dualDid.createDid()
-  
+  console.log("<- JWT & signedTx ------------------------------->")
+  console.log(did)
+  console.log("<- verifyJWT ------------------------------->")
+  console.log(JSON.stringify((await dualDid.verifyJWT(did.jwt)), null, 4))
+
 }
 
 
 
 export default class Signup extends React.Component {
     state = {
+    confirmPassword:'',
     password: '',
     address: '',
     privateKey:'',
@@ -88,17 +98,23 @@ export default class Signup extends React.Component {
     this.setState({ password })
 
   }
+  handleConfirmPWchange = confirmPassword => {
+    this.setState({ confirmPassword })
+  }
   stateSet = () =>{
-    did();
-    this.setState({ address: userAddress, privateKey: userPK, mnemonic: userMnemonic, dataKey: dataKey}, () => {
+    if(this.state.password == this.state.confirmPassword){
+      did();
+      this.setState({ address: userAddress, privateKey: userPK, mnemonic: userMnemonic, dataKey: dataKey}, () => {
       let cipherData = CryptoJS.AES.encrypt(JSON.stringify(this.state), dataKey).toString();
       
       SecureStorage.setItem(this.state.dataKey, cipherData);
       SecureStorage.setItem(this.state.password,this.state.dataKey);
       this.setState({ modalVisible: true })
       
-    });
-    
+      });
+    } else {
+      alert("비밀번호 불일치")
+    }
   }
   agree = () => {
     this.setState({ modalVisible: false})
@@ -115,7 +131,7 @@ export default class Signup extends React.Component {
   
   
   render() {
-      const { password, modalVisible } = this.state
+      const { password, confirmPassword, modalVisible } = this.state
     return (
       <View style={styles.container}>
       <Modal
@@ -153,8 +169,11 @@ export default class Signup extends React.Component {
             style={styles.inputText}
           />
           <TextInput
+            name='confirmPassword'
             placeholder='비밀번호 확인'
             secureTextEntry
+            value={confirmPassword}
+            onChangeText={this.handleConfirmPWchange}
             style={styles.inputText}
           />
         </View>
