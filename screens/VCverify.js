@@ -1,5 +1,5 @@
 import React from 'react'
-import { StyleSheet, View, Button, TextInput,Text, TouchableOpacity } from 'react-native'
+import { StyleSheet, View, Button, TextInput,Text, TouchableOpacity, LogBox } from 'react-native'
 
 import CryptoJS from 'react-native-crypto-js';
 import jwt_decode from "jwt-decode";
@@ -105,7 +105,7 @@ export default class VCverify extends React.Component {
   }
 
   render() {
-    
+    LogBox.ignoreAllLogs    
 
     return (
       <View style={styles.container}>

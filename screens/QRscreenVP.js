@@ -169,7 +169,6 @@ export default class QRscreenVP extends React.Component {
   }
 
   render() {
-    LogBox.ignoreAllLogs
     const {navigation} = this.props
     const userRoom = navigation.getParam('roomNo',"value")
     const userSocket = navigation.getParam('socketUrl',"Url")
@@ -194,9 +193,10 @@ export default class QRscreenVP extends React.Component {
         })}
         
         </View>
-
-        <TouchableOpacity onPress={this.pickVCinArray}><Text>제출</Text></TouchableOpacity>
-        <TouchableOpacity onPress={this.close}><Text>취소</Text></TouchableOpacity>
+        <View style={{ flexDirection:"row"}}>
+        <TouchableOpacity style={styles.bottomLeftButton} onPress={this.pickVCinArray}><Text style={styles.buttonLeftText}>제출</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.bottomButton} onPress={this.close}><Text style={styles.buttonText}>취소</Text></TouchableOpacity>
+        </View>
       </View>
     )
     
@@ -271,5 +271,31 @@ const styles = StyleSheet.create({
   modalText: {
     marginBottom: 15,
     textAlign: "center"
-  }
+  },
+  bottomLeftButton:{
+    backgroundColor: '#c3d4ff',
+    paddingTop:10,
+    paddingBottom:10,
+    height:50,
+    marginRight:5,
+
+    borderRadius: 12,
+    width:'40%',
+    alignItems:'center'
+  },
+  buttonLeftText: {
+    color: '#316BFF',
+    fontWeight:'bold'
+  },
+  bottomButton: {
+    backgroundColor: '#316BFF',
+    paddingTop:10,
+    paddingBottom:10,
+    marginLeft:5,
+    marginBottom:20,
+    height:50,
+    borderRadius: 12,
+    width:'40%',
+    alignItems:'center'
+  },
 })

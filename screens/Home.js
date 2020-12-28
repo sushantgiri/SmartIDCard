@@ -1,5 +1,5 @@
 import React from 'react'
-import {ScrollView, StyleSheet, Text, View, Button, TextInput, Linking, Image, TouchableOpacity} from 'react-native'
+import {ScrollView, StyleSheet, Text, View, Button, TextInput, Linking, Image, TouchableOpacity, LogBox} from 'react-native'
 import CryptoJS from 'react-native-crypto-js';
 import axios from 'axios';
 
@@ -73,6 +73,7 @@ export default class Home extends React.Component {
 
   //Navigation end
   render() {
+    LogBox.ignoreAllLogs
     const {navigation} = this.props
     const userPassword = navigation.getParam('password','value')
     this.state.password = userPassword;
