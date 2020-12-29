@@ -4,7 +4,7 @@ import CryptoJS from 'react-native-crypto-js';
 var AES = require("react-native-crypto-js").AES;
 import SecureStorage from 'react-native-secure-storage'
 
-
+import Clipboard from '@react-native-community/clipboard'
 
 
 const didJWT = require('did-jwt');
@@ -150,6 +150,9 @@ export default class Signup extends React.Component {
               <Text>24 단어 형태의 시드는 앱을 재설치하거나 새로운 기기에
               현재의 계정을 옮기기 위해 이용됩니다. </Text>
               <Text>이후에도 프로필 화면에서 확인하실 수 있습니다.</Text>
+              <TouchableOpacity onPress={()=>Clipboard.setString(this.state.mnemonic)}>
+                <Text style={{backgroundColor:'grey'}}>클립보드에 복사</Text>
+              </TouchableOpacity>
               <TouchableHighlight
                 style={styles.modalButton}
                 onPress={this.agree}

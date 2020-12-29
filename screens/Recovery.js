@@ -36,7 +36,7 @@ export default class Signup extends React.Component {
           alert("no account")
         } else {
           //Seed 관련 확인 부분 TODO: 활성화
-          /*
+          
           this.setState({dataKey: state}, async function(){
             await SecureStorage.getItem(this.state.dataKey). then((userData) => {
               if( userData != null){
@@ -50,11 +50,11 @@ export default class Signup extends React.Component {
             })
           })
           
-          */
+          
           
 
           //
-          this.goToMain();
+          //this.goToMain();
         }
       })
       

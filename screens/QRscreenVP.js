@@ -5,7 +5,6 @@ const web3 = new Web3('http://182.162.89.51:4313')
 import React from 'react'
 import { StyleSheet, View,Text, Button, TouchableOpacity, LogBox} from 'react-native'
 import CryptoJS from 'react-native-crypto-js';
-import CheckBox from 'react-native-check-box'
 import SecureStorage from 'react-native-secure-storage'
 
 var AES = require("react-native-crypto-js").AES;
@@ -207,17 +206,7 @@ export default class QRscreenVP extends React.Component {
     
   }
 }
-/*
-<View>
-          {this.state.checkedArray.map((vc,index) => {
-            return(
-            <CheckBox onClick={()=>
-            this.checkboxClicked(index)
-            
-            } isChecked={this.state.checkedArray[index].checked}/>
-          )})}
-        </View>
-        */
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
