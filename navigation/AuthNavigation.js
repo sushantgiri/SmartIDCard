@@ -3,13 +3,15 @@ import Main from '../screens/Main'
 import Signup from '../screens/Signup'
 import Recovery from '../screens/Recovery'
 
-import ScanScreen from '../screens/ScanScreen'
 const AuthNavigation = createStackNavigator(
   {
-    Main: { screen: Main },
+    Main: { screen: Main,
+            navigationOptions: {
+              headerTitle: 'Main'
+            },
+            path: 'Main' },
     Signup: { screen: Signup },
-    Recovery: { screen: Recovery},
-    ScanScreen: { screen: ScanScreen}
+    Recovery: { screen: Recovery}
   },
   {
     initialRouteName: 'Main',

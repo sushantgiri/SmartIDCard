@@ -116,9 +116,11 @@ export default class Signup extends React.Component {
       alert("비밀번호 불일치")
     }
   }
-  agree = () => {
+  agree = async () => {
     this.setState({ modalVisible: false})
-    this.props.navigation.navigate('VCcontrol',{password:this.state.password})
+    await SecureStorage.setItem('userToken', this.state.password)
+    console.log(this.state.password)
+    this.props.navigation.navigate('App')
   }
   saveItem = async () => {
 

@@ -21,7 +21,10 @@ export default class Signup extends React.Component {
   handlePasswordChange = password => {
     this.setState({ password })
   }
-  goToMain = () => this.props.navigation.navigate('VCcontrol',{password:this.state.password})
+  goToMain = async () => {
+    await SecureStorage.setItem('userToken',this.state.password)
+    this.props.navigation.navigate('App')
+  }
 
   handleSeedChange = seed => {
     this.setState({ seed })

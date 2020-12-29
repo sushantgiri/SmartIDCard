@@ -3,6 +3,8 @@ import { StyleSheet, View, Text, TouchableOpacity, Image} from 'react-native'
 
 import Swiper from 'react-native-swiper'
 
+import SecureStorage from 'react-native-secure-storage'
+
 var estormLogo = require ('./ic-logo.svg');
 
 export default class Login extends React.Component {
@@ -16,29 +18,16 @@ export default class Login extends React.Component {
     this.setState({ password })
   }
 
-  onLogin = async () => {
-    const { password } = this.state
-    try {
-      if (password.length > 0) {
-        this.props.navigation.navigate('App')
-      }
-    } catch (error) {
-      alert(error)
-    }
+  setTokenEmpty = async () => {
+    await SecureStorage.removeItem('userToken');
   }
 
   goToSignup = () => this.props.navigation.navigate('Signup')
   goToRecovery = () => this.props.navigation.navigate('Recovery')
-  goToScan = () => {
-
-    this.props.navigation.navigate('ScanScreen')
   
-  }
 
   
   render() {
-    const { password } = this.state
-
     return (
       <View style={styles.container}>
         <View>

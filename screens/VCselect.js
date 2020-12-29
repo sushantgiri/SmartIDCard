@@ -40,7 +40,7 @@ function VC({vc}){
   //)
   //}
 }
-var dataforTTA = '';
+var dataforTTA = '';LogBox.ignoreAllLogs
 export default class VCselect extends React.Component {
   
   state = {
@@ -93,7 +93,7 @@ export default class VCselect extends React.Component {
   setinVCarray = () => {
     const {navigation} = this.props
     const receivedVC = navigation.getParam('VCdata',"VCvalue")
-    
+    LogBox.ignoreAllLogs(true)
     if(receivedVC != "VCvalue"){
       console.disableYellowBox = true;
       const decodedVC = JSON.stringify(receivedVC).substring(28,JSON.stringify(receivedVC).length-2)
@@ -110,6 +110,7 @@ export default class VCselect extends React.Component {
       })
 
     } else {
+      LogBox.ignoreAllLogs
       console.log('no received vc')
     }
     

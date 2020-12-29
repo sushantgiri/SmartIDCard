@@ -6,6 +6,7 @@ import QRscreenVP from '../screens/QRscreenVP'
 import ScanScreen from '../screens/ScanScreen'
 import VCselect from '../screens/VCselect'
 import VCverify from '../screens/VCverify'
+import WebRequest from '../screens/WebRequest';
 const AppNavigation = createStackNavigator(
   {
     VCcontrol: { screen: Home,
@@ -18,7 +19,12 @@ const AppNavigation = createStackNavigator(
     QRInfoScreen: { screen: QRInfoScreen},
     QRscreenVP: {screen: QRscreenVP},
     CompleteSubmit: { screen: CompleteSubmit},
-    VCselect: {screen: VCselect}
+    VCselect: {screen: VCselect},
+    WebRequest: {screen: WebRequest,
+                  navigationOptions: {
+                    headerTitle: 'WebRequest'
+                  },
+                path: 'WebRequest'}
   },
   {
     initialRouteName: 'VCcontrol',

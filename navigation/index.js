@@ -1,5 +1,5 @@
 import { createStackNavigator } from 'react-navigation-stack'
-import {createAppContainer} from 'react-navigation'
+import {createAppContainer, createSwitchNavigator} from 'react-navigation'
 import React from 'react';
 import VCcontrol from '../screens/Home'
 import CompleteSubmit from '../screens/CompleteSubmit'
@@ -12,31 +12,19 @@ import Main from '../screens/Main'
 import Signup from '../screens/Signup'
 import Recovery from '../screens/Recovery'
 import WebRequest from '../screens/WebRequest';
-const AppNavigator = createStackNavigator(
+import LoadingScreen from '../screens/LoadingScreen';
+
+import AppNavigation from './AppNavigation';
+import AuthNavigation from './AuthNavigation';
+
+const AppNavigator = createSwitchNavigator(
   {
-    VCcontrol: { screen: VCcontrol},
-    ScanScreen: { screen: ScanScreen},
-    VCverify: { screen: VCverify},
-    QRInfoScreen: { screen: QRInfoScreen},
-    QRscreenVP: {screen: QRscreenVP},
-    CompleteSubmit: { screen: CompleteSubmit},
-    VCselect: {screen: VCselect},
-    Main: { screen: Main,
-            navigationOptions: {
-              headerTitle: 'Main'
-            },
-          path: 'Main' },
-    Signup: { screen: Signup },
-    Recovery: { screen: Recovery},
-    ScanScreen: { screen: ScanScreen},
-    WebRequest: {screen: WebRequest,
-                  navigationOptions: {
-                    headerTitle: 'WebRequest'
-                  },
-                path: 'WebRequest'}
+    App: AppNavigation,
+    Auth: AuthNavigation,
+    LoadingScreen: { screen: LoadingScreen }
   },
   {
-    initialRouteName: 'Main',
+    initialRouteName: 'LoadingScreen',
     headerMode: 'none'
   }
 )

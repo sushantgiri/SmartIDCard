@@ -12,6 +12,9 @@ var estormLogo = require ('./emptyprofile.png');
 
 export default class Home extends React.Component {
   state = {
+    name:'name',
+    email:'email@email.com',
+    phone:'010-0000-0000',
     password: '',
     dataKey: '',
     address: '',
@@ -21,28 +24,69 @@ export default class Home extends React.Component {
     ],
     VCjwtArray:[]
   }
-  goToMain = () => this.props.navigation.navigate('Auth')
   
   goToScan = () => this.props.navigation.navigate('ScanScreen',{password:this.state.password})
   goToVerify = () => this.props.navigation.navigate('VCverify')
   goToQRInfo = () => this.props.navigation.navigate('QRInfoScreen')
   
 
-
-
-
-
-
-
-
-
-
-
-
+  handleName = name => {
+    this.setState({ name })
+  }
 
   
+  handleEmail = email => {
+    this.setState({ email })
+  }
+
+  
+  handlePhone = phone => {
+    this.setState({ phone })
+  }
+
+
+
+
+
+
+  getUserToken = async () => {
+    await SecureStorage.getItem('userToken').then((res) => {
+      console.log(res)
+      this.setState({password: res}, async function() {
+        this.getDidData();
+        //this.getProfileInfo();
+      })
+    })
+  }
+  saveItem = async () => {
+
+    
+    let cipherData = CryptoJS.AES.encrypt(JSON.stringify(this.state), this.state.dataKey).toString();
+    
+    await SecureStorage.setItem(this.state.dataKey, cipherData);
+    await SecureStorage.setItem(this.state.password,this.state.dataKey);
+  }
+
+  saveProfileInfo = async () => {
+    await SecureStorage.setItem('userName',this.state.name)
+    await SecureStorage.setItem('userEmail',this.state.email)
+    await SecureStorage.setItem('userPhone',this.state.phone)
+    
+  }
+  getProfileInfo = async () => {
+    await SecureStorage.getItem('userName').then((res) => {
+      this.setState({name: res})
+    })
+    await SecureStorage.getItem('userEmail').then((res) => {
+      this.setState({email: res})
+    })
+    await SecureStorage.getItem('userPhone').then((res) => {
+      this.setState({phone: res})
+    })
+  }
+  
   getDidData = async () => {
-    console.log(this.state.password)
+    
       await SecureStorage.getItem(this.state.password).then((docKey) => {
         this.setState({dataKey: docKey}, async function() {
             await SecureStorage.getItem(this.state.dataKey).then((userData) => {
@@ -54,6 +98,7 @@ export default class Home extends React.Component {
               let originalText = bytes.toString(CryptoJS.enc.Utf8);
               //console.log(originalText)
               this.setState(JSON.parse(originalText))
+              this.saveUserToken();
             }
             })
 
@@ -62,9 +107,21 @@ export default class Home extends React.Component {
       
 
   }
+  logout = async () => {
+    console.log("logout")
+    
+    await SecureStorage.removeItem('userToken');
+    this.props.navigation.navigate('Auth');
+  }
+
+  saveUserToken = async () => {
+    await SecureStorage.setItem('userToken', this.state.password);
+  }
   //Navigation
   goToVCselect = () => {
-  this.props.navigation.navigate('VCselect',{password:this.state.password})
+    this.saveItem();
+    this.saveUserToken();
+    this.props.navigation.navigate('VCselect',{password:this.state.password})
   }
 
 
@@ -74,30 +131,34 @@ export default class Home extends React.Component {
   //Navigation end
   render() {
     LogBox.ignoreAllLogs
-    const {navigation} = this.props
-    const userPassword = navigation.getParam('password','value')
-    this.state.password = userPassword;
+    const { name,email,phone } = this.state
     return (
       <View style={styles.container}>
-        <Text style={styles.textTop}>프로필</Text>
+        <Text style={styles.textTop}>프로필</Text><TouchableOpacity onPress={this.logout}><Text>로그아웃</Text></TouchableOpacity>
         <View style={styles.scrollCard}>
         <ScrollView>
         <View style={styles.profileCard}>
           <Image source={estormLogo} style={{marginLeft:'25%',marginRight:"25%",marginTop:"5%",marginBottom:"5%",height:150 ,width:150}}></Image>
           <TextInput
-            placeholder='홍길동'
-            
+            placeholder={this.state.name}
+            name='name'
+            value={name}
             style={styles.inputProfileText}
+            onChangeText={this.handleName}
           />
           <TextInput
-            placeholder='GilDong@estorm.co.kr'
-            
+            placeholder={this.state.email}
+            name='email'
+            value={email}
             style={styles.inputProfileText}
+            onChangeText={this.handleEmail}
           />
           <TextInput
-            placeholder='010-2345-5678'
-            
+            placeholder={this.state.phone}
+            name='phone'
+            value={phone}
             style={styles.inputProfileText}
+            onChangeText={this.handlePhone}
           />
         </View>
         <View style={styles.profileCard}>
@@ -123,7 +184,7 @@ export default class Home extends React.Component {
     )
   }
   componentDidMount(){
-    this.getDidData();
+    this.getUserToken();
   }
   
 }
