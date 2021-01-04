@@ -3,7 +3,7 @@ const didJWT = require('did-jwt')
 const Web3 = require('web3')
 const web3 = new Web3('http://182.162.89.51:4313')
 import React from 'react'
-import { StyleSheet, View,Text, Button, TouchableOpacity, LogBox} from 'react-native'
+import { StyleSheet, View,Text, Button,TextInput, TouchableOpacity, TouchableHighlight, Modal, LogBox} from 'react-native'
 import CryptoJS from 'react-native-crypto-js';
 import SecureStorage from 'react-native-secure-storage'
 
@@ -46,8 +46,14 @@ export default class QRscreenVP extends React.Component {
     VCarray:[],
     VCjwtArray:[],
     showingData: '',
-    checkedArray:[]
+    checkedArray:[],
+    confirmCheckPassword:'',
+    modalVisible: false
   }
+  handleConfirmPWchange = confirmCheckPassword => {
+    this.setState({ confirmCheckPassword })
+  }
+
   getDidData = async () => {
       await SecureStorage.getItem(passwordInMobile).then((docKey) => {
         this.setState({dataKey: docKey}, async function() {
@@ -126,6 +132,22 @@ export default class QRscreenVP extends React.Component {
 
 
   }
+  passwordModal = () => {
+    this.setState({ modalVisible: true})
+  }
+  passwordCheck = () => {
+    if(this.state.confirmCheckPassword == this.state.password){
+     
+      this.setState({modalVisible:false}, function(){
+        this.pickVCinArray()
+      })
+     
+    } else {
+      alert('비밀번호 불일치')
+    }
+  }
+
+
   next = async (i) => {
     const privateKey = this.state.privateKey;
     const ethAccount = web3.eth.accounts.privateKeyToAccount(privateKey)
@@ -168,6 +190,7 @@ export default class QRscreenVP extends React.Component {
   }
 
   render() {
+    const { confirmCheckPassword, modalVisible} = this.state
     const {navigation} = this.props
     const userRoom = navigation.getParam('roomNo',"value")
     const userSocket = navigation.getParam('socketUrl',"Url")
@@ -177,8 +200,30 @@ export default class QRscreenVP extends React.Component {
     socketURL = userSocket;
     nonce = userNonce;
     passwordInMobile = userPW;
-    return (
+    return ( 
+
       <View style={styles.container}>
+        <Modal animationType="slide" transparent={true} visible={modalVisible}>
+          <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+              <Text style={{fontWeight:"bold",fontSize:25}}> 비밀번호를 입력해주세요 </Text>
+              <TextInput
+                name='confirmCheckPassword'
+                value={confirmCheckPassword}
+                placeholder='비밀번호'
+                secureTextEntry
+                onChangeText={this.handleConfirmPWchange}
+                style={styles.inputText}
+              />
+              <TouchableHighlight
+                style={styles.modalButton}
+                onPress={this.passwordCheck}
+                >
+                <Text style={styles.textStyle}>다음</Text>
+              </TouchableHighlight>
+            </View>
+          </View>
+        </Modal>
         <Text>{userNonce.split(':')[3]}</Text>
         
         <Text>VC를 선택해주세요</Text>
@@ -193,7 +238,7 @@ export default class QRscreenVP extends React.Component {
         
         </View>
         <View style={{ flexDirection:"row"}}>
-        <TouchableOpacity style={styles.bottomLeftButton} onPress={this.pickVCinArray}><Text style={styles.buttonLeftText}>제출</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.bottomLeftButton} onPress={this.passwordModal}><Text style={styles.buttonLeftText}>VP 생성 및 제출</Text></TouchableOpacity>
         <TouchableOpacity style={styles.bottomButton} onPress={this.close}><Text style={styles.buttonText}>취소</Text></TouchableOpacity>
         </View>
       </View>
@@ -230,6 +275,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#AAA',
     margin:10,
     padding:10
+  },
+  modalButton: {
+    backgroundColor: '#316BFF',
+    padding: 15,
+    margin: 50,
+    borderRadius: 12,
+    width:300,
   },
   modalView: {
     margin: 20,

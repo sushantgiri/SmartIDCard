@@ -10,7 +10,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "@estorm/dual-did": "../dual-did",
+    "@estorm/dual-did": "../core_ethereum",
     "@react-native-community/clipboard": "1.5.1",
     "@react-native-community/masked-view": "0.1.10",
     "@react-navigation/native": "5.8.9",
