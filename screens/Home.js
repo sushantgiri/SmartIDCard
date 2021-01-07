@@ -4,7 +4,6 @@ import CryptoJS from 'react-native-crypto-js';
 import axios from 'axios';
 
 import SecureStorage from 'react-native-secure-storage'
-import {TouchableHighlight} from 'react-native-gesture-handler';
 var AES = require("react-native-crypto-js").AES;
 
 
@@ -51,22 +50,12 @@ export default class Home extends React.Component {
 
   getUserToken = async () => {
     await SecureStorage.getItem('userToken').then((res) => {
-      console.log(res)
       this.setState({password: res}, async function() {
         this.getDidData();
-        //this.getProfileInfo();
+        this.getProfileInfo();
       })
     })
   }
-  saveItem = async () => {
-
-    
-    let cipherData = CryptoJS.AES.encrypt(JSON.stringify(this.state), this.state.dataKey).toString();
-    
-    await SecureStorage.setItem(this.state.dataKey, cipherData);
-    await SecureStorage.setItem(this.state.password,this.state.dataKey);
-  }
-
   saveProfileInfo = async () => {
     await SecureStorage.setItem('userName',this.state.name)
     await SecureStorage.setItem('userEmail',this.state.email)
@@ -90,13 +79,12 @@ export default class Home extends React.Component {
       await SecureStorage.getItem(this.state.password).then((docKey) => {
         this.setState({dataKey: docKey}, async function() {
             await SecureStorage.getItem(this.state.dataKey).then((userData) => {
-            //console.log(JSON.stringify(userData))
+            
             if( userData != null){
-              console.log(this.state.dataKey)
+             
               let bytes  = CryptoJS.AES.decrypt(userData, this.state.dataKey);
-              //console.log(bytes)
+              
               let originalText = bytes.toString(CryptoJS.enc.Utf8);
-              //console.log(originalText)
               this.setState(JSON.parse(originalText))
               this.saveUserToken();
             }
@@ -119,7 +107,6 @@ export default class Home extends React.Component {
   }
   //Navigation
   goToVCselect = () => {
-    this.saveItem();
     this.saveUserToken();
     this.props.navigation.navigate('VCselect',{password:this.state.password})
   }
@@ -160,6 +147,7 @@ export default class Home extends React.Component {
             style={styles.inputProfileText}
             onChangeText={this.handlePhone}
           />
+          <TouchableOpacity style={styles.profileCardSaveButton} onPress={this.saveProfileInfo}><Text>프로필 저장</Text></TouchableOpacity>
         </View>
         <View style={styles.profileCard}>
         <Text style={styles.profileTitle}>DID ( 개인용 )</Text>
@@ -194,6 +182,18 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'white',
     alignItems:'center'
+  },
+  profileCardSaveButton:{
+    textAlign:'center',
+    alignItems:'center',
+    alignContent:'center',
+    backgroundColor:'white',
+    width:"30%",
+    justifyContent:'center',
+    right:"-10%",
+    padding:5,
+    marginTop:15,
+    borderRadius:10
   },
   scrollCard:{
     height:'75%',

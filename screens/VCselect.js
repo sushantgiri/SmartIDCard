@@ -61,22 +61,12 @@ export default class VCselect extends React.Component {
     this.setStateData();
   }
 
-  clearArray = () => {
-    this.setState({
-      VCarray: []
-    }, function() {
-        let cipherData = CryptoJS.AES.encrypt(JSON.stringify(this.state), this.state.dataKey).toString();
-        SecureStorage.setItem(this.state.dataKey, cipherData);
-    })
-
-  }
 
   setStateData = async () => {
   await SecureStorage.getItem(passwordInMobile).then((docKey) => {
       this.setState({dataKey: docKey}, function() {
           SecureStorage.getItem(this.state.dataKey).then((userData) => {
             if(userData != null) {
-              
               let bytes = CryptoJS.AES.decrypt(userData, this.state.dataKey);
               let originalText = bytes.toString(CryptoJS.enc.Utf8);
               
@@ -90,27 +80,23 @@ export default class VCselect extends React.Component {
 
   
 
-  setinVCarray = () => {
+  setinVCarray = async () => {
     const {navigation} = this.props
     const receivedVC = navigation.getParam('VCdata',"VCvalue")
     LogBox.ignoreAllLogs(true)
     if(receivedVC != "VCvalue"){
-      console.disableYellowBox = true;
       const decodedVC = JSON.stringify(receivedVC).substring(28,JSON.stringify(receivedVC).length-2)
       const VCform = jwt_decode(decodedVC)
       this.setState({
         VCarray: this.state.VCarray.concat([VCform]),
         VCjwtArray: this.state.VCjwtArray.concat([receivedVC])
-        }, function(){
-        
+        }, async function(){
         let cipherData = CryptoJS.AES.encrypt(JSON.stringify(this.state), this.state.dataKey).toString();
-        SecureStorage.setItem(this.state.dataKey, cipherData);
-        let vcData = CryptoJS.AES.encrypt(JSON.stringify(this.state.VCjwtArray), this.state.dataKey);
-        dataforTTA = vcData;
+        await SecureStorage.setItem(this.state.dataKey, cipherData);
+        
       })
 
     } else {
-      LogBox.ignoreAllLogs
       console.log('no received vc')
     }
     
@@ -118,7 +104,8 @@ export default class VCselect extends React.Component {
               
   }
   goToScan = () => this.props.navigation.navigate('ScanScreen',{password:this.state.password})
-  goToMain = () => {
+  goToMain = async () => {
+    console.log("aasdfasdf")
     this.props.navigation.navigate('VCcontrol')
 
   }
