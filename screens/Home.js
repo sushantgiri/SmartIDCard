@@ -127,21 +127,21 @@ export default class Home extends React.Component {
         <View style={styles.profileCard}>
           <Image source={estormLogo} style={{marginLeft:'25%',marginRight:"25%",marginTop:"5%",marginBottom:"5%",height:150 ,width:150}}></Image>
           <TextInput
-            placeholder={this.state.name}
+            placeholder="name"
             name='name'
             value={name}
             style={styles.inputProfileText}
             onChangeText={this.handleName}
           />
           <TextInput
-            placeholder={this.state.email}
+            placeholder="email"
             name='email'
             value={email}
             style={styles.inputProfileText}
             onChangeText={this.handleEmail}
           />
           <TextInput
-            placeholder={this.state.phone}
+            placeholder="phone"
             name='phone'
             value={phone}
             style={styles.inputProfileText}

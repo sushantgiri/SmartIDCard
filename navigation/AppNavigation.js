@@ -4,6 +4,7 @@ import Home from '../screens/Home'
 import QRInfoScreen from '../screens/QRInfoScreen'
 import QRscreenVP from '../screens/QRscreenVP'
 import ScanScreen from '../screens/ScanScreen'
+import SVPscreen from '../screens/SVPscreen'
 import VCselect from '../screens/VCselect'
 import VCverify from '../screens/VCverify'
 import WebRequest from '../screens/WebRequest';
@@ -17,6 +18,7 @@ const AppNavigation = createStackNavigator(
     ScanScreen: { screen: ScanScreen},
     VCverify: { screen: VCverify},
     QRInfoScreen: { screen: QRInfoScreen},
+    SVPscreen: { screen: SVPscreen},
     QRscreenVP: {screen: QRscreenVP},
     CompleteSubmit: { screen: CompleteSubmit},
     VCselect: {screen: VCselect},

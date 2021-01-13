@@ -30,10 +30,13 @@ export default class ScanScreen extends React.Component {
         roomNo = response.data.data.no;
         socketUrl = response.data.data.websocketUrl;
         nonce = response.data.data.nonce;
-        //console.log(response.data.data.nonce)
         
         if(response.data.data.requestType == 'vp'){
           this.props.navigation.navigate('QRscreenVP',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce});
+        } else if(response.data.data.requestType == 'svp') {
+          this.props.navigation.navigate('SVPscreen',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce});
+
+
         } else {
         this.props.navigation.navigate('QRInfoScreen',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce});
         }
