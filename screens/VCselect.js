@@ -1,9 +1,10 @@
 import React from 'react'
-import { StyleSheet, View, Button,Text,TouchableOpacity, ScrollView, Image, Linking, LogBox} from 'react-native'
+import { StyleSheet, View, Button,Text,TouchableOpacity, ScrollView, Image, Linking, LogBox, Modal, TextInput, TouchableHighlight} from 'react-native'
 import jwt_decode from "jwt-decode";
 import CryptoJS from 'react-native-crypto-js';
 
 import SecureStorage from 'react-native-secure-storage'
+import {exp} from 'react-native-reanimated';
 var AES = require("react-native-crypto-js").AES;
 
 var estormLogo = require ('./estormLogo.png');
@@ -11,11 +12,15 @@ var passwordInMobile = '';
 
 function VC({vc}){
   //console.log(vc)
+  //date calculate
+  var toDate = vc.exp * 1000
+  var expDate = new Date(toDate)
   //if(JSON.stringify(vc.vc.type) == '["VerifiableCredential","certificate"]'){
     return (
     <View>
       <View style={styles.certificateCard}>
               <Text style={styles.vcText}>인증서</Text>
+              <Text>만료일 : {expDate.toString()}</Text>
               <Text>이름 : {vc.vc.credentialSubject.name}</Text>
               <Text>Email: {vc.vc.credentialSubject.email}</Text>
               <Text>생일 : {vc.vc.credentialSubject.birthday}</Text>
@@ -40,7 +45,8 @@ function VC({vc}){
   //)
   //}
 }
-var dataforTTA = '';LogBox.ignoreAllLogs
+var dataforTTA = '';
+var target = [];
 export default class VCselect extends React.Component {
   
   state = {
@@ -50,7 +56,10 @@ export default class VCselect extends React.Component {
     privateKey:'',
     mnemonic:'',
     VCarray:[],
-    VCjwtArray:[]
+    VCjwtArray:[],
+    
+    confirmCheckPassword:'',
+    modalVisible: false
   }
   
   //first setting data key for functions
@@ -61,6 +70,9 @@ export default class VCselect extends React.Component {
     this.setStateData();
   }
 
+  handleConfirmPWchange = confirmCheckPassword => {
+    this.setState({ confirmCheckPassword })
+  }
 
   setStateData = async () => {
   await SecureStorage.getItem(passwordInMobile).then((docKey) => {
@@ -105,38 +117,108 @@ export default class VCselect extends React.Component {
   }
   goToScan = () => this.props.navigation.navigate('ScanScreen',{password:this.state.password})
   goToMain = async () => {
-    console.log("aasdfasdf")
     this.props.navigation.navigate('VCcontrol')
 
   }
-
-  deleteVC = e => {
+  passwordModal = () => {
+  }
+  passwordCheck = () => {
+    if(this.state.confirmCheckPassword == this.state.password){
+     
+      this.setState({modalVisible:false,confirmCheckPassword:""}, function(){
+        this.setState(this.state.VCarray.splice(this.state.VCarray.indexOf(target),1))
+        this.setState(this.state.VCjwtArray.splice(this.state.VCarray.indexOf(target),1))
+        console.log(this.state)
     
-    this.setState(this.state.VCarray.splice(this.state.VCarray.indexOf(e),1))
-    this.setState(this.state.VCjwtArray.splice(this.state.VCarray.indexOf(e),1))
-         
-        
-    this.reArrangeState();
+        this.setState({confirmCheckPassword:""})
+    
+        this.reArrangeState();
+      })
       
+    } else {
+      alert('비밀번호 불일치')
+    }
     
-    
+  }
+  setFalse = () => {
+    return(false)
+  }
+  deleteVC = e => {
+    target = e;
+    this.setState({ modalVisible: true })
         
   }
   reArrangeState = () => {
         let cipherData = CryptoJS.AES.encrypt(JSON.stringify(this.state), this.state.dataKey).toString();
         SecureStorage.setItem(this.state.dataKey, cipherData);
   }
-  
+  modalCancel = () => {
+    this.setState({ modalVisible: false})
+  }  
+  noVC = () => {
+    if(this.state.VCarray.length == 0){
+      return{
+        fontColor:'black',
+        margin:20
+      }
+    } else {
+      return {
+        fontColor:'white',
+        width:0,
+        height:0
+      }
+    }
+  }
 
+  goToSetting = () => {
+    
+    this.props.navigation.navigate('Setting',{password:this.state.password})
+  }
+  readying = () => {
+    alert("준비중입니다")
+  }
   render() {
+    const { confirmCheckPassword, modalVisible} = this.state
+    
     LogBox.ignoreAllLogs
     return (
       <View style={styles.container}>
-        
+        <Modal animationType="slide" transparent={true} visible={modalVisible}>
+          <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+              <Text style={{fontWeight:"bold",fontSize:25}}> 비밀번호를 입력해주세요 </Text>
+              <TextInput
+                name='confirmCheckPassword'
+                value={confirmCheckPassword}
+                placeholder='비밀번호'
+                secureTextEntry
+                onChangeText={this.handleConfirmPWchange}
+                style={styles.inputText}
+              />
+              <View style={styles.modalButtonGroup}>
+              <TouchableHighlight
+                style={styles.modalButton}
+                onPress={this.passwordCheck}
+                >
+                <Text style={styles.textStyle}>다음</Text>
+              </TouchableHighlight>
+              <TouchableHighlight
+                style={styles.modalCancel}
+                onPress={this.modalCancel}
+                >
+                <Text style={styles.textStyle}>취소</Text>
+              </TouchableHighlight>
+              </View>
+            </View>
+          </View>
+        </Modal>
         <Text style={styles.textTop}>VC 관리</Text>
           <View>
           <ScrollView>
           <Text style={{fontWeight:'bold'}}>현재 보유한 VC</Text>
+          <View >
+            <Text style={this.noVC()}>현재 보유한 VC가 없습니다</Text>
+          </View>
           <View style={styles.vcContainter}>
           
           <ScrollView>
@@ -169,8 +251,9 @@ export default class VCselect extends React.Component {
             <TouchableOpacity style={styles.bottomButton} onPress={this.goToVCselect}><Text style={styles.buttonText}>VC 관리</Text></TouchableOpacity>
         
             <TouchableOpacity style={styles.bottomButton} onPress={this.goToMain}><Text style={styles.buttonText}>프로필</Text></TouchableOpacity>
-            <TouchableOpacity style={styles.bottomButton} ><Text style={styles.buttonText}>가이드</Text></TouchableOpacity>
-            <TouchableOpacity style={styles.bottomButton} ><Text style={styles.buttonText}>설정</Text></TouchableOpacity>
+            
+            <TouchableOpacity style={styles.bottomButton} onPress={this.readying}><Text style={styles.buttonText}>가이드</Text></TouchableOpacity>
+            <TouchableOpacity style={styles.bottomButton} onPress={this.goToSetting}><Text style={styles.buttonText}>설정</Text></TouchableOpacity>
             </View>
           </ScrollView>
 
@@ -291,5 +374,42 @@ const styles = StyleSheet.create({
     width: '100%',
     position: 'absolute', 
     bottom: 0,
+  },
+  modalButton: {
+    backgroundColor: '#316BFF',
+    alignContent:'center',
+    justifyContent:'center',
+    alignItems:'center',
+    padding: 15,
+    borderRadius: 12,
+    width:120,
+    margin:20
+  },
+  modalButtonGroup:{
+    flexDirection: 'row'
+  },
+  modalCancel:{
+    backgroundColor: '#f89',
+    
+    alignItems:'center',
+    padding: 15,
+    borderRadius: 12,
+    width:120,
+    margin:20
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5
   }
 })

@@ -1,10 +1,11 @@
 import { createStackNavigator } from 'react-navigation-stack'
+import ChangePW from '../screens/ChangePW'
 import CompleteSubmit from '../screens/CompleteSubmit'
 import Home from '../screens/Home'
 import QRInfoScreen from '../screens/QRInfoScreen'
 import QRscreenVP from '../screens/QRscreenVP'
 import ScanScreen from '../screens/ScanScreen'
-import SVPscreen from '../screens/SVPscreen'
+import Setting from '../screens/Setting'
 import VCselect from '../screens/VCselect'
 import VCverify from '../screens/VCverify'
 import WebRequest from '../screens/WebRequest';
@@ -18,10 +19,11 @@ const AppNavigation = createStackNavigator(
     ScanScreen: { screen: ScanScreen},
     VCverify: { screen: VCverify},
     QRInfoScreen: { screen: QRInfoScreen},
-    SVPscreen: { screen: SVPscreen},
     QRscreenVP: {screen: QRscreenVP},
     CompleteSubmit: { screen: CompleteSubmit},
     VCselect: {screen: VCselect},
+    Setting: {screen: Setting},
+    ChangePW: {screen: ChangePW},
     WebRequest: {screen: WebRequest,
                   navigationOptions: {
                     headerTitle: 'WebRequest'

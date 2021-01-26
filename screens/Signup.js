@@ -187,13 +187,6 @@ export default class Signup extends React.Component {
           <Text style={styles.textContext}>이후 비밀번호는 VC를 제출하거나 계정을 복구하는데 사용됩니다.</Text>
         </View>
         <View >
-        <TouchableHighlight
-          onPress={() => {
-            this.setModalVisible(true);
-          }}
-          >
-          <Text>제출</Text>
-        </TouchableHighlight>
         <TouchableOpacity style={styles.bottomButton} onPress={this.stateSet}><Text style={styles.buttonText}>확인</Text></TouchableOpacity>
         </View>
       </View>

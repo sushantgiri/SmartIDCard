@@ -3,8 +3,6 @@ import {ScrollView, StyleSheet, Text, View, Button, TextInput, Linking, Image, T
 import CryptoJS from 'react-native-crypto-js';
 import axios from 'axios';
 
-import Clipboard from '@react-native-community/clipboard'
-
 import SecureStorage from 'react-native-secure-storage'
 import {TouchableHighlight} from 'react-native-gesture-handler';
 var AES = require("react-native-crypto-js").AES;
@@ -12,7 +10,7 @@ var AES = require("react-native-crypto-js").AES;
 
 var estormLogo = require ('./emptyprofile.png');
 
-export default class Home extends React.Component {
+export default class Setting extends React.Component {
   state = {
     name:'name',
     email:'email@email.com',
@@ -26,46 +24,18 @@ export default class Home extends React.Component {
     ],
     VCjwtArray:[]
   }
-  
-  goToScan = () => this.props.navigation.navigate('ScanScreen',{password:this.state.password})
-  goToVerify = () => this.props.navigation.navigate('VCverify')
-  goToQRInfo = () => this.props.navigation.navigate('QRInfoScreen')
-  
 
-  handleName = name => {
-    this.setState({ name })
+  changePW = () => {
+      this.props.navigation.navigate('ChangePW')
   }
-
-  
-  handleEmail = email => {
-    this.setState({ email })
-  }
-
-  
-  handlePhone = phone => {
-    this.setState({ phone })
-  }
-
-
-
-
-
 
   getUserToken = async () => {
     await SecureStorage.getItem('userToken').then((res) => {
-      console.log(res)
       this.setState({password: res}, async function() {
         this.getDidData();
         this.getProfileInfo();
       })
     })
-  }
-
-  saveProfileInfo = async () => {
-    await SecureStorage.setItem('userName',this.state.name)
-    await SecureStorage.setItem('userEmail',this.state.email)
-    await SecureStorage.setItem('userPhone',this.state.phone)
-    
   }
   getProfileInfo = async () => {
     await SecureStorage.getItem('userName').then((res) => {
@@ -84,15 +54,14 @@ export default class Home extends React.Component {
       await SecureStorage.getItem(this.state.password).then((docKey) => {
         this.setState({dataKey: docKey}, async function() {
             await SecureStorage.getItem(this.state.dataKey).then((userData) => {
-            //console.log(JSON.stringify(userData))
+            
             if( userData != null){
-              console.log(this.state.dataKey)
+             
               let bytes  = CryptoJS.AES.decrypt(userData, this.state.dataKey);
-              //console.log(bytes)
+              
               let originalText = bytes.toString(CryptoJS.enc.Utf8);
-              //console.log(originalText)
               this.setState(JSON.parse(originalText))
-              this.saveUserToken();
+              
             }
             })
 
@@ -101,73 +70,46 @@ export default class Home extends React.Component {
       
 
   }
-  logout = async () => {
-    console.log("logout")
-    
-    await SecureStorage.removeItem('userToken');
-    this.props.navigation.navigate('Auth');
-  }
 
-  saveUserToken = async () => {
-    await SecureStorage.setItem('userToken', this.state.password);
-  }
+
   //Navigation
   goToVCselect = () => {
-    this.saveUserToken();
     this.props.navigation.navigate('VCselect',{password:this.state.password})
   }
+  goToMain = async () => {
+    this.props.navigation.navigate('VCcontrol')
 
-
-  goToSetting = () => {
-    
-    this.saveUserToken();
-    this.props.navigation.navigate('Setting',{password:this.state.password})
   }
   readying = () => {
     alert("준비중입니다")
   }
-  //TODO: 테스트로 VP선택지까지 가는 functions
-  copySeed = () => {
-    alert("시드가 복사되었습니다")
-    Clipboard.setString(this.state.mnemonic)
-  }
+
 
   //Navigation end
   render() {
-    LogBox.ignoreAllLogs
-    const { name,email,phone } = this.state
+    LogBox.ignoreAllLogs(true)
     return (
       <View style={styles.container}>
-        <Text style={styles.textTop}>프로필</Text>
-        <View style={styles.scrollCard}>
-        <ScrollView>
-        
-        <View style={styles.profileCard}>
-        <Text style={styles.profileTitle}>DID ( 개인용 )</Text>
-        <View style={{flexDirection:"row"}}><Text>DID : {this.state.address}</Text></View>
-        <View style={{flexDirection:"row"}}><Text>시드 : {this.state.mnemonic}</Text></View>
-         <TouchableOpacity onPress={this.copySeed}>
-                <Text style={{backgroundColor:'grey'}}>시드 복사</Text>
-              </TouchableOpacity>
-        </View>
-        </ScrollView>
-        </View>
+        <Text style={styles.textTop}>설정</Text>
+        <Text style={{margin:20}}>스마트 ID 카드 ver.1.0</Text>
+
+        <TouchableOpacity onPress={this.changePW}><Text>비밀번호 변경</Text></TouchableOpacity>
+
 
         <ScrollView style={styles.bottomFix}>
-        <TouchableOpacity style={styles.QRbutton} onPress={this.goToScan}><Text style={styles.qrText}>QR코드</Text></TouchableOpacity>
         <View style={styles.bottomNav}>
         <TouchableOpacity style={styles.bottomButton} onPress={this.goToVCselect}><Text style={styles.buttonText}>VC 관리</Text></TouchableOpacity>
         
-        <TouchableOpacity style={styles.bottomButton} ><Text style={styles.buttonText}>프로필</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.bottomButton} onPress={this.goToMain}><Text style={styles.buttonText}>프로필</Text></TouchableOpacity>
         <TouchableOpacity style={styles.bottomButton} onPress={this.readying}><Text style={styles.buttonText}>가이드</Text></TouchableOpacity>
-        <TouchableOpacity style={styles.bottomButton} onPress={this.goToSetting}><Text style={styles.buttonText}>설정</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.bottomButton} ><Text style={styles.buttonText}>설정</Text></TouchableOpacity>
         </View>
         </ScrollView>
       </View>
     )
   }
   componentDidMount(){
-    this.getUserToken();
+      this.getUserToken();
   }
   
 }

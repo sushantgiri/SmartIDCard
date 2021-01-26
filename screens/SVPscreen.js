@@ -7,7 +7,9 @@ var socketURL = '';
 var passwordInMobile = '';
 var nonce = '';
 var ws = '';
-var challenger = 12345;
+var reqTypeOnUse = '';
+var issuerURLOnUse = '';
+var challenger = Math.floor(Math.random() *10000) + 1;
 export default class SVPscreen extends React.Component {
     state = {
     showingData: ''
@@ -28,11 +30,12 @@ export default class SVPscreen extends React.Component {
       ws.onmessage = (e) => {
           this.setState({showingData: JSON.stringify(e)})
           console.log(e)
-          alert(e)
       }
   }
 
-  
+  goToNext = () => {
+    this.props.navigation.navigate('QRscreenVP',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqTypeOnUse,issuerURL:issuerURLOnUse});
+  }
   render() {
       
     const {navigation} = this.props
@@ -40,16 +43,20 @@ export default class SVPscreen extends React.Component {
     const userSocket = navigation.getParam('socketUrl',"Url")
     const userPW = navigation.getParam('userPW',"passwordValue")
     const userNonce = navigation.getParam('nonce',"nonceVal")
+    const issuerReqType = navigation.getParam('reqType',"reqTypeVal")
+    const issuerURL = navigation.getParam('issuerURL',"issuerURLVal")
     socketRoom = userRoom;
     socketURL = userSocket;
     nonce = userNonce;
+    reqTypeOnUse = issuerReqType;
+    issuerURLOnUse = issuerURL;
     passwordInMobile = userPW;
     return (
       <View style={styles.container}>
         <View>
             <Text>{this.state.showingData}</Text>
         </View>
-        <TouchableOpacity style={styles.bottomLeftButton}><Text style={styles.buttonLeftText}>VP 생성 및 제출</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.bottomLeftButton} onPress={this.goToNext}><Text style={styles.buttonLeftText}>확인</Text></TouchableOpacity>
         <TouchableOpacity style={styles.bottomButton} ><Text style={styles.buttonText}>취소</Text></TouchableOpacity>
       </View>
     )

@@ -3,16 +3,13 @@ import {ScrollView, StyleSheet, Text, View, Button, TextInput, Linking, Image, T
 import CryptoJS from 'react-native-crypto-js';
 import axios from 'axios';
 
-import Clipboard from '@react-native-community/clipboard'
-
 import SecureStorage from 'react-native-secure-storage'
 import {TouchableHighlight} from 'react-native-gesture-handler';
 var AES = require("react-native-crypto-js").AES;
 
 
 var estormLogo = require ('./emptyprofile.png');
-
-export default class Home extends React.Component {
+export default class ChangePW extends React.Component {
   state = {
     name:'name',
     email:'email@email.com',
@@ -24,58 +21,41 @@ export default class Home extends React.Component {
     mnemonic:'',
     VCarray:[
     ],
-    VCjwtArray:[]
-  }
-  
-  goToScan = () => this.props.navigation.navigate('ScanScreen',{password:this.state.password})
-  goToVerify = () => this.props.navigation.navigate('VCverify')
-  goToQRInfo = () => this.props.navigation.navigate('QRInfoScreen')
-  
+    VCjwtArray:[],
 
-  handleName = name => {
-    this.setState({ name })
+    passwordCheck:'',
+    passwordCH:'',
+    confirmPasswordCH:''
   }
 
-  
-  handleEmail = email => {
-    this.setState({ email })
-  }
-
-  
-  handlePhone = phone => {
-    this.setState({ phone })
-  }
-
-
-
-
-
-
-  getUserToken = async () => {
-    await SecureStorage.getItem('userToken').then((res) => {
-      console.log(res)
-      this.setState({password: res}, async function() {
-        this.getDidData();
-        this.getProfileInfo();
+  changePW = async () => {
+      this.clearPWinput();
+      this.setState({password:this.state.passwordCH}, await function(){
+        let cipherData = CryptoJS.AES.encrypt(JSON.stringify(this.state), this.state.dataKey).toString();
+      
+        SecureStorage.setItem(this.state.dataKey, cipherData);
+      
+        SecureStorage.setItem(this.state.password,this.state.dataKey);
+        this.saveUserToken();
       })
-    })
+      
   }
-
-  saveProfileInfo = async () => {
-    await SecureStorage.setItem('userName',this.state.name)
-    await SecureStorage.setItem('userEmail',this.state.email)
-    await SecureStorage.setItem('userPhone',this.state.phone)
+  cancel = () => {
+      this.props.navigation.navigate('Setting',{password:this.state.password})
+  }
+  saveUserToken = async () => {
+    await SecureStorage.setItem('userToken', this.state.password);
+    
+    alert("비밀번호 변경이 완료되었습니다")
+    this.props.navigation.navigate('Setting',{password:this.state.password})
     
   }
-  getProfileInfo = async () => {
-    await SecureStorage.getItem('userName').then((res) => {
-      this.setState({name: res})
-    })
-    await SecureStorage.getItem('userEmail').then((res) => {
-      this.setState({email: res})
-    })
-    await SecureStorage.getItem('userPhone').then((res) => {
-      this.setState({phone: res})
+  getUserToken = async () => {
+    await SecureStorage.getItem('userToken').then((res) => {
+      this.setState({password: res}, async function() {
+        this.getDidData();
+        
+      })
     })
   }
   
@@ -84,15 +64,14 @@ export default class Home extends React.Component {
       await SecureStorage.getItem(this.state.password).then((docKey) => {
         this.setState({dataKey: docKey}, async function() {
             await SecureStorage.getItem(this.state.dataKey).then((userData) => {
-            //console.log(JSON.stringify(userData))
+            
             if( userData != null){
-              console.log(this.state.dataKey)
+             
               let bytes  = CryptoJS.AES.decrypt(userData, this.state.dataKey);
-              //console.log(bytes)
+              
               let originalText = bytes.toString(CryptoJS.enc.Utf8);
-              //console.log(originalText)
               this.setState(JSON.parse(originalText))
-              this.saveUserToken();
+              
             }
             })
 
@@ -101,77 +80,93 @@ export default class Home extends React.Component {
       
 
   }
-  logout = async () => {
-    console.log("logout")
-    
-    await SecureStorage.removeItem('userToken');
-    this.props.navigation.navigate('Auth');
+  clearPWinput = () => {
+      this.setState({passwordCheck:'',passwordCH:'',confirmPasswordCH:''}, function(){
+          console.log(this.state)
+      })
+      
   }
 
-  saveUserToken = async () => {
-    await SecureStorage.setItem('userToken', this.state.password);
-  }
-  //Navigation
-  goToVCselect = () => {
-    this.saveUserToken();
-    this.props.navigation.navigate('VCselect',{password:this.state.password})
-  }
-
-
-  goToSetting = () => {
-    
-    this.saveUserToken();
-    this.props.navigation.navigate('Setting',{password:this.state.password})
-  }
-  readying = () => {
-    alert("준비중입니다")
-  }
-  //TODO: 테스트로 VP선택지까지 가는 functions
-  copySeed = () => {
-    alert("시드가 복사되었습니다")
-    Clipboard.setString(this.state.mnemonic)
+  finalCheck = () => {
+      if(this.state.password == this.state.passwordCheck) {
+          if(this.state.passwordCH == this.state.confirmPasswordCH){
+            this.changePW();
+          } else {
+              alert("새 비밀번호와 새 비밀번호 확인이 일치하지 않습니다")
+          }
+      } else {
+          alert("현재 비밀번호가 일치하지 않습니다")
+      }
   }
 
-  //Navigation end
+
+
+  handleCheckPassword = passwordCheck => {
+      this.setState({ passwordCheck })
+  }
+
+  handlePasswordChange = passwordCH => {
+    this.setState({ passwordCH })
+
+  }
+  handleConfirmPWchange = confirmPasswordCH => {
+    this.setState({ confirmPasswordCH })
+  }
   render() {
-    LogBox.ignoreAllLogs
-    const { name,email,phone } = this.state
+    LogBox.ignoreAllLogs(true)
     return (
       <View style={styles.container}>
-        <Text style={styles.textTop}>프로필</Text>
-        <View style={styles.scrollCard}>
-        <ScrollView>
-        
-        <View style={styles.profileCard}>
-        <Text style={styles.profileTitle}>DID ( 개인용 )</Text>
-        <View style={{flexDirection:"row"}}><Text>DID : {this.state.address}</Text></View>
-        <View style={{flexDirection:"row"}}><Text>시드 : {this.state.mnemonic}</Text></View>
-         <TouchableOpacity onPress={this.copySeed}>
-                <Text style={{backgroundColor:'grey'}}>시드 복사</Text>
-              </TouchableOpacity>
+        <Text style={styles.textTop}>비밀번호 변경</Text>
+        <View style={{ margin: 10 }}>
+          <TextInput
+            name='passwordCheck'
+            value={this.state.passwordCheck}
+            placeholder='현재 비밀번호'
+            style={styles.inputText}
+            secureTextEntry
+            onChangeText={this.handleCheckPassword}
+          />
+          <TextInput
+            name='passwordCH'
+            value={this.state.passwordCH}
+            placeholder='새 비밀번호'
+            style={styles.inputText}
+            secureTextEntry
+            onChangeText={this.handlePasswordChange}
+          />
+          <TextInput
+            name='confirmPasswordCH'
+            placeholder='새 비밀번호 확인'
+            value={this.state.confirmPasswordCH}
+            style={styles.inputText}
+            secureTextEntry
+            onChangeText={this.handleConfirmPWchange}
+          />
         </View>
-        </ScrollView>
+        <View style={styles.modalButtonGroup}>
+        <TouchableHighlight
+                style={styles.modalButton}
+                onPress={this.finalCheck}
+                >
+                <Text style={styles.textStyle}>확인</Text>
+              </TouchableHighlight>
+              <TouchableHighlight
+                style={styles.modalCancel}
+                onPress={this.cancel}
+                >
+                <Text style={styles.textStyle}>취소</Text>
+              </TouchableHighlight>
         </View>
-
-        <ScrollView style={styles.bottomFix}>
-        <TouchableOpacity style={styles.QRbutton} onPress={this.goToScan}><Text style={styles.qrText}>QR코드</Text></TouchableOpacity>
-        <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.bottomButton} onPress={this.goToVCselect}><Text style={styles.buttonText}>VC 관리</Text></TouchableOpacity>
-        
-        <TouchableOpacity style={styles.bottomButton} ><Text style={styles.buttonText}>프로필</Text></TouchableOpacity>
-        <TouchableOpacity style={styles.bottomButton} onPress={this.readying}><Text style={styles.buttonText}>가이드</Text></TouchableOpacity>
-        <TouchableOpacity style={styles.bottomButton} onPress={this.goToSetting}><Text style={styles.buttonText}>설정</Text></TouchableOpacity>
-        </View>
-        </ScrollView>
       </View>
     )
   }
   componentDidMount(){
-    this.getUserToken();
+      this.getUserToken();
+      this.clearPWinput();
   }
   
 }
-//<TouchableOpacity style={styles.bottomButton} ><Text style={styles.buttonText}></Text></TouchableOpacity>
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -216,6 +211,27 @@ const styles = StyleSheet.create({
     backgroundColor:'#316BFF',
     height:40,
     borderRadius:12
+  },modalButton: {
+    backgroundColor: '#316BFF',
+    alignContent:'center',
+    justifyContent:'center',
+    alignItems:'center',
+    padding: 15,
+    borderRadius: 12,
+    width:120,
+    margin:20
+  },
+  modalButtonGroup:{
+    flexDirection: 'row'
+  },
+  modalCancel:{
+    backgroundColor: '#f89',
+    
+    alignItems:'center',
+    padding: 15,
+    borderRadius: 12,
+    width:120,
+    margin:20
   },
   bannerButton: {
     width:'90%',

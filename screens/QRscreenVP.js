@@ -100,6 +100,8 @@ export default class QRscreenVP extends React.Component {
   }
   
   close = () => {
+    
+    ws.send('{"type":"exit"}')
     this.props.navigation.navigate('VCselect',{password:this.state.password});
   }
   checkboxClicked = index => {
@@ -133,7 +135,22 @@ export default class QRscreenVP extends React.Component {
 
   }
   passwordModal = () => {
-    this.setState({ modalVisible: true})
+    //console.log(this.state.checkedArray)
+    var empty = true;
+    for( var i = 0; i< this.state.checkedArray.length;i++){
+      if(this.state.checkedArray[i].checked == true){
+        console.log(i)
+        empty = false;
+        
+      }
+    }
+    
+    if(empty) {
+      alert("VC를 선택해 주세요")
+    } else if (empty == false) {
+    
+      this.setState({ modalVisible: true})
+    }
   }
   passwordCheck = () => {
     if(this.state.confirmCheckPassword == this.state.password){
@@ -162,10 +179,13 @@ export default class QRscreenVP extends React.Component {
             
             
     }
-    
+    alert("VP 제출 완료")
     this.close()
   }
 
+  modalCancel = () => {
+    this.setState({ modalVisible: false})
+  }  
   cardStyle = bool => {
     
     if(this.state.checkedArray[bool] != null){
@@ -190,6 +210,8 @@ export default class QRscreenVP extends React.Component {
   }
 
   render() {
+    
+    LogBox.ignoreAllLogs(true)
     const { confirmCheckPassword, modalVisible} = this.state
     const {navigation} = this.props
     const userRoom = navigation.getParam('roomNo',"value")
@@ -215,16 +237,23 @@ export default class QRscreenVP extends React.Component {
                 onChangeText={this.handleConfirmPWchange}
                 style={styles.inputText}
               />
+              <View style={styles.modalButtonGroup}>
               <TouchableHighlight
                 style={styles.modalButton}
                 onPress={this.passwordCheck}
                 >
-                <Text style={styles.textStyle}>다음</Text>
+                <Text style={styles.textStyle}>확인</Text>
               </TouchableHighlight>
+              <TouchableHighlight
+                style={styles.modalCancel}
+                onPress={this.modalCancel}
+                >
+                <Text style={styles.textStyle}>취소</Text>
+              </TouchableHighlight>
+              </View>
             </View>
           </View>
         </Modal>
-        <Text>{userNonce.split(':')[3]}</Text>
         
         <Text>VC를 선택해주세요</Text>
         
@@ -278,10 +307,25 @@ const styles = StyleSheet.create({
   },
   modalButton: {
     backgroundColor: '#316BFF',
+    alignContent:'center',
+    justifyContent:'center',
+    alignItems:'center',
     padding: 15,
-    margin: 50,
     borderRadius: 12,
-    width:300,
+    width:120,
+    margin:20
+  },
+  modalButtonGroup:{
+    flexDirection: 'row'
+  },
+  modalCancel:{
+    backgroundColor: '#f89',
+    
+    alignItems:'center',
+    padding: 15,
+    borderRadius: 12,
+    width:120,
+    margin:20
   },
   modalView: {
     margin: 20,
