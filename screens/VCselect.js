@@ -62,16 +62,16 @@ export default class VCselect extends React.Component {
     modalVisible: false
   }
   
+  handleConfirmPWchange = confirmCheckPassword => {
+    this.setState({ confirmCheckPassword })
+  }
+
   //first setting data key for functions
   setKey = () => {
     const {navigation} = this.props
     const mobileKey = navigation.getParam('password',"value")
     passwordInMobile = mobileKey
     this.setStateData();
-  }
-
-  handleConfirmPWchange = confirmCheckPassword => {
-    this.setState({ confirmCheckPassword })
   }
 
   setStateData = async () => {
@@ -126,8 +126,9 @@ export default class VCselect extends React.Component {
     if(this.state.confirmCheckPassword == this.state.password){
      
       this.setState({modalVisible:false,confirmCheckPassword:""}, function(){
-        this.setState(this.state.VCarray.splice(this.state.VCarray.indexOf(target),1))
         this.setState(this.state.VCjwtArray.splice(this.state.VCarray.indexOf(target),1))
+        this.setState(this.state.VCarray.splice(this.state.VCarray.indexOf(target),1))
+        
         console.log(this.state)
     
         this.setState({confirmCheckPassword:""})
@@ -158,12 +159,10 @@ export default class VCselect extends React.Component {
   noVC = () => {
     if(this.state.VCarray.length == 0){
       return{
-        fontColor:'black',
         margin:20
       }
     } else {
       return {
-        fontColor:'white',
         width:0,
         height:0
       }

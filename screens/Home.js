@@ -138,10 +138,34 @@ export default class Home extends React.Component {
     const { name,email,phone } = this.state
     return (
       <View style={styles.container}>
-        <Text style={styles.textTop}>프로필</Text>
+        <Text style={styles.textTop}>프로필</Text><TouchableOpacity onPress={this.logout}><Text>로그아웃</Text></TouchableOpacity>
         <View style={styles.scrollCard}>
         <ScrollView>
-        
+        <View style={styles.profileCard}>
+          <Image source={estormLogo} style={{marginLeft:'25%',marginRight:"25%",marginTop:"5%",marginBottom:"5%",height:150 ,width:150}}></Image>
+          <TextInput
+            placeholder="name"
+            name='name'
+            value={name}
+            style={styles.inputProfileText}
+            onChangeText={this.handleName}
+          />
+          <TextInput
+            placeholder="email"
+            name='email'
+            value={email}
+            style={styles.inputProfileText}
+            onChangeText={this.handleEmail}
+          />
+          <TextInput
+            placeholder="phone"
+            name='phone'
+            value={phone}
+            style={styles.inputProfileText}
+            onChangeText={this.handlePhone}
+          />
+          <TouchableOpacity style={styles.profileCardSaveButton} onPress={this.saveProfileInfo}><Text>프로필 저장</Text></TouchableOpacity>
+        </View>
         <View style={styles.profileCard}>
         <Text style={styles.profileTitle}>DID ( 개인용 )</Text>
         <View style={{flexDirection:"row"}}><Text>DID : {this.state.address}</Text></View>

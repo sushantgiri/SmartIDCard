@@ -25,30 +25,38 @@ export default class ScanScreen extends React.Component {
     LogBox.ignoreAllLogs(true)
     const {navigation} = this.props
     const userPassword = navigation.getParam('password',"passwordValue")
-    axios.get('http://182.162.89.72:30600/rest/connector/' + e.data)
+    axios.get('http://182.162.89.79:30600/rest/connector/' + e.data)
     .then(res => {
       var getQRdata = res.data.data.url + "/rest/qrdata/" + e.data;
       axios.get(getQRdata).then(response => {
-        console.log(response.data.data)
         roomNo = response.data.data.no;
         socketUrl = response.data.data.websocketUrl;
         nonce = response.data.data.nonce;
         
+        console.log(response.data.data)
         if(response.data.data.requestType == 'vp'){
+
           reqType = response.data.data.requestData[0].type;
           //TODO: 현재 테스트 상황에서 제외.
           //issuerURL = response.data.data.requestData[0].issuer[0].url;
           this.props.navigation.navigate('QRscreenVP',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqType,issuerURL:issuerURL});
-        } else if(response.data.data.requestType == 'svp') {
-          
-          reqType = response.data.data.requestData[0].type;
-          issuerURL = response.data.data.requestData[0].issuer[0].url;
-          this.props.navigation.navigate('SVPscreen',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqType,issueURL:issueURL});
-        } else if(response.data.data.requestType == 'sign') {
-          
-          reqType = response.data.data.requestData[0].type;
-          issuerURL = response.data.data.requestData[0].issuer[0].url;
-          this.props.navigation.navigate()
+        } else if(response.data.data.requestType == 'vc') {
+          console.log('VC request')
+
+          if(response.data.data.useSvp == true) {
+            console.log("svc 사용")
+            if(response.data.data.requestData == null){
+              // VC req / SVP 사용 / VC 요청(X)
+                console.log("VC req / SVP 사용 / VC 요청(X)")
+                this.props.navigation.navigate('SVPDIDsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce})
+
+            } else {
+                console.log("VC req / SVP 사용 / VC 요청(O)")
+                this.props.navigation.navigate('SVPVCsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce})
+            }
+
+          }
+         
 
         } else {
         this.props.navigation.navigate('QRInfoScreen',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce});
@@ -59,7 +67,8 @@ export default class ScanScreen extends React.Component {
   };
     
   
-
+// reqType = response.data.data.requestData[0].type;
+         // issuerURL = response.data.data.requestData[0].issuer[0].url;
 
 
   render() {

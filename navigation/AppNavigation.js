@@ -6,6 +6,8 @@ import QRInfoScreen from '../screens/QRInfoScreen'
 import QRscreenVP from '../screens/QRscreenVP'
 import ScanScreen from '../screens/ScanScreen'
 import Setting from '../screens/Setting'
+import SVPDIDsend from '../screens/SVPDIDsend'
+import SVPVCsend from '../screens/SVPVCsend'
 import VCselect from '../screens/VCselect'
 import VCverify from '../screens/VCverify'
 import WebRequest from '../screens/WebRequest';
@@ -17,6 +19,8 @@ const AppNavigation = createStackNavigator(
                   },
                   path: 'VCcontrol' },
     ScanScreen: { screen: ScanScreen},
+    SVPDIDsend: { screen: SVPDIDsend},
+    SVPVCsend: {screen: SVPVCsend},
     VCverify: { screen: VCverify},
     QRInfoScreen: { screen: QRInfoScreen},
     QRscreenVP: {screen: QRscreenVP},

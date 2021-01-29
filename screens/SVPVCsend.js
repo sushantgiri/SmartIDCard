@@ -1,0 +1,349 @@
+import React from 'react'
+import { StyleSheet, View,Text, Button,TextInput, TouchableOpacity, TouchableHighlight, Modal, LogBox} from 'react-native'
+
+import CryptoJS from 'react-native-crypto-js';
+import SecureStorage from 'react-native-secure-storage'
+
+var AES = require("react-native-crypto-js").AES;
+import {DualDID} from '@estorm/dual-did';
+const didJWT = require('did-jwt')
+const Web3 = require('web3')
+const web3 = new Web3('http://182.162.89.51:4313')
+
+var socketRoom ='';
+var socketURL = '';
+var passwordInMobile = '';
+var nonce = '';
+var ws = '';
+var reqTypeOnUse = '';
+var issuerDIDOnUse = '';
+var challenger = Math.floor(Math.random() *10000) + 1;
+
+
+
+export default class SVPVCsend extends React.Component {
+    state = {
+    password: '',
+    dataKey: '',
+    address: '',
+    privateKey:'',
+    mnemonic:'',
+    VCarray:[],
+    VCjwtArray:[],
+
+    showingData: '',
+    checkedArray:[],
+    confirmCheckPassword:'',
+    modalVisible: false
+  }
+  
+  
+handleConfirmPWchange = confirmCheckPassword => {
+    this.setState({ confirmCheckPassword })
+  }
+
+  getDidData = async () => {
+      await SecureStorage.getItem(passwordInMobile).then((docKey) => {
+        this.setState({dataKey: docKey}, async function() {
+            await SecureStorage.getItem(this.state.dataKey).then((userData) => {
+            //console.log(JSON.stringify(userData))
+            if( userData != null){
+              let bytes  = CryptoJS.AES.decrypt(userData, this.state.dataKey);
+              //console.log(bytes)
+              let originalText = bytes.toString(CryptoJS.enc.Utf8);
+              //console.log(originalText)
+              this.setState(JSON.parse(originalText))
+              this.settingCheckArray();
+            }
+            })
+
+        })
+      })
+      
+
+  }
+
+  settingCheckArray = () => {
+    arrChecked = [];
+    for (var i = 1; i<=this.state.VCarray.length;i++){
+      arrChecked = arrChecked.concat([{"checked" : false}])
+      
+      
+    } 
+    this.setState({
+      checkedArray: arrChecked
+    })
+  }
+  
+  close = () => {
+    
+    ws.send('{"type":"exit"}')
+    this.props.navigation.navigate('VCselect',{password:this.state.password});
+  }
+  checkboxClicked = index => {
+    this.state.checkedArray[index].checked = !this.state.checkedArray[index].checked
+    arrChecked = this.state.checkedArray
+    this.setState({checkedArray: this.state.checkedArray})
+  }
+  VCclick = e =>{
+    
+    for (var i=0;this.state.VCarray.length;i++){
+      
+      if(e == this.state.VCarray[i]){
+        this.checkboxClicked(i)
+        
+        //this.next(i)
+        return
+      }
+    }
+  
+  }
+  pickVCinArray = () => {
+    var vcSubmitArr = [];
+    for(var i = 0; i<this.state.VCjwtArray.length;i++){
+      if(this.state.checkedArray[i].checked == true){
+        var jwtString = this.state.VCjwtArray[i].split(',')[1].split(':')[1]
+        vcSubmitArr = vcSubmitArr.concat([jwtString.substring(1,jwtString.length-2)])
+      }
+    }
+    this.next(vcSubmitArr)
+
+
+  }
+  passwordModal = () => {
+    //console.log(this.state.checkedArray)
+    var empty = true;
+    for( var i = 0; i< this.state.checkedArray.length;i++){
+      if(this.state.checkedArray[i].checked == true){
+        console.log(i)
+        empty = false;
+        
+      }
+    }
+    
+    if(empty) {
+      alert("VC를 선택해 주세요")
+    } else if (empty == false) {
+    
+      this.setState({ modalVisible: true})
+    }
+  }
+  passwordCheck = () => {
+    if(this.state.confirmCheckPassword == this.state.password){
+     
+      this.setState({modalVisible:false}, function(){
+        this.pickVCinArray()
+      })
+     
+    } else {
+      alert('비밀번호 불일치')
+    }
+  }
+
+
+  next = async (i) => {
+    const privateKey = this.state.privateKey;
+    const ethAccount = web3.eth.accounts.privateKeyToAccount(privateKey)
+    const dualSigner = createDualSigner(didJWT.SimpleSigner(privateKey.replace('0x','')), ethAccount)
+    
+    
+    const dualDid = new DualDID(dualSigner, 'Issuer(change later)', 'Dualauth.com(change later)',web3,'0x3CF0CB3cD457b959F6027676dF79200C8EF19907')
+    const vp = await dualDid.createVP(i,nonce)
+    //console.log(vp)
+    ws.send('{"type":"vp", "data":"'+vp+'"}')
+    ws.onmessage = (e) => {
+            
+            
+    }
+    alert("VP 제출 완료")
+    this.close()
+  }
+
+  modalCancel = () => {
+    this.setState({ modalVisible: false})
+  }  
+  cardStyle = bool => {
+    
+    if(this.state.checkedArray[bool] != null){
+      if(this.state.checkedArray[bool].checked == true){    
+        return{
+          backgroundColor:'#8FF',
+          borderRadius:12,
+          width:300,
+          margin:10,
+          padding:10
+        }
+      } else {
+        return{
+          backgroundColor:'#eff',
+          borderRadius:12,
+          width:300,
+          margin:10,
+          padding:10
+        }
+      }
+    }
+  }
+
+  setConnection = () => {
+    ws = new WebSocket(socketURL);
+    ws.onopen = () => {
+        ws.send('{"type":"authm", "no":"'+socketRoom+'"}');
+        ws.onmessage = (e) => {
+            this.sendChallenger();
+        }
+    }
+  }
+
+  sendChallenger = () => {
+      ws.send('{"type":"challenger","data":"'+challenger+'"}');
+      ws.onmessage = (e) => {
+          this.setState({showingData: JSON.stringify(e)})
+      }
+  }
+
+  goToNext = () => {
+    this.props.navigation.navigate('QRscreenVP',{roomNo:socketRoom,socketUrl:socketURL,userPW:passwordInMobile,nonce:nonce});
+  }
+  goBack = () => {
+    ws.send('{"type":"exit"}')
+    this.props.navigation.navigate('VCselect',{password:this.state.password});
+  }
+  render() {
+      
+    LogBox.ignoreAllLogs(true)
+    
+    const { confirmCheckPassword, modalVisible} = this.state
+    const {navigation} = this.props
+    const userRoom = navigation.getParam('roomNo',"value")
+    const userSocket = navigation.getParam('socketUrl',"Url")
+    const userPW = navigation.getParam('userPW',"passwordValue")
+    const userNonce = navigation.getParam('nonce',"nonceVal")
+    const issuerReqType = navigation.getParam('reqType',"reqTypeVal")
+    const issuerDID = navigation.getParam('issuerDID',"issuerDIDVal")
+    socketRoom = userRoom;
+    socketURL = userSocket;
+    nonce = userNonce;
+    reqTypeOnUse = issuerReqType;
+    issuerDIDOnUse = issuerDID;
+    passwordInMobile = userPW;
+    return (
+      <View style={styles.container}>
+      <Modal animationType="slide" transparent={true} visible={modalVisible}>
+          <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+              <Text style={{fontWeight:"bold",fontSize:25}}> 비밀번호를 입력해주세요 </Text>
+              <TextInput
+                name='confirmCheckPassword'
+                value={confirmCheckPassword}
+                placeholder='비밀번호'
+                secureTextEntry
+                onChangeText={this.handleConfirmPWchange}
+                style={styles.inputText}
+              />
+              <View style={styles.modalButtonGroup}>
+              <TouchableHighlight
+                style={styles.modalButton}
+                onPress={this.passwordCheck}
+                >
+                <Text style={styles.textStyle}>확인</Text>
+              </TouchableHighlight>
+              <TouchableHighlight
+                style={styles.modalCancel}
+                onPress={this.modalCancel}
+                >
+                <Text style={styles.textStyle}>취소</Text>
+              </TouchableHighlight>
+              </View>
+            </View>
+          </View>
+        </Modal>
+        <View>
+            <Text>SVP : {this.state.showingData}</Text>
+        </View>
+        <Text>VC를 선택해주세요</Text>
+        
+        <View>{this.state.VCarray.map((vc,index) => {return(
+          <View>
+          <TouchableOpacity  style={this.cardStyle(index)} onPress={() => this.VCclick(vc)}><VC vc={vc} key={vc.exp}/>
+          </TouchableOpacity>   
+          </View>
+        )
+        })}
+        
+        </View>
+        <View style={{ flexDirection:"row"}}>
+        <TouchableOpacity style={styles.bottomLeftButton} onPress={this.passwordModal}><Text style={styles.buttonLeftText}>VP 생성 및 제출</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.bottomButton} onPress={this.close}><Text style={styles.buttonText}>취소</Text></TouchableOpacity>
+        </View>
+      </View>
+    )
+  }
+  
+  
+  componentDidMount(){
+   this.getDidData();
+   this.setConnection();
+  }
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  modalButton: {
+    backgroundColor: '#316BFF',
+    alignContent:'center',
+    justifyContent:'center',
+    alignItems:'center',
+    padding: 15,
+    borderRadius: 12,
+    width:120,
+    margin:20
+  },
+  modalButtonGroup:{
+    flexDirection: 'row'
+  },
+  modalCancel:{
+    backgroundColor: '#f89',
+    
+    alignItems:'center',
+    padding: 15,
+    borderRadius: 12,
+    width:120,
+    margin:20
+  },
+  modalText: {
+    marginBottom: 15,
+    textAlign: "center"
+  },
+  bottomLeftButton:{
+    backgroundColor: '#c3d4ff',
+    paddingTop:10,
+    paddingBottom:10,
+    height:50,
+    marginRight:5,
+
+    borderRadius: 12,
+    width:'40%',
+    alignItems:'center'
+  },
+  buttonLeftText: {
+    color: '#316BFF',
+    fontWeight:'bold'
+  },
+  bottomButton: {
+    backgroundColor: '#316BFF',
+    paddingTop:10,
+    paddingBottom:10,
+    marginLeft:5,
+    marginBottom:20,
+    height:50,
+    borderRadius: 12,
+    width:'40%',
+    alignItems:'center'
+  },
+})
