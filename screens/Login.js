@@ -1,37 +1,20 @@
 import React from 'react'
-import { StyleSheet, View, Text, TouchableOpacity, Image} from 'react-native'
+import { StyleSheet, View, Text, TouchableOpacity} from 'react-native'
 
 import Swiper from 'react-native-swiper'
 
-import SecureStorage from 'react-native-secure-storage'
-
-var estormLogo = require ('./ic-logo.svg');
-
 export default class Login extends React.Component {
-  state = {
-    email: '',
-    password: ''
-  }
 
-
-  handlePasswordChange = password => {
-    this.setState({ password })
-  }
-
-  setTokenEmpty = async () => {
-    await SecureStorage.removeItem('userToken');
-  }
-
+  // 네비게이션
   goToSignup = () => this.props.navigation.navigate('Signup')
   goToRecovery = () => this.props.navigation.navigate('Recovery')
-  
+  //
 
-  
+
   render() {
     return (
       <View style={styles.container}>
         <View>
-          <Image style={{height:200,width:200}} source = {estormLogo}></Image>
         </View>
         <Swiper style={styles.wrapper} showsButtons={true}>
         <View style={styles.slide1}>
@@ -47,8 +30,8 @@ export default class Login extends React.Component {
         </View>
       </Swiper>
         <View style={{ flexDirection:"row"}}>
-        <TouchableOpacity style={styles.bottomLeftButton} title='계정 생성' onPress={this.goToSignup}><Text style={styles.buttonLeftText}>시작</Text></TouchableOpacity>
-        <TouchableOpacity style={styles.bottomButton} title='계정 복구' onPress={this.goToRecovery}><Text style={styles.buttonText}>가져오기</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.bottomLeftButton} title='계정 생성' onPress={this.goToSignup}><Text style={styles.buttonLeftText}>시작</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.bottomButton} title='계정 복구' onPress={this.goToRecovery}><Text style={styles.buttonText}>가져오기</Text></TouchableOpacity>
         </View>
       </View>
     )
@@ -62,7 +45,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center'
   },
-  wrapper: { },
   slide1: {
     flex: 1,
     justifyContent: 'center',

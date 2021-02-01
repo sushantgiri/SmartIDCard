@@ -3,7 +3,7 @@ import { StyleSheet, Text, View, Button, TextInput, TouchableOpacity  } from 're
 import CryptoJS from 'react-native-crypto-js';
 var AES = require("react-native-crypto-js").AES;
 import SecureStorage from 'react-native-secure-storage'
-export default class Signup extends React.Component {
+export default class Recovery extends React.Component {
     state = {
     password: '',
     dataKey: '',
@@ -17,58 +17,59 @@ export default class Signup extends React.Component {
     seed:''
   }
 
-
-  handlePasswordChange = password => {
+  // State 의 password 값 적용 
+  handlePassword = password => {
     this.setState({ password })
   }
+  // State 의 Seed 값 적용
+  handleSeedChange = seed => {
+    this.setState({ seed })
+  }
+  
+  // 복구된 사용자의 password를 현재 user의 token 으로 지정하여 저장한후 이동 
   goToMain = async () => {
     await SecureStorage.setItem('userToken',this.state.password)
     this.props.navigation.navigate('App')
   }
 
-  handleSeedChange = seed => {
-    this.setState({ seed })
-  }
-  
+  // 사용자의 password를 사용하여 현재 기기의 secure storage에 저장된  state가 있는지 확인후, state의 값을 복구
   getDidData = async () => {
       await SecureStorage.getItem(this.state.password).then((state) => { 
         if( state == null){
           alert("no account")
-        } else {
-          //Seed 관련 확인 부분 TODO: 활성화
-          
+        } 
+        
+        else {
           this.setState({dataKey: state}, async function(){
             await SecureStorage.getItem(this.state.dataKey). then((userData) => {
               if( userData != null){
+
                 let bytes  = CryptoJS.AES.decrypt(userData, this.state.dataKey);
-                //console.log(bytes)
+                
                 let originalText = bytes.toString(CryptoJS.enc.Utf8);
-                //console.log(originalText)
+                
                 this.setState(JSON.parse(originalText))
+
                 this.checkSeed()
               }
             })
           })
-          
-          
-          
-
-          //
-          //this.goToMain();
         }
       })
-      
-
   }
+
+  // 사용자가 입력한 Seed 값을 비교 
   checkSeed = () => {
-    console.log(this.state.mnemonic)
-    console.log(this.state.seed)
     if(this.state.mnemonic == this.state.seed){
       this.goToMain()
+    } else {
+      alert("시드가 일치하지 않습니다")
     }
   }
+
   render() {
-      const { password,seed } = this.state
+    const { password,seed } = this.state
+
     return (
       <View style={styles.container}>
         <Text style={styles.textUpper}>복구 비밀번호 입력</Text>
@@ -79,7 +80,7 @@ export default class Signup extends React.Component {
             placeholder='Enter password'
             style={styles.inputText}
             secureTextEntry
-            onChangeText={this.handlePasswordChange}
+            onChangeText={this.handlePassword}
           />
           <Text style={styles.textContext}>최초 계정을 생성할 때에 사용되었던 비밀번호를 입력해 주시기 바랍니다.</Text>
           <TextInput
