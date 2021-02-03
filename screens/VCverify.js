@@ -51,12 +51,25 @@ export default class VCverify extends React.Component {
     ],
     showingData: []
   }
+
+  /**
+   * setKey :
+   *      이전 페이지로부터 password를 받아 passwordInMobile global variable에 저장함
+   * 
+   */
+
   setKey = () => {
     const {navigation} = this.props
     const mobileKey = navigation.getParam('password',"value")
     passwordInMobile = mobileKey
   }
   
+  /**
+   *  setStateData :
+   *        newVCcheck() 과 연결
+   *        "passwordInMobile global variable" 을 이용하여 State를 구성
+   *        showVC()와 연결
+   */
   setStateData = async () => {
   await SecureStorage.getItem(passwordInMobile).then((docKey) => {
       this.setState({dataKey: docKey}, function() {
@@ -74,6 +87,12 @@ export default class VCverify extends React.Component {
     })
   }
 
+  /**
+   * showVC :
+   * 
+   *      이전 페이지로부터 전달받은 VCdata를 jwt로 decode하여 showingData에 저장함
+   */
+
   showVC = () => {
     const {navigation} = this.props
     const receivedVC = navigation.getParam('VCdata',"VCvalue")
@@ -86,23 +105,17 @@ export default class VCverify extends React.Component {
     })
   }
 
+  /**
+   * gotoNext :
+   *        VC의 판독이 끝난후, VCselect로 데이터와 비밀번호를 전달함
+   * 
+   */
   gotoNext = () => {
     const {navigation} = this.props
     const receivedVC = navigation.getParam('VCdata',"VCvalue")
     this.props.navigation.navigate('VCselect',{VCdata:receivedVC,password:this.state.password})
   }
 
-  test = () => {
-    const {navigation} = this.props
-    const receivedVC = navigation.getParam('VCdata',"VCvalue")
-    var iv = this.state.dataKey;
-    let vcBytes = CryptoJS.AES.encrypt(JSON.stringify(receivedVC),this.state.dataKey,{iv:iv});
-    
-    this.props.navigation.navigate('TestKey',{dataKey:this.state.dataKey,savedData:vcBytes,receivedVC:receivedVC})
-    //alert("this is datakey :" + this.state.dataKey  +'\n' + '\n' +
-    //       'saved data :' + vcBytes +'\n' + '\n'+ 'received vc :' + receivedVC )
-    
-  }
 
   render() {
     LogBox.ignoreAllLogs    

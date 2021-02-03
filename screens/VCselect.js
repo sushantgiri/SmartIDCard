@@ -7,11 +7,12 @@ import SecureStorage from 'react-native-secure-storage'
 import {exp} from 'react-native-reanimated';
 var AES = require("react-native-crypto-js").AES;
 
-var estormLogo = require ('./estormLogo.png');
+//사용자 패스워드
 var passwordInMobile = '';
+//삭제 선택된 VC
+var target = [];
 
 function VC({vc}){
-  //console.log(vc)
   //date calculate
   var toDate = vc.exp * 1000
   var expDate = new Date(toDate)
@@ -45,8 +46,6 @@ function VC({vc}){
   //)
   //}
 }
-var dataforTTA = '';
-var target = [];
 export default class VCselect extends React.Component {
   
   state = {
@@ -66,14 +65,25 @@ export default class VCselect extends React.Component {
     this.setState({ confirmCheckPassword })
   }
 
-  //first setting data key for functions
-  setKey = () => {
+  /**
+   *  getUserInfoFromNavPassword / setStateData : 최초 페이지 실행시 실행되며, 현재 사용자의 password를 받아 
+   *           global variable : passwordInMobile 에 저장하고,
+   *           setStateData function을 사용하여 State를 구성함
+   * 
+   */
+  getUserInfoFromNavPassword = () => {
     const {navigation} = this.props
     const mobileKey = navigation.getParam('password',"value")
     passwordInMobile = mobileKey
     this.setStateData();
   }
 
+  /**
+   *  setStateData :
+   *        newVCcheck() 과 연결
+   *        "passwordInMobile global variable" 을 이용하여 State를 구성
+   * 
+   */
   setStateData = async () => {
   await SecureStorage.getItem(passwordInMobile).then((docKey) => {
       this.setState({dataKey: docKey}, function() {
@@ -81,18 +91,22 @@ export default class VCselect extends React.Component {
             if(userData != null) {
               let bytes = CryptoJS.AES.decrypt(userData, this.state.dataKey);
               let originalText = bytes.toString(CryptoJS.enc.Utf8);
-              
               this.setState(JSON.parse(originalText))
-              this.setinVCarray();
+
+              // newVCcheck로 현재 새 vc를 받았는지, 단순 페이지 이동인지 확인함
+              this.newVCcheck();
             }
           })
       })
     })
   }
 
-  
-
-  setinVCarray = async () => {
+  /**
+   *  newVCcheck : navigation을 통해 이동했을때, 'VCdata'를 새로 받은 경우,
+   *              새로 받은 VCdata jwt를 decode 하여 VCarray와, VCjwtArray에 입력하고 저장함
+   * 
+   */
+  newVCcheck = async () => {
     const {navigation} = this.props
     const receivedVC = navigation.getParam('VCdata',"VCvalue")
     LogBox.ignoreAllLogs(true)
@@ -103,9 +117,8 @@ export default class VCselect extends React.Component {
         VCarray: this.state.VCarray.concat([VCform]),
         VCjwtArray: this.state.VCjwtArray.concat([receivedVC])
         }, async function(){
-        let cipherData = CryptoJS.AES.encrypt(JSON.stringify(this.state), this.state.dataKey).toString();
-        await SecureStorage.setItem(this.state.dataKey, cipherData);
-        
+          let cipherData = CryptoJS.AES.encrypt(JSON.stringify(this.state), this.state.dataKey).toString();
+          await SecureStorage.setItem(this.state.dataKey, cipherData);  
       })
 
     } else {
@@ -115,22 +128,22 @@ export default class VCselect extends React.Component {
                 
               
   }
-  goToScan = () => this.props.navigation.navigate('ScanScreen',{password:this.state.password})
-  goToMain = async () => {
-    this.props.navigation.navigate('VCcontrol')
 
-  }
-  passwordModal = () => {
-  }
-  passwordCheck = () => {
+
+  /**
+   *  passwordCheckAndDeleteVCinList :
+   *          입력된 값과 현재 패스워드를 비교하여, 
+   *          현재 state의 VCarray와 VCjwtArray에서 제외한 후,
+   *          reArrangeState()와 연결
+   * 
+   */
+  passwordCheckAndDeleteVCinList = () => {
     if(this.state.confirmCheckPassword == this.state.password){
      
-      this.setState({modalVisible:false,confirmCheckPassword:""}, function(){
+      this.setState({modalVisible:false}, function(){
         this.setState(this.state.VCjwtArray.splice(this.state.VCarray.indexOf(target),1))
         this.setState(this.state.VCarray.splice(this.state.VCarray.indexOf(target),1))
         
-        console.log(this.state)
-    
         this.setState({confirmCheckPassword:""})
     
         this.reArrangeState();
@@ -141,21 +154,36 @@ export default class VCselect extends React.Component {
     }
     
   }
-  setFalse = () => {
-    return(false)
-  }
-  deleteVC = e => {
-    target = e;
-    this.setState({ modalVisible: true })
-        
-  }
+
+  /**
+   *  reArrangeState :
+   *          현재 State의 datakey를 키로 지정하여,
+   *          새로 변경된 State의 data 값을 Secure Storage에 저장함
+   * 
+   */
   reArrangeState = () => {
         let cipherData = CryptoJS.AES.encrypt(JSON.stringify(this.state), this.state.dataKey).toString();
         SecureStorage.setItem(this.state.dataKey, cipherData);
   }
+
+
+  /**
+   *  deleteClicked :
+   *        삭제하고자 하는 VC의 삭제 버튼을 눌렀을때
+   *        "global variable target" 에 현재 선택된 VC를 저장
+   *        비밀번호를 확인하는 Modal을 오픈
+   */
+  deleteClicked = e => {
+    target = e;
+    this.setState({ modalVisible: true })
+  }
+  
+  // Modal을 닫음
   modalCancel = () => {
     this.setState({ modalVisible: false})
   }  
+
+  // 현재 VC 의 개수에 따라 다른 Style을 return 함
   noVC = () => {
     if(this.state.VCarray.length == 0){
       return{
@@ -169,13 +197,17 @@ export default class VCselect extends React.Component {
     }
   }
 
+  //Navigations
   goToSetting = () => {
-    
     this.props.navigation.navigate('Setting',{password:this.state.password})
+  }
+  goToMain = async () => {
+    this.props.navigation.navigate('VCcontrol')
   }
   readying = () => {
     alert("준비중입니다")
   }
+
   render() {
     const { confirmCheckPassword, modalVisible} = this.state
     
@@ -197,7 +229,7 @@ export default class VCselect extends React.Component {
               <View style={styles.modalButtonGroup}>
               <TouchableHighlight
                 style={styles.modalButton}
-                onPress={this.passwordCheck}
+                onPress={this.passwordCheckAndDeleteVCinList}
                 >
                 <Text style={styles.textStyle}>다음</Text>
               </TouchableHighlight>
@@ -225,7 +257,7 @@ export default class VCselect extends React.Component {
           
             <View>
             <VC vc={vc} key={vc.exp}></VC>
-            <TouchableOpacity style={styles.deleteVCbutton} onPress={() => this.deleteVC(vc)}><Text style={styles.deleteText}>삭제</Text></TouchableOpacity>
+            <TouchableOpacity style={styles.deleteVCbutton} onPress={() => this.deleteClicked(vc)}><Text style={styles.deleteText}>삭제</Text></TouchableOpacity>
             </View>
           )}
           </ScrollView>
@@ -233,27 +265,26 @@ export default class VCselect extends React.Component {
           </View>
 
           <Text style={{fontWeight:'bold'}}>생성 가능한 VC</Text>
-          <View style={styles.vcContainter}>
-          
-          
-          <TouchableOpacity style={styles.certificateCard} onPress={this.gotoURL}>
-              <Text style={styles.vcText}>인증서</Text>
-              <Text>요구정보: 성명, 생년월일, 이메일, 성별, 휴대폰번호</Text>
-          </TouchableOpacity>
-        
-          </View>
+
+            <View style={styles.vcContainter}>
+              <TouchableOpacity style={styles.certificateCard} onPress={this.gotoURL}>
+                <Text style={styles.vcText}>인증서</Text>
+                <Text>요구정보: 성명, 생년월일, 이메일, 성별, 휴대폰번호</Text>
+              </TouchableOpacity>
+            </View>
+
           </ScrollView>
           </View>
+
           <ScrollView style={styles.bottomFix}>
         
             <View style={styles.bottomNav}>
             <TouchableOpacity style={styles.bottomButton} onPress={this.goToVCselect}><Text style={styles.buttonText}>VC 관리</Text></TouchableOpacity>
-        
             <TouchableOpacity style={styles.bottomButton} onPress={this.goToMain}><Text style={styles.buttonText}>프로필</Text></TouchableOpacity>
-            
             <TouchableOpacity style={styles.bottomButton} onPress={this.readying}><Text style={styles.buttonText}>가이드</Text></TouchableOpacity>
             <TouchableOpacity style={styles.bottomButton} onPress={this.goToSetting}><Text style={styles.buttonText}>설정</Text></TouchableOpacity>
             </View>
+
           </ScrollView>
 
       </View>
@@ -262,7 +293,7 @@ export default class VCselect extends React.Component {
     )
   }
   componentDidMount(){
-    this.setKey();
+    this.getUserInfoFromNavPassword();
   }
 }
 

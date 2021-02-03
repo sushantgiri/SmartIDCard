@@ -1,14 +1,13 @@
 import React from 'react'
-import {ScrollView, StyleSheet, Text, View, Button, TextInput, Linking, Image, TouchableOpacity, LogBox} from 'react-native'
+import {StyleSheet, Text, View, TextInput, LogBox} from 'react-native'
 import CryptoJS from 'react-native-crypto-js';
-import axios from 'axios';
+
 
 import SecureStorage from 'react-native-secure-storage'
 import {TouchableHighlight} from 'react-native-gesture-handler';
 var AES = require("react-native-crypto-js").AES;
 
 
-var estormLogo = require ('./emptyprofile.png');
 export default class ChangePW extends React.Component {
   state = {
     name:'name',
@@ -27,7 +26,12 @@ export default class ChangePW extends React.Component {
     passwordCH:'',
     confirmPasswordCH:''
   }
-
+  /**
+   *  changePW :
+   *      clearPWinput() 으로 현재 입력되었던 input 값들을 초기화 하고,
+   *      현재의 
+   * 
+   */
   changePW = async () => {
       this.clearPWinput();
       this.setState({password:this.state.passwordCH}, await function(){
@@ -40,9 +44,6 @@ export default class ChangePW extends React.Component {
       })
       
   }
-  cancel = () => {
-      this.props.navigation.navigate('Setting',{password:this.state.password})
-  }
   saveUserToken = async () => {
     await SecureStorage.setItem('userToken', this.state.password);
     
@@ -50,44 +51,54 @@ export default class ChangePW extends React.Component {
     this.props.navigation.navigate('Setting',{password:this.state.password})
     
   }
-  getUserToken = async () => {
+  /** getUserInfoFromToken : 
+   * 페이지가 실행 되었을 때, userToken을 키로 이용해 password를 가져와 state에 저장하고,
+   *  getDidData function을 실행시킴
+   * 
+   */
+  getUserInfoFromToken = async () => {
     await SecureStorage.getItem('userToken').then((res) => {
       this.setState({password: res}, async function() {
         this.getDidData();
-        
       })
     })
   }
-  
+  /** getDidData : 
+   *        "현재 state의 password"를 이용하여 암호화된 State를 가져와 복호화 하여 State에 저장함
+   *        
+   * 
+   */
   getDidData = async () => {
-    
       await SecureStorage.getItem(this.state.password).then((docKey) => {
         this.setState({dataKey: docKey}, async function() {
             await SecureStorage.getItem(this.state.dataKey).then((userData) => {
-            
             if( userData != null){
-             
               let bytes  = CryptoJS.AES.decrypt(userData, this.state.dataKey);
-              
               let originalText = bytes.toString(CryptoJS.enc.Utf8);
               this.setState(JSON.parse(originalText))
-              
             }
             })
-
         })
       })
-      
-
   }
+
+  /**
+   *  clearPWinput :
+   *       입력되었던 input 값들을 초기화
+   */
   clearPWinput = () => {
       this.setState({passwordCheck:'',passwordCH:'',confirmPasswordCH:''}, function(){
-          console.log(this.state)
+          
       })
       
   }
 
-  finalCheck = () => {
+  /**
+   *  checkPWandinputs
+   *      기존의 password 와 입력된 본인 확인용 password가 일치하는지 먼저 확인하고
+   *      변경하려는 password 두 입력값이 같은지 확인하고 changePW() function으로 연결한다.
+   */
+  checkPWandinputs = () => {
       if(this.state.password == this.state.passwordCheck) {
           if(this.state.passwordCH == this.state.confirmPasswordCH){
             this.changePW();
@@ -101,6 +112,7 @@ export default class ChangePW extends React.Component {
 
 
 
+  // 현재 password, 바꿀 password, 바꿀 password 확인 
   handleCheckPassword = passwordCheck => {
       this.setState({ passwordCheck })
   }
@@ -111,6 +123,11 @@ export default class ChangePW extends React.Component {
   }
   handleConfirmPWchange = confirmPasswordCH => {
     this.setState({ confirmPasswordCH })
+  }
+
+  // 취소 navigation
+  cancel = () => {
+      this.props.navigation.navigate('Setting',{password:this.state.password})
   }
   render() {
     LogBox.ignoreAllLogs(true)
@@ -146,7 +163,7 @@ export default class ChangePW extends React.Component {
         <View style={styles.modalButtonGroup}>
         <TouchableHighlight
                 style={styles.modalButton}
-                onPress={this.finalCheck}
+                onPress={this.checkPWandinputs}
                 >
                 <Text style={styles.textStyle}>확인</Text>
               </TouchableHighlight>
@@ -161,8 +178,7 @@ export default class ChangePW extends React.Component {
     )
   }
   componentDidMount(){
-      this.getUserToken();
-      this.clearPWinput();
+      this.getUserInfoFromToken();
   }
   
 }

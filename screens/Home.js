@@ -36,12 +36,12 @@ export default class Home extends React.Component {
     this.setState({ phone })
   }
 
-  /** getUserToken : 
+  /** getUserInfoFromToken : 
    * 페이지가 실행 되었을 때, userToken을 키로 이용해 password를 가져와 state에 저장하고,
    *  getDidData function 과 getProfileInfo function을 실행시킴
    * 
    */
-  getUserToken = async () => {
+  getUserInfoFromToken = async () => {
     await SecureStorage.getItem('userToken').then((res) => {
       this.setState({password: res}, async function() {
         this.getDidData();
@@ -76,8 +76,9 @@ export default class Home extends React.Component {
     })
   }
   
-  /** getDidData : 현재 password를 이용하여 암호화된 State를 가져와 복호화 하여 State에 저장함
-   * 
+  /** getDidData : 
+   *        "현재 state의 password"를 이용하여 암호화된 State를 가져와 복호화 하여 State에 저장함
+   *        saveUserToken() 과 연결
    * 
    */
   getDidData = async () => {
@@ -199,7 +200,7 @@ export default class Home extends React.Component {
     )
   }
   componentDidMount(){
-    this.getUserToken();
+    this.getUserInfoFromToken();
   }
   
 }

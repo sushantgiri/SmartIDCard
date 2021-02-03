@@ -1,14 +1,10 @@
 import React from 'react'
-import {ScrollView, StyleSheet, Text, View, Button, TextInput, Linking, Image, TouchableOpacity, LogBox} from 'react-native'
+import {ScrollView, StyleSheet, Text, View, TouchableOpacity, LogBox} from 'react-native'
 import CryptoJS from 'react-native-crypto-js';
-import axios from 'axios';
-
 import SecureStorage from 'react-native-secure-storage'
-import {TouchableHighlight} from 'react-native-gesture-handler';
+
 var AES = require("react-native-crypto-js").AES;
 
-
-var estormLogo = require ('./emptyprofile.png');
 
 export default class Setting extends React.Component {
   state = {
@@ -25,52 +21,37 @@ export default class Setting extends React.Component {
     VCjwtArray:[]
   }
 
-  changePW = () => {
-      this.props.navigation.navigate('ChangePW')
-  }
-
-  getUserToken = async () => {
+  /** getUserInfoFromToken : 
+   * 페이지가 실행 되었을 때, userToken을 키로 이용해 password를 가져와 state에 저장하고,
+   *  getDidData function을 실행시킴
+   * 
+   */
+  getUserInfoFromToken = async () => {
     await SecureStorage.getItem('userToken').then((res) => {
       this.setState({password: res}, async function() {
         this.getDidData();
-        this.getProfileInfo();
       })
     })
   }
-  getProfileInfo = async () => {
-    await SecureStorage.getItem('userName').then((res) => {
-      this.setState({name: res})
-    })
-    await SecureStorage.getItem('userEmail').then((res) => {
-      this.setState({email: res})
-    })
-    await SecureStorage.getItem('userPhone').then((res) => {
-      this.setState({phone: res})
-    })
-  }
-  
+  /** getDidData : 
+   *        "현재 state의 password"를 이용하여 암호화된 State를 가져와 복호화 하여 State에 저장함
+   *        
+   * 
+   */
   getDidData = async () => {
     
       await SecureStorage.getItem(this.state.password).then((docKey) => {
         this.setState({dataKey: docKey}, async function() {
             await SecureStorage.getItem(this.state.dataKey).then((userData) => {
-            
             if( userData != null){
-             
               let bytes  = CryptoJS.AES.decrypt(userData, this.state.dataKey);
-              
               let originalText = bytes.toString(CryptoJS.enc.Utf8);
               this.setState(JSON.parse(originalText))
-              
             }
             })
-
         })
       })
-      
-
   }
-
 
   //Navigation
   goToVCselect = () => {
@@ -80,12 +61,15 @@ export default class Setting extends React.Component {
     this.props.navigation.navigate('VCcontrol')
 
   }
+  changePW = () => {
+      this.props.navigation.navigate('ChangePW')
+  }
   readying = () => {
     alert("준비중입니다")
   }
-
-
   //Navigation end
+
+
   render() {
     LogBox.ignoreAllLogs(true)
     return (
@@ -109,7 +93,7 @@ export default class Setting extends React.Component {
     )
   }
   componentDidMount(){
-      this.getUserToken();
+      this.getUserInfoFromToken();
   }
   
 }
