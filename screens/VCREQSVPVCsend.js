@@ -21,7 +21,7 @@ var challenger = Math.floor(Math.random() *10000) + 1;
 
 
 
-export default class SVPVCsend extends React.Component {
+export default class VCREQSVPVCsend extends React.Component {
     state = {
     password: '',
     dataKey: '',
@@ -32,6 +32,8 @@ export default class SVPVCsend extends React.Component {
     VCjwtArray:[],
 
     showingData: '',
+    reqType:'',
+    issuerDID:'',
     checkedArray:[],
     confirmCheckPassword:'',
     modalVisible: false
@@ -279,6 +281,7 @@ export default class SVPVCsend extends React.Component {
     reqTypeOnUse = issuerReqType;
     issuerDIDOnUse = issuerDID;
     passwordInMobile = userPW;
+    
     return (
       <View style={styles.container}>
       <Modal animationType="slide" transparent={true} visible={modalVisible}>
@@ -312,6 +315,8 @@ export default class SVPVCsend extends React.Component {
         </Modal>
         <View>
             <Text>SVP : {this.state.showingData}</Text>
+            <Text>req Type : {reqTypeOnUse} </Text>
+            <Text>issuerDID : {issuerDIDOnUse} </Text>
         </View>
         <Text>VC를 선택해주세요</Text>
         

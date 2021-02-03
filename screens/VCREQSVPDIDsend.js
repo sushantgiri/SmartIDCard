@@ -17,7 +17,7 @@ var issuerURLOnUse = '';
 var challenger = Math.floor(Math.random() *10000) + 1;
 
 
-export default class SVPDIDsend extends React.Component {
+export default class VCREQSVPDIDsend extends React.Component {
     state = {
     password: '',
     dataKey: '',
