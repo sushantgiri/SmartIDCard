@@ -21,7 +21,7 @@ var challenger = Math.floor(Math.random() *10000) + 1;
 
 
 
-export default class VCREQSVPVCsend extends React.Component {
+export default class VCREQ_SVP_VCsend extends React.Component {
     state = {
     password: '',
     dataKey: '',

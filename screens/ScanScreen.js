@@ -12,6 +12,9 @@ var nonce = '';
 var reqType = '';
 var issuerDID = '';
 
+var signType = '';
+var signData = '';
+
 export default class ScanScreen extends React.Component {
   
   /**
@@ -51,10 +54,22 @@ export default class ScanScreen extends React.Component {
               if(response.data.data.sign == null) {
                 // VP req / SVP 사용 / VC 요청(O) / Sign (X)
                 console.log("VP req / SVP 사용 / VC 요청(O) / Sign (X)")
+                reqType = response.data.data.requestData[0].type;
+                issuerDID = response.data.data.requestData[0].issuer;
+
+                this.props.navigation.navigate('VPREQ_SVP_VCsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqType,issuerDID:issuerDID})
               } else {
                 
                 // VP req / SVP 사용 / VC 요청(O) / Sign (O)
                 console.log("VP req / SVP 사용 / VC 요청(O) / Sign (O)")
+
+                reqType = response.data.data.requestData[0].type;
+                issuerDID = response.data.data.requestData[0].issuer;
+
+                signData = response.data.data.sign.data
+                signType = response.data.data.sign.type
+                
+                this.props.navigation.navigate('VPREQ_SVP_SIGN_VCsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqType,issuerDID:issuerDID,signData:signData,signType:signType})
               }
             }
           }
@@ -69,14 +84,14 @@ export default class ScanScreen extends React.Component {
             if(response.data.data.requestData == null){
                 // VC req / SVP 사용 / VC 요청(X)
                 console.log("VC req / SVP 사용 / VC 요청(X)")
-                this.props.navigation.navigate('SVPDIDsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce})
+                this.props.navigation.navigate('VCREQ_SVP_DIDsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce})
 
             } else {
                 // VC req / SVP 사용 / VC 요청(O)
                 console.log("VC req / SVP 사용 / VC 요청(O)")
                 reqType = response.data.data.requestData[0].type;
                 issuerDID = response.data.data.requestData[0].issuer;
-                this.props.navigation.navigate('SVPVCsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqType,issuerDID:issuerDID})
+                this.props.navigation.navigate('VCREQ_SVP_VCsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqType,issuerDID:issuerDID})
             }
 
           }
