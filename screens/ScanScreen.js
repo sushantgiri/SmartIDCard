@@ -44,16 +44,19 @@ export default class ScanScreen extends React.Component {
             if(response.data.data.requestData == null) {
               if(response.data.data.sign == null) {
                 // VP req / SVP 사용 / VC 요청(X) / Sign (X)
-                console.log("VP req / SVP 사용 / VC 요청(X) / Sign (X)")
+                this.props.navigation.navigate('VPREQ_SVP_NULLsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqType,issuerDID:issuerDID})
               } else {
                 
                 // VP req / SVP 사용 / VC 요청(X) / Sign (O)
-                console.log("VP req / SVP 사용 / VC 요청(X) / Sign (O)")
+                
+                signData = response.data.data.sign.data
+                signType = response.data.data.sign.type
+                
+                this.props.navigation.navigate('VPREQ_SVP_SIGN_NULLsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,signData:signData,signType:signType})
               }
             } else {
               if(response.data.data.sign == null) {
                 // VP req / SVP 사용 / VC 요청(O) / Sign (X)
-                console.log("VP req / SVP 사용 / VC 요청(O) / Sign (X)")
                 reqType = response.data.data.requestData[0].type;
                 issuerDID = response.data.data.requestData[0].issuer;
 
@@ -61,7 +64,6 @@ export default class ScanScreen extends React.Component {
               } else {
                 
                 // VP req / SVP 사용 / VC 요청(O) / Sign (O)
-                console.log("VP req / SVP 사용 / VC 요청(O) / Sign (O)")
 
                 reqType = response.data.data.requestData[0].type;
                 issuerDID = response.data.data.requestData[0].issuer;
@@ -72,6 +74,9 @@ export default class ScanScreen extends React.Component {
                 this.props.navigation.navigate('VPREQ_SVP_SIGN_VCsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqType,issuerDID:issuerDID,signData:signData,signType:signType})
               }
             }
+            // SVP 사용 
+          } else if (response.data.data.useSvp == false){
+            
           }
 
           
@@ -83,17 +88,23 @@ export default class ScanScreen extends React.Component {
 
             if(response.data.data.requestData == null){
                 // VC req / SVP 사용 / VC 요청(X)
-                console.log("VC req / SVP 사용 / VC 요청(X)")
                 this.props.navigation.navigate('VCREQ_SVP_DIDsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce})
-
             } else {
                 // VC req / SVP 사용 / VC 요청(O)
-                console.log("VC req / SVP 사용 / VC 요청(O)")
                 reqType = response.data.data.requestData[0].type;
                 issuerDID = response.data.data.requestData[0].issuer;
                 this.props.navigation.navigate('VCREQ_SVP_VCsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqType,issuerDID:issuerDID})
             }
-
+          } else {
+            if(response.data.data.requestData == null){
+              // VC req / SVP 사용안함 / VC 요청 (X)
+                this.props.navigation.navigate('VCREQ_DIDsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce})
+            } else {
+              // VC req / SVP 사용안함 / VC 요청 (O)
+                reqType = response.data.data.requestData[0].type;
+                issuerDID = response.data.data.requestData[0].issuer;
+                this.props.navigation.navigate('VCREQ_VCsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqType,issuerDID:issuerDID})
+            }
           }
          
 
