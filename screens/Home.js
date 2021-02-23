@@ -7,8 +7,22 @@ import Clipboard from '@react-native-community/clipboard'
 import SecureStorage from 'react-native-secure-storage'
 var AES = require("react-native-crypto-js").AES;
 
+import {FloatingAction} from "react-native-floating-action"
 
 var estormLogo = require ('./emptyprofile.png');
+  //Floating button
+  const actions = [
+  {
+    text: "QR 스캔",
+    name: "scanqr",
+    position: 2
+  },
+  {
+    text: "Bluetooth",
+    name: "bluetooth",
+    position: 1
+  },
+];
 
 export default class Home extends React.Component {
   state = {
@@ -136,6 +150,15 @@ export default class Home extends React.Component {
   }
   //Navigation end
 
+  floatButtonAction = (name) => {
+    if (name == "scanqr"){
+      this.saveUserToken();
+      this.props.navigation.navigate('ScanScreen',{password:this.state.password})
+    } else if (name == "bluetooth"){
+      alert("bluetooth 준비중")
+    }
+  }
+
 
   render() {
     LogBox.ignoreAllLogs
@@ -184,18 +207,24 @@ export default class Home extends React.Component {
               </TouchableOpacity>
             </View>
 
+          
+         
           </ScrollView>
+          
         </View>
-
+        
         <ScrollView style={styles.bottomFix}>
-          <TouchableOpacity style={styles.QRbutton} onPress={this.goToScan}><Text style={styles.qrText}>QR코드</Text></TouchableOpacity>
+
           <View style={styles.bottomNav}>
+           
             <TouchableOpacity style={styles.bottomButton} onPress={this.goToVCselect}><Text style={styles.buttonText}>VC 관리</Text></TouchableOpacity>
             <TouchableOpacity style={styles.bottomButton} ><Text style={styles.buttonText}>프로필</Text></TouchableOpacity>
             <TouchableOpacity style={styles.bottomButton} onPress={this.readying}><Text style={styles.buttonText}>가이드</Text></TouchableOpacity>
             <TouchableOpacity style={styles.bottomButton} onPress={this.goToSetting}><Text style={styles.buttonText}>설정</Text></TouchableOpacity>
           </View>
         </ScrollView>
+        
+          <FloatingAction style={styles.floatButton} actions={actions} onPressItem={name => {this.floatButtonAction(name)}}/>
       </View>
     )
   }
@@ -236,6 +265,9 @@ const styles = StyleSheet.create({
   qrText: {
     color:'white',
     fontWeight:'bold'
+  },
+  floatButton:{
+    position:'absolute',
   },
   QRbutton:{
     textAlign:"center",
@@ -300,9 +332,10 @@ const styles = StyleSheet.create({
     height:50,  
   },
   bottomFix: {
+    zIndex:0,
     width: '100%',
-    position: 'absolute', 
-    bottom: 0,
+    position: 'absolute',
+    bottom:0,
   },
   inputProfileText: {
     backgroundColor:'white',

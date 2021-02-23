@@ -3,10 +3,24 @@ import { StyleSheet, View, Button,Text,TouchableOpacity, ScrollView, Image, Link
 import jwt_decode from "jwt-decode";
 import CryptoJS from 'react-native-crypto-js';
 
+import {FloatingAction} from "react-native-floating-action"
+
 import SecureStorage from 'react-native-secure-storage'
 import {exp} from 'react-native-reanimated';
 var AES = require("react-native-crypto-js").AES;
-
+//Floating button
+  const actions = [
+  {
+    text: "QR 스캔",
+    name: "scanqr",
+    position: 2
+  },
+  {
+    text: "Bluetooth",
+    name: "bluetooth",
+    position: 1
+  },
+];
 //사용자 패스워드
 var passwordInMobile = '';
 //삭제 선택된 VC
@@ -46,6 +60,8 @@ function VC({vc}){
   //)
   //}
 }
+
+  
 export default class VCselect extends React.Component {
   
   state = {
@@ -208,6 +224,14 @@ export default class VCselect extends React.Component {
     alert("준비중입니다")
   }
 
+
+  floatButtonAction = (name) => {
+    if (name == "scanqr"){
+      this.props.navigation.navigate('ScanScreen',{password:this.state.password})
+    } else if (name == "bluetooth"){
+      alert("bluetooth 준비중")
+    }
+  }
   render() {
     const { confirmCheckPassword, modalVisible} = this.state
     
@@ -273,9 +297,12 @@ export default class VCselect extends React.Component {
               </TouchableOpacity>
             </View>
 
-          </ScrollView>
-          </View>
 
+          </ScrollView>
+          
+          </View>
+          <FloatingAction actions={actions} onPressItem={name => {console.log('selected item: ${name}');}}/>
+            
           <ScrollView style={styles.bottomFix}>
         
             <View style={styles.bottomNav}>
@@ -286,7 +313,7 @@ export default class VCselect extends React.Component {
             </View>
 
           </ScrollView>
-
+          <FloatingAction style={styles.floatButton} actions={actions} onPressItem={name => {this.floatButtonAction(name)}}/>
       </View>
       
 
