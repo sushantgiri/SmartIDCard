@@ -1,13 +1,25 @@
 import React from 'react'
-import {ScrollView, StyleSheet, Text, View, TextInput, Image, TouchableOpacity, LogBox} from 'react-native'
+import {ScrollView, StyleSheet, Text, View, TextInput, Image, TouchableOpacity, LogBox, Linking} from 'react-native'
 import CryptoJS from 'react-native-crypto-js';
-
+import axios from 'axios'
 import Clipboard from '@react-native-community/clipboard'
 
 import SecureStorage from 'react-native-secure-storage'
 var AES = require("react-native-crypto-js").AES;
 
 import {FloatingAction} from "react-native-floating-action"
+
+
+
+// global variables : 웹소켓 url, 웹소켓 room number, nonce, request type, issuer 의 url
+var socketUrl = '';
+var roomNo = '';
+var nonce = '';
+var reqType = '';
+var issuerDID = '';
+
+var signType = '';
+var signData = '';
 
 var estormLogo = require ('./emptyprofile.png');
   //Floating button
@@ -110,6 +122,34 @@ export default class Home extends React.Component {
         })
       })
   }
+
+  //App to app test
+  linktest = () => {
+    Linking.getInitialURL().then(url => {
+      if(url != null){
+       axios.get('http://182.162.89.79:30600/rest/connector/' + url.substring(30,url.length)).then(
+          res => {
+            console.log(res.data.data)
+            var getQRdata = res.data.data.url + "/rest/qrdata/" + url.substring(30,url.length)
+            console.log(getQRdata)
+            axios.get(getQRdata).then(response => {
+            
+            roomNo = response.data.data.no;
+            socketUrl = response.data.data.websocketUrl;
+            nonce = response.data.data.nonce;
+            
+              }
+            )
+            console.log(roomNo)
+            console.log(socketUrl)
+            console.log(nonce)
+      })
+      } else {
+      }
+    })
+  }
+
+
 
   // 로그아웃
   logout = async () => {
@@ -230,6 +270,7 @@ export default class Home extends React.Component {
   }
   componentDidMount(){
     this.getUserInfoFromToken();
+    this.linktest();
   }
   
 }

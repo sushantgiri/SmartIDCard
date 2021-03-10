@@ -87,6 +87,7 @@ export default class VCselect extends React.Component {
    *           setStateData function을 사용하여 State를 구성함
    * 
    */
+  
   getUserInfoFromNavPassword = () => {
     const {navigation} = this.props
     const mobileKey = navigation.getParam('password',"value")
@@ -100,6 +101,7 @@ export default class VCselect extends React.Component {
    *        "passwordInMobile global variable" 을 이용하여 State를 구성
    * 
    */
+
   setStateData = async () => {
   await SecureStorage.getItem(passwordInMobile).then((docKey) => {
       this.setState({dataKey: docKey}, function() {
@@ -321,6 +323,7 @@ export default class VCselect extends React.Component {
   }
   componentDidMount(){
     this.getUserInfoFromNavPassword();
+    
   }
 }
 

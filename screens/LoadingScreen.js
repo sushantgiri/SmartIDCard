@@ -1,5 +1,5 @@
 import React from 'react'
-import { StyleSheet, View, Text} from 'react-native'
+import { StyleSheet, View, Text, Linking} from 'react-native'
 
 import SecureStorage from 'react-native-secure-storage'
 
@@ -15,7 +15,14 @@ export default class LoadingScreen extends React.Component {
         console.log(userToken)
         this.props.navigation.navigate(userToken ? 'App' : 'Auth');
     }
-
+    //확인용
+    linktest = () => {
+        Linking.getInitialURL().then(url =>{
+            console.log(url);
+            alert(url)
+        });
+    }
+    
 
 
     render() {
@@ -26,6 +33,9 @@ export default class LoadingScreen extends React.Component {
             </View>
           </View>
         )   
+    }
+    componentDidMount(){
+        //this.linktest();
     }
 }
 

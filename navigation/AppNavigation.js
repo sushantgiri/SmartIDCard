@@ -1,8 +1,6 @@
 import { createStackNavigator } from 'react-navigation-stack'
 import ChangePW from '../screens/ChangePW'
-import CompleteSubmit from '../screens/CompleteSubmit'
 import Home from '../screens/Home'
-import QRInfoScreen from '../screens/QRInfoScreen'
 import QRscreenVP from '../screens/QRscreenVP'
 import ScanScreen from '../screens/ScanScreen'
 import Setting from '../screens/Setting'
@@ -38,9 +36,7 @@ const AppNavigation = createStackNavigator(
     VPREQ_SVP_SIGN_VCsend: { screen: VPREQ_SVP_SIGN_VCsend},
     VPREQ_SVP_VCsend: { screen: VPREQ_SVP_VCsend},
     VPREQ_SVP_NULLsend: {screen: VPREQ_SVP_NULLsend},
-    QRInfoScreen: { screen: QRInfoScreen},
     QRscreenVP: {screen: QRscreenVP},
-    CompleteSubmit: { screen: CompleteSubmit},
     VCselect: {screen: VCselect},
     Setting: {screen: Setting},
     ChangePW: {screen: ChangePW},
