@@ -129,20 +129,90 @@ export default class Home extends React.Component {
       if(url != null){
        axios.get('http://182.162.89.79:30600/rest/connector/' + url.substring(30,url.length)).then(
           res => {
-            console.log(res.data.data)
             var getQRdata = res.data.data.url + "/rest/qrdata/" + url.substring(30,url.length)
-            console.log(getQRdata)
+            
             axios.get(getQRdata).then(response => {
             
             roomNo = response.data.data.no;
             socketUrl = response.data.data.websocketUrl;
             nonce = response.data.data.nonce;
+            const userPassword = this.state.password;
+            if(response.data.data.requestType == 'vp'){
+
+          if(response.data.data.useSvp == true ) {
+
+            if(response.data.data.requestData == null) {
+              if(response.data.data.sign == null) {
+                // VP req / SVP 사용 / VC 요청(X) / Sign (X)
+                this.props.navigation.navigate('VPREQ_SVP_NULLsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqType,issuerDID:issuerDID})
+              } else {
+                
+                // VP req / SVP 사용 / VC 요청(X) / Sign (O)
+                
+                signData = response.data.data.sign.data
+                signType = response.data.data.sign.type
+                
+                this.props.navigation.navigate('VPREQ_SVP_SIGN_NULLsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,signData:signData,signType:signType})
+              }
+            } else {
+              if(response.data.data.sign == null) {
+                // VP req / SVP 사용 / VC 요청(O) / Sign (X)
+                reqType = response.data.data.requestData[0].type;
+                issuerDID = response.data.data.requestData[0].issuer;
+
+                this.props.navigation.navigate('VPREQ_SVP_VCsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqType,issuerDID:issuerDID})
+              } else {
+                
+                // VP req / SVP 사용 / VC 요청(O) / Sign (O)
+
+                reqType = response.data.data.requestData[0].type;
+                issuerDID = response.data.data.requestData[0].issuer;
+
+                signData = response.data.data.sign.data
+                signType = response.data.data.sign.type
+                
+                this.props.navigation.navigate('VPREQ_SVP_SIGN_VCsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqType,issuerDID:issuerDID,signData:signData,signType:signType})
+              }
+            }
+            // SVP 사용 
+          } else if (response.data.data.useSvp == false){
             
+          }
+
+          
+
+
+        } else if(response.data.data.requestType == 'vc') {
+          
+          if(response.data.data.useSvp == true) {
+
+            if(response.data.data.requestData == null){
+                // VC req / SVP 사용 / VC 요청(X)
+                this.props.navigation.navigate('VCREQ_SVP_DIDsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce})
+            } else {
+                // VC req / SVP 사용 / VC 요청(O)
+                reqType = response.data.data.requestData[0].type;
+                issuerDID = response.data.data.requestData[0].issuer;
+                this.props.navigation.navigate('VCREQ_SVP_VCsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqType,issuerDID:issuerDID})
+            }
+          } else {
+            if(response.data.data.requestData == null){
+              // VC req / SVP 사용안함 / VC 요청 (X)
+                this.props.navigation.navigate('VCREQ_DIDsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce})
+            } else {
+              // VC req / SVP 사용안함 / VC 요청 (O)
+                reqType = response.data.data.requestData[0].type;
+                issuerDID = response.data.data.requestData[0].issuer;
+                this.props.navigation.navigate('VCREQ_VCsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqType,issuerDID:issuerDID})
+            }
+          }
+         
+
+        } else {
+            alert("error")
+        }
               }
             )
-            console.log(roomNo)
-            console.log(socketUrl)
-            console.log(nonce)
       })
       } else {
       }

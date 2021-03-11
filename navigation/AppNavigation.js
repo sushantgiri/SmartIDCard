@@ -1,7 +1,6 @@
 import { createStackNavigator } from 'react-navigation-stack'
 import ChangePW from '../screens/ChangePW'
 import Home from '../screens/Home'
-import QRscreenVP from '../screens/QRscreenVP'
 import ScanScreen from '../screens/ScanScreen'
 import Setting from '../screens/Setting'
 import VCselect from '../screens/VCselect'
@@ -16,7 +15,6 @@ import VPREQ_SVP_SIGN_VCsend from '../screens/VPREQ_SVP_SIGN_VCsend'
 import VPREQ_SVP_VCsend from '../screens/VPREQ_SVP_VCsend'
 import VPREQ_SVP_NULLsend from '../screens/VPREQ_SVP_NULLsend'
 import VCverify from '../screens/VCverify'
-import WebRequest from '../screens/WebRequest';
 const AppNavigation = createStackNavigator(
   {
     VCcontrol: { screen: Home,
@@ -36,15 +34,9 @@ const AppNavigation = createStackNavigator(
     VPREQ_SVP_SIGN_VCsend: { screen: VPREQ_SVP_SIGN_VCsend},
     VPREQ_SVP_VCsend: { screen: VPREQ_SVP_VCsend},
     VPREQ_SVP_NULLsend: {screen: VPREQ_SVP_NULLsend},
-    QRscreenVP: {screen: QRscreenVP},
     VCselect: {screen: VCselect},
     Setting: {screen: Setting},
     ChangePW: {screen: ChangePW},
-    WebRequest: {screen: WebRequest,
-                  navigationOptions: {
-                    headerTitle: 'WebRequest'
-                  },
-                path: 'WebRequest'}
   },
   {
     initialRouteName: 'VCcontrol',
