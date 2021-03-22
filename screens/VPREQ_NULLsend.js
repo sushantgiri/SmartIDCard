@@ -25,7 +25,7 @@ function createDualSigner (jwtSigner, ethAccount) {
   return { jwtSigner, ethAccount }
 }
 
-export default class VPREQ_SVP_NULLsend extends React.Component {
+export default class VPREQ_NULLsend extends React.Component {
     state = {
     password: '',
     dataKey: '',
@@ -124,10 +124,7 @@ export default class VPREQ_SVP_NULLsend extends React.Component {
   /**
    *  setConnection :
    *        웹소켓에 연결후, 현재 room Number를 전송함
-   *        이후 challenger를 전달함
-   *  sendChallenger :
-   *        랜덤값인 challenger를 전달함
-   *        받아온 SVP 데이터를 showingData에 저장함
+   *        
    */
 
   setConnection = () => {
@@ -135,17 +132,11 @@ export default class VPREQ_SVP_NULLsend extends React.Component {
     ws.onopen = () => {
         ws.send('{"type":"authm", "no":"'+socketRoom+'"}');
         ws.onmessage = (e) => {
-            this.sendChallenger();
+            console.log(e)
         }
     }
   }
 
-  sendChallenger = () => {
-      ws.send('{"type":"challenger","data":"'+challenger+'"}');
-      ws.onmessage = (e) => {
-          this.setState({showingData: JSON.stringify(e)})
-      }
-  }
 
 
   render() {
@@ -204,9 +195,7 @@ export default class VPREQ_SVP_NULLsend extends React.Component {
         </Modal>
 
         <View>
-            <Text>SVP : {this.state.showingData}</Text>
-            <Text>req Type : {reqTypeOnUse} </Text>
-            <Text>issuerDID : {issuerDIDOnUse} </Text>
+            <Text>SVP를 제공받지 않습니다</Text>
         </View>
 
         <Text>VC제출이 필요 없습니다</Text>

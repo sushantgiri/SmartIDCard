@@ -76,7 +76,40 @@ export default class ScanScreen extends React.Component {
             }
             // SVP 사용 
           } else if (response.data.data.useSvp == false){
-            
+
+            if(response.data.data.requestData == null) {
+              if(response.data.data.sign == null) {
+                // VP req / SVP 사용(X) / VC 요청(X) / Sign (X)
+                this.props.navigation.navigate('VPREQ_NULLsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqType,issuerDID:issuerDID})
+              } else {
+                
+                // VP req / SVP 사용(X) / VC 요청(X) / Sign (O)
+                
+                signData = response.data.data.sign.data
+                signType = response.data.data.sign.type
+                
+                this.props.navigation.navigate('VPREQ_SIGN_NULLsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,signData:signData,signType:signType})
+              }
+            } else {
+              if(response.data.data.sign == null) {
+                // VP req / SVP 사용(X) / VC 요청(O) / Sign (X)
+                reqType = response.data.data.requestData[0].type;
+                issuerDID = response.data.data.requestData[0].issuer;
+
+                this.props.navigation.navigate('VPREQ_VCsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqType,issuerDID:issuerDID})
+              } else {
+                
+                // VP req / SVP 사용 / VC 요청(O) / Sign (O)
+
+                reqType = response.data.data.requestData[0].type;
+                issuerDID = response.data.data.requestData[0].issuer;
+
+                signData = response.data.data.sign.data
+                signType = response.data.data.sign.type
+                
+                this.props.navigation.navigate('VPREQ_SIGN_VCsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqType,issuerDID:issuerDID,signData:signData,signType:signType})
+              }
+            }
           }
 
           

@@ -126,6 +126,7 @@ export default class Home extends React.Component {
   //App to app test
   linktest = () => {
     Linking.getInitialURL().then(url => {
+      console.log(url)
       if(url != null){
        axios.get('http://182.162.89.79:30600/rest/connector/' + url.substring(30,url.length)).then(
           res => {

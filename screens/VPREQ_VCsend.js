@@ -25,7 +25,7 @@ function createDualSigner (jwtSigner, ethAccount) {
   return { jwtSigner, ethAccount }
 }
 
-export default class VPREQ_SVP_NULLsend extends React.Component {
+export default class VPREQ_VCsend extends React.Component {
     state = {
     password: '',
     dataKey: '',
@@ -98,22 +98,111 @@ export default class VPREQ_SVP_NULLsend extends React.Component {
 
 
   /**
-   * sendEmptyVC : null VC를 생성 후 전달
+   *  VCclick :
+   *        현재 클릭된 VC를 찾아 checkboxClicked()로 보내준다
+   *        
+   */
+  VCclick = e =>{
+    for (var i=0;this.state.VCarray.length;i++){
+      if(e == this.state.VCarray[i]){
+        this.checkboxClicked(i)
+        return
+      }
+    }
+  }
+
+  /**
+   * checkbocClicked :
+   *        현재 index를 parameter로 받아, Array의 원소중 체크가 되어 있는지 확인하여,
+   *        checked 의 값을 false 나 true로 바꿔주고 state에 저장한다.
+   * @param {*} index 
+   */
+  checkboxClicked = index => {
+    this.state.checkedArray[index].checked = !this.state.checkedArray[index].checked
+    arrChecked = this.state.checkedArray
+    this.setState({checkedArray: this.state.checkedArray})
+  }
+
+  /**
+   * passwordCheck :
+   *      입력된 password의 input값과 현재 state의 password가 일치하는지 확인
+   * 
+   */
+  passwordCheck = () => {
+    if(this.state.confirmCheckPassword == this.state.password){
+     
+      this.setState({modalVisible:false}, function(){
+        this.pickVCinArray()
+      })
+     
+    } else {
+      alert('비밀번호 불일치')
+    }
+  }
+
+  /**
+   * pickVCinArray :
+   *        현재 제출해야 하는 VC를 VCjwtArray에서 가져와 jwt로 제출할 수 있도록
+   *        vcSubmitArr[] 에 포함시킨다.
+   *        
+   *        생성된 vcSubmitArr[]를 makeVCJWTandSign()로 보낸다
+   * 
+   */
+  pickVCinArray = () => {
+    var vcSubmitArr = [];
+    for(var i = 0; i<this.state.VCjwtArray.length;i++){
+      if(this.state.checkedArray[i].checked == true){
+        var jwtString = this.state.VCjwtArray[i].split(',')[1].split(':')[1]
+        vcSubmitArr = vcSubmitArr.concat([jwtString.substring(1,jwtString.length-2)])
+      }
+    }
+    this.makeVCJWT(vcSubmitArr)
+  }
+  
+  /**
+   * makeVCJWT :
+   *        pickVCinArray에서 전달받은 VC의 JWT를 VP로 만들어 제출
+   * @param { pickVCinArray 로부터 전달받은 VCjwt의 array} vcjwtArray 
    */
 
-  sendEmptyVC = () => {
-    ws.send('{"type":"vp", "data":"null"}')
+  makeVCJWT = async (vcjwtArray) => {
+    const privateKey = this.state.privateKey;
+    const ethAccount = web3.eth.accounts.privateKeyToAccount(privateKey)
+    const dualSigner = createDualSigner(didJWT.SimpleSigner(privateKey.replace('0x','')), ethAccount)
+    const dualDid = new DualDID(dualSigner, 'Issuer(change later)', 'Dualauth.com(change later)',web3,'0x3CF0CB3cD457b959F6027676dF79200C8EF19907')
+    
+    const vp = await dualDid.createVP(vcjwtArray,nonce)
+    ws.send('{"type":"vp", "data":"'+vp+'"}')
     ws.onmessage = (e) => {
             console.log(e)
             
     }
+    alert("VP 제출 완료")
     this.successVPsubmit();
   }
 
+  /**
+   * checkVCexist :
+   *        현재 선택된 VC가 있는지 확인하고,
+   *        VC가 선택된 경우에만 modal을 open함
+   */
+  checkVCexist = () => {
+    var empty = true;
+    for( var i = 0; i< this.state.checkedArray.length;i++){
+      if(this.state.checkedArray[i].checked == true){
+        empty = false;
+      }
+    }
+    if(empty) {
+      alert("VC를 선택해 주세요")
+    } else if (empty == false) {
+      this.setState({ modalVisible: true})
+    }
+  }
 
   /**
    *  successVPsubmit :
-   *      현재 page에서의 과정이 완료된 후, VCselect 페이지로 돌아감
+   *      현재 page에서의 VP 전달 과정이 완료된 후, VCselect 페이지로 돌아감
    * 
    */
   successVPsubmit = () => {
@@ -122,12 +211,43 @@ export default class VPREQ_SVP_NULLsend extends React.Component {
   }
 
   /**
+   *  modalCancel:
+   * 
+   *      현재 modal 창을 닫음
+   * 
+   */
+
+  modalCancel = () => {
+    this.setState({ modalVisible: false})
+  }  
+
+
+  cardStyle = bool => {
+    
+    if(this.state.checkedArray[bool] != null){
+      if(this.state.checkedArray[bool].checked == true){    
+        return{
+          backgroundColor:'#8FF',
+          borderRadius:12,
+          width:300,
+          margin:10,
+          padding:10
+        }
+      } else {
+        return{
+          backgroundColor:'#eff',
+          borderRadius:12,
+          width:300,
+          margin:10,
+          padding:10
+        }
+      }
+    }
+  }
+  
+  /**
    *  setConnection :
    *        웹소켓에 연결후, 현재 room Number를 전송함
-   *        이후 challenger를 전달함
-   *  sendChallenger :
-   *        랜덤값인 challenger를 전달함
-   *        받아온 SVP 데이터를 showingData에 저장함
    */
 
   setConnection = () => {
@@ -135,18 +255,10 @@ export default class VPREQ_SVP_NULLsend extends React.Component {
     ws.onopen = () => {
         ws.send('{"type":"authm", "no":"'+socketRoom+'"}');
         ws.onmessage = (e) => {
-            this.sendChallenger();
+            console.log(e)
         }
     }
   }
-
-  sendChallenger = () => {
-      ws.send('{"type":"challenger","data":"'+challenger+'"}');
-      ws.onmessage = (e) => {
-          this.setState({showingData: JSON.stringify(e)})
-      }
-  }
-
 
   render() {
       
@@ -204,16 +316,25 @@ export default class VPREQ_SVP_NULLsend extends React.Component {
         </Modal>
 
         <View>
-            <Text>SVP : {this.state.showingData}</Text>
+            <Text>SVP를 전달받지 않습니다</Text>
             <Text>req Type : {reqTypeOnUse} </Text>
             <Text>issuerDID : {issuerDIDOnUse} </Text>
         </View>
 
-        <Text>VC제출이 필요 없습니다</Text>
+        <Text>VC를 선택해주세요</Text>
         
+        <View>{this.state.VCarray.map((vc,index) => {return(
+          <View>
+          <TouchableOpacity  style={this.cardStyle(index)} onPress={() => this.VCclick(vc)}><VC vc={vc} key={vc.exp}/>
+          </TouchableOpacity>   
+          </View>
+        )
+        })}
         
+        </View>
+
         <View style={{ flexDirection:"row"}}>
-        <TouchableOpacity style={styles.bottomLeftButton} onPress={this.sendEmptyVC}><Text style={styles.buttonLeftText}>다음</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.bottomLeftButton} onPress={this.checkVCexist}><Text style={styles.buttonLeftText}>VP 생성 및 제출</Text></TouchableOpacity>
         <TouchableOpacity style={styles.bottomButton} onPress={this.close}><Text style={styles.buttonText}>취소</Text></TouchableOpacity>
         </View>
 

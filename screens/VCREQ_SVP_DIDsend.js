@@ -82,7 +82,7 @@ export default class VCREQ_SVP_DIDsend extends React.Component {
   }
 
   sendDID = () => {
-      ws.send('{"type":"did","data:":"'+this.state.address+'"}')
+      ws.send('{"type":"did","data":"'+this.state.address+'"}')
       ws.onmessage = (e) => {
         this.setState({VC: e.data})
         

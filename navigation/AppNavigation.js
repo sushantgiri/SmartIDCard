@@ -10,6 +10,11 @@ import VCREQ_SVP_VCsend from '../screens/VCREQ_SVP_VCsend'
 import VCREQ_DIDsend from '../screens/VCREQ_DIDsend'
 import VCREQ_VCsend from '../screens/VCREQ_VCsend'
 
+import VPREQ_SIGN_NULLsend from '../screens/VPREQ_SIGN_NULLsend'
+import VPREQ_SIGN_VCsend from '../screens/VPREQ_SIGN_VCsend'
+import VPREQ_VCsend from '../screens/VPREQ_VCsend'
+import VPREQ_NULLsend from '../screens/VPREQ_NULLsend'
+
 import VPREQ_SVP_SIGN_NULLsend from '../screens/VPREQ_SVP_SIGN_NULLsend'
 import VPREQ_SVP_SIGN_VCsend from '../screens/VPREQ_SVP_SIGN_VCsend'
 import VPREQ_SVP_VCsend from '../screens/VPREQ_SVP_VCsend'
@@ -29,6 +34,11 @@ const AppNavigation = createStackNavigator(
     VCREQ_DIDsend: {screen: VCREQ_DIDsend},
     VCREQ_VCsend: {screen: VCREQ_VCsend},
     VCverify: { screen: VCverify},
+
+    VPREQ_SIGN_NULLsend: { screen: VPREQ_SIGN_NULLsend},
+    VPREQ_SIGN_VCsend: {screen: VPREQ_SIGN_VCsend},
+    VPREQ_NULLsend: {screen: VPREQ_NULLsend},
+    VPREQ_VCsend: {screen: VPREQ_VCsend},
 
     VPREQ_SVP_SIGN_NULLsend: { screen: VPREQ_SVP_SIGN_NULLsend},
     VPREQ_SVP_SIGN_VCsend: { screen: VPREQ_SVP_SIGN_VCsend},
