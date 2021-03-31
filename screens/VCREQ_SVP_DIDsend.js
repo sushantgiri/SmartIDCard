@@ -4,6 +4,7 @@ import { StyleSheet, View,Text, TouchableHighlight} from 'react-native'
 import CryptoJS from 'react-native-crypto-js';
 import SecureStorage from 'react-native-secure-storage'
 
+var AES = require("react-native-crypto-js").AES;
 // global variables
 var socketRoom ='';
 var socketURL = '';
@@ -12,6 +13,7 @@ var nonce = '';
 var ws = '';
 var reqTypeOnUse = '';
 var issuerURLOnUse = '';
+var encryptionKeyOnUse ='';
 
 // 랜덤한 값을 생성 : challenger로 이용 
 var challenger = Math.floor(Math.random() *10000) + 1;
@@ -82,10 +84,14 @@ export default class VCREQ_SVP_DIDsend extends React.Component {
   }
 
   sendDID = () => {
-      ws.send('{"type":"did","data":"'+this.state.address+'"}')
+      var key = CryptoJS.enc.Hex.parse(encryptionKeyOnUse)
+      
+      var cipherText = CryptoJS.AES.encrypt(this.state.address,key,{iv:key}).toString();
+      ws.send('{"type":"did","data":"'+cipherText+'"}')
       ws.onmessage = (e) => {
-        this.setState({VC: e.data})
-        
+            var dataToDec = e.data.substring(21,e.data.length-2);
+            var vcjwtdata = CryptoJS.AES.decrypt(dataToDec,key,{iv:key}).toString(CryptoJS.enc.Utf8);
+            this.setState({VC: vcjwtdata})
       }
 
   }
@@ -111,13 +117,14 @@ export default class VCREQ_SVP_DIDsend extends React.Component {
     const userNonce = navigation.getParam('nonce',"nonceVal")
     const issuerReqType = navigation.getParam('reqType',"reqTypeVal")
     const issuerURL = navigation.getParam('issuerURL',"issuerURLVal")
+    const encryptionKey = navigation.getParam('encryptKey',"encryptKeyVal")
     socketRoom = userRoom;
     socketURL = userSocket;
     nonce = userNonce;
     reqTypeOnUse = issuerReqType;
     issuerURLOnUse = issuerURL;
     passwordInMobile = userPW;
-
+    encryptionKeyOnUse = encryptionKey;
 
     return (
       <View style={styles.container}>

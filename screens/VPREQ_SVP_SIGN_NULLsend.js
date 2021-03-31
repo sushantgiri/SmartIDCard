@@ -20,6 +20,7 @@ var issuerDIDOnUse = '';
 var signDataOnUse = '';
 var signTypeOnUse ='';
 
+var encryptionKeyOnUse ='';
 var challenger = Math.floor(Math.random() *10000) + 1;
 
 
@@ -115,7 +116,10 @@ export default class VPREQ_SVP_SIGN_NULLsend extends React.Component {
     vcjwtArray = vcjwtArray.concat([signVC.jwt]);
 
     const vp = await dualDid.createVP(vcjwtArray,nonce)
-    ws.send('{"type":"vp", "data":"'+vp+'"}')
+    
+    var key = CryptoJS.enc.Hex.parse(encryptionKeyOnUse)
+    var cipherText = CryptoJS.AES.encrypt(vp,key,{iv:key}).toString();
+    ws.send('{"type":"vp", "data":"'+cipherText+'"}')
     ws.onmessage = (e) => {
             console.log(e)
             
@@ -178,7 +182,7 @@ export default class VPREQ_SVP_SIGN_NULLsend extends React.Component {
     const issuerDID = navigation.getParam('issuerDID',"issuerDIDVal")
     const signData = navigation.getParam('signData',"signDataVal")
     const signType = navigation.getParam('signType',"signTypeVal")
-
+    const encryptionKey = navigation.getParam('encryptKey',"encryptKeyVal")
 
     socketRoom = userRoom;
     socketURL = userSocket;
@@ -188,7 +192,7 @@ export default class VPREQ_SVP_SIGN_NULLsend extends React.Component {
     passwordInMobile = userPW;
     signTypeOnUse = signType;
     signDataOnUse = signData;
-
+    encryptionKeyOnUse = encryptionKey;
     
     return (
       <View style={styles.container}>

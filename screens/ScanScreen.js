@@ -11,10 +11,10 @@ var roomNo = '';
 var nonce = '';
 var reqType = '';
 var issuerDID = '';
-
+var issuerURL = '';
 var signType = '';
 var signData = '';
-
+var encryptKey = '';
 export default class ScanScreen extends React.Component {
   
   /**
@@ -26,17 +26,21 @@ export default class ScanScreen extends React.Component {
   onSuccess = e => {
     //e.data를 url로 이용
     LogBox.ignoreAllLogs(true)
+    var connectorUrl = '';
     const {navigation} = this.props
     const userPassword = navigation.getParam('password',"passwordValue")
-    axios.get('http://182.162.89.79:30600/rest/connector/' + e.data)
-    .then(res => {
-      var getQRdata = res.data.data.url + "/rest/qrdata/" + e.data;
-      axios.get(getQRdata).then(response => {
+    if(e.data[9] == "s") {
+      
+      connectorUrl = "https" + e.data.substring(10,e.data.length);
+    } else {
+      connectorUrl = "http" + e.data.substring(9,e.data.length)
+    }
+    
+      axios.get(connectorUrl).then(response => {
         roomNo = response.data.data.no;
         socketUrl = response.data.data.websocketUrl;
         nonce = response.data.data.nonce;
-        
-        console.log(response.data.data)
+        encryptKey = response.data.data.encryptionKey;
         if(response.data.data.requestType == 'vp'){
 
           if(response.data.data.useSvp == true ) {
@@ -44,7 +48,7 @@ export default class ScanScreen extends React.Component {
             if(response.data.data.requestData == null) {
               if(response.data.data.sign == null) {
                 // VP req / SVP 사용 / VC 요청(X) / Sign (X)
-                this.props.navigation.navigate('VPREQ_SVP_NULLsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqType,issuerDID:issuerDID})
+                this.props.navigation.navigate('VPREQ_SVP_NULLsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqType,issuerDID:issuerDID,issuerURL:issuerURL,encryptKey:encryptKey})
               } else {
                 
                 // VP req / SVP 사용 / VC 요청(X) / Sign (O)
@@ -52,26 +56,28 @@ export default class ScanScreen extends React.Component {
                 signData = response.data.data.sign.data
                 signType = response.data.data.sign.type
                 
-                this.props.navigation.navigate('VPREQ_SVP_SIGN_NULLsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,signData:signData,signType:signType})
+                this.props.navigation.navigate('VPREQ_SVP_SIGN_NULLsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,signData:signData,signType:signType,encryptKey:encryptKey})
               }
             } else {
               if(response.data.data.sign == null) {
                 // VP req / SVP 사용 / VC 요청(O) / Sign (X)
                 reqType = response.data.data.requestData[0].type;
-                issuerDID = response.data.data.requestData[0].issuer;
+                issuerDID = response.data.data.requestData[0].issuer[0].did;
+                issuerURL = response.data.data.requestData[0].issuer[0].url;
 
-                this.props.navigation.navigate('VPREQ_SVP_VCsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqType,issuerDID:issuerDID})
+                this.props.navigation.navigate('VPREQ_SVP_VCsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqType,issuerDID:issuerDID,issuerURL:issuerURL,encryptKey:encryptKey})
               } else {
                 
                 // VP req / SVP 사용 / VC 요청(O) / Sign (O)
 
                 reqType = response.data.data.requestData[0].type;
-                issuerDID = response.data.data.requestData[0].issuer;
-
+                issuerDID = response.data.data.requestData[0].issuer[0].did;
+                issuerURL = response.data.data.requestData[0].issuer[0].url;
+                
                 signData = response.data.data.sign.data
                 signType = response.data.data.sign.type
                 
-                this.props.navigation.navigate('VPREQ_SVP_SIGN_VCsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqType,issuerDID:issuerDID,signData:signData,signType:signType})
+                this.props.navigation.navigate('VPREQ_SVP_SIGN_VCsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqType,issuerDID:issuerDID,issuerURL:issuerURL,signData:signData,signType:signType,encryptKey:encryptKey})
               }
             }
             // SVP 사용 
@@ -80,7 +86,7 @@ export default class ScanScreen extends React.Component {
             if(response.data.data.requestData == null) {
               if(response.data.data.sign == null) {
                 // VP req / SVP 사용(X) / VC 요청(X) / Sign (X)
-                this.props.navigation.navigate('VPREQ_NULLsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqType,issuerDID:issuerDID})
+                this.props.navigation.navigate('VPREQ_NULLsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqType,issuerDID:issuerDID,encryptKey:encryptKey})
               } else {
                 
                 // VP req / SVP 사용(X) / VC 요청(X) / Sign (O)
@@ -88,26 +94,28 @@ export default class ScanScreen extends React.Component {
                 signData = response.data.data.sign.data
                 signType = response.data.data.sign.type
                 
-                this.props.navigation.navigate('VPREQ_SIGN_NULLsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,signData:signData,signType:signType})
+                this.props.navigation.navigate('VPREQ_SIGN_NULLsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,signData:signData,signType:signType,encryptKey:encryptKey})
               }
             } else {
               if(response.data.data.sign == null) {
                 // VP req / SVP 사용(X) / VC 요청(O) / Sign (X)
                 reqType = response.data.data.requestData[0].type;
-                issuerDID = response.data.data.requestData[0].issuer;
+                issuerDID = response.data.data.requestData[0].issuer[0].did;
+                issuerURL = response.data.data.requestData[0].issuer[0].url;
 
-                this.props.navigation.navigate('VPREQ_VCsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqType,issuerDID:issuerDID})
+                this.props.navigation.navigate('VPREQ_VCsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqType,issuerDID:issuerDID,issuerURL:issuerURL,encryptKey:encryptKey})
               } else {
                 
                 // VP req / SVP 사용 / VC 요청(O) / Sign (O)
 
                 reqType = response.data.data.requestData[0].type;
-                issuerDID = response.data.data.requestData[0].issuer;
-
+                issuerDID = response.data.data.requestData[0].issuer[0].did;
+                issuerURL = response.data.data.requestData[0].issuer[0].url;
+                
                 signData = response.data.data.sign.data
                 signType = response.data.data.sign.type
                 
-                this.props.navigation.navigate('VPREQ_SIGN_VCsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqType,issuerDID:issuerDID,signData:signData,signType:signType})
+                this.props.navigation.navigate('VPREQ_SIGN_VCsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqType,issuerDID:issuerDID,issuerURL:issuerURL,signData:signData,signType:signType,encryptKey:encryptKey})
               }
             }
           }
@@ -121,22 +129,26 @@ export default class ScanScreen extends React.Component {
 
             if(response.data.data.requestData == null){
                 // VC req / SVP 사용 / VC 요청(X)
-                this.props.navigation.navigate('VCREQ_SVP_DIDsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce})
+                this.props.navigation.navigate('VCREQ_SVP_DIDsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,encryptKey:encryptKey})
             } else {
                 // VC req / SVP 사용 / VC 요청(O)
                 reqType = response.data.data.requestData[0].type;
-                issuerDID = response.data.data.requestData[0].issuer;
-                this.props.navigation.navigate('VCREQ_SVP_VCsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqType,issuerDID:issuerDID})
+                issuerDID = response.data.data.requestData[0].issuer[0].did;
+                issuerURL = response.data.data.requestData[0].issuer[0].url;
+
+                this.props.navigation.navigate('VCREQ_SVP_VCsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqType,issuerDID:issuerDID,issuerURL:issuerURL,encryptKey:encryptKey})
             }
           } else {
             if(response.data.data.requestData == null){
               // VC req / SVP 사용안함 / VC 요청 (X)
-                this.props.navigation.navigate('VCREQ_DIDsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce})
+                this.props.navigation.navigate('VCREQ_DIDsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,encryptKey:encryptKey})
             } else {
               // VC req / SVP 사용안함 / VC 요청 (O)
                 reqType = response.data.data.requestData[0].type;
-                issuerDID = response.data.data.requestData[0].issuer;
-                this.props.navigation.navigate('VCREQ_VCsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqType,issuerDID:issuerDID})
+                issuerDID = response.data.data.requestData[0].issuer[0].did;
+                issuerURL = response.data.data.requestData[0].issuer[0].url;
+
+                this.props.navigation.navigate('VCREQ_VCsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqType,issuerDID:issuerDID,issuerURL:issuerURL,encryptKey:encryptKey})
             }
           }
          
@@ -144,8 +156,8 @@ export default class ScanScreen extends React.Component {
         } else {
             alert("error")
         }
-      })
-    })
+      }
+    )
     
   };
     

@@ -17,16 +17,51 @@ var nonce = '';
 var ws = '';
 var reqTypeOnUse = '';
 var issuerDIDOnUse = '';
+var issuerURLOnUse = '';
 var signDataOnUse = '';
 var signTypeOnUse ='';
 
+var encryptionKeyOnUse ='';
 var challenger = Math.floor(Math.random() *10000) + 1;
 
 
 function createDualSigner (jwtSigner, ethAccount) {
   return { jwtSigner, ethAccount }
 }
+function VC({vc}){
+  //date calculate
+  var toDate = vc.exp * 1000
+  var expDate = new Date(toDate)
+  //if(JSON.stringify(vc.vc.type) == '["VerifiableCredential","certificate"]'){
+    return (
+    <View>
+      <View style={styles.certificateCard}>
+              <Text style={styles.vcText}>인증서</Text>
+              <Text>만료일 : {expDate.toString()}</Text>
+              <Text>이름 : {vc.vc.credentialSubject.name}</Text>
+              <Text>Email: {vc.vc.credentialSubject.email}</Text>
+              <Text>생일 : {vc.vc.credentialSubject.birthday}</Text>
+              <Text>성별 : {vc.vc.credentialSubject.gender}</Text>
+              <Text>Phone: {vc.vc.credentialSubject.phone}</Text>
+      </View>
 
+    </View>
+    )
+  //} //else {
+  //return (
+    //<View>
+      //<View style={styles.vcCard}>
+              //<Text style={styles.vcText}>운전 면허증</Text>
+              //<Text>이름 : {vc.vc.credentialSubject.name}</Text>
+              //<Text>발급 기관: {vc.vc.credentialSubject.issueAgency}</Text>
+              //<Text>발급 날짜: {vc.vc.credentialSubject.issueDate}</Text>
+              //<Text>ID : {vc.vc.credentialSubject.idNo}</Text>
+      //</View>
+
+    //</View>
+  //)
+  //}
+}
 export default class VPREQ_SVP_SIGN_VCsend extends React.Component {
     state = {
     password: '',
@@ -177,7 +212,10 @@ export default class VPREQ_SVP_SIGN_VCsend extends React.Component {
     vcjwtArray = vcjwtArray.concat([signVC.jwt]);
 
     const vp = await dualDid.createVP(vcjwtArray,nonce)
-    ws.send('{"type":"vp", "data":"'+vp+'"}')
+    
+    var key = CryptoJS.enc.Hex.parse(encryptionKeyOnUse)
+    var cipherText = CryptoJS.AES.encrypt(vp,key,{iv:key}).toString();
+    ws.send('{"type":"vp", "data":"'+cipherText+'"}')
     ws.onmessage = (e) => {
             console.log(e)
             
@@ -290,19 +328,21 @@ export default class VPREQ_SVP_SIGN_VCsend extends React.Component {
     const userNonce = navigation.getParam('nonce',"nonceVal")
     const issuerReqType = navigation.getParam('reqType',"reqTypeVal")
     const issuerDID = navigation.getParam('issuerDID',"issuerDIDVal")
+    const issuerURL = navigation.getParam('issuerURL',"issuerURLVal")
     const signData = navigation.getParam('signData',"signDataVal")
     const signType = navigation.getParam('signType',"signTypeVal")
-
+    const encryptionKey = navigation.getParam('encryptKey',"encryptKeyVal")
 
     socketRoom = userRoom;
     socketURL = userSocket;
     nonce = userNonce;
     reqTypeOnUse = issuerReqType;
     issuerDIDOnUse = issuerDID;
+    issuerURLOnUse = issuerURL;
     passwordInMobile = userPW;
     signTypeOnUse = signType;
     signDataOnUse = signData;
-
+    encryptionKeyOnUse = encryptionKey;
     
     return (
       <View style={styles.container}>
@@ -339,6 +379,7 @@ export default class VPREQ_SVP_SIGN_VCsend extends React.Component {
             <Text>SVP : {this.state.showingData}</Text>
             <Text>req Type : {reqTypeOnUse} </Text>
             <Text>issuerDID : {issuerDIDOnUse} </Text>
+            <Text>issuerURL : {issuerURLOnUse}</Text>
             <Text>Sign Type : {signTypeOnUse}</Text>
             <Text>Sign Data : {signDataOnUse}</Text>
         </View>
