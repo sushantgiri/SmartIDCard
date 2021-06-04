@@ -7,6 +7,7 @@ var AES = require("react-native-crypto-js").AES;
 
 // SecureStorage 모듈
 import SecureStorage from 'react-native-secure-storage'
+
 // Clipboard 모듈 
 import Clipboard from '@react-native-community/clipboard'
 
@@ -55,7 +56,6 @@ function address() {
 	const extendedPrivateKey = masterKey.derive("m/44'/60'/0'/0").extendedPrivateKey;
 	const childKey = HDKey.parseExtendedKey(extendedPrivateKey);
 	const wallet = childKey.derive("0");
-	didprivatekey = wallet.privateKey;
 	userPK = Web3Utils.bytesToHex(wallet.privateKey);
 
 	//generate key for use in mobile device data exchange
