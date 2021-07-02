@@ -1,14 +1,25 @@
 import React from 'react'
-import { StyleSheet, View,Text, Button,TextInput, TouchableOpacity, TouchableHighlight, Modal, LogBox} from 'react-native'
+import { 
+	StyleSheet, View, Text, Image, TextInput, ScrollView,
+	TouchableOpacity, TouchableHighlight, LogBox, 
+} from 'react-native'
 
 import CryptoJS from 'react-native-crypto-js';
 import SecureStorage from 'react-native-secure-storage'
+
+import Modal from 'react-native-modal' // Modal
+import CLoader from './common/Loader'; // Loader
+import CHeader from './common/Header'; // Header
 
 var AES = require("react-native-crypto-js").AES;
 import {DualDID} from '@estorm/dual-did';
 const didJWT = require('did-jwt')
 const Web3 = require('web3')
 const web3 = new Web3('http://182.162.89.51:4313')
+
+var imgCard = require('../screens/assets/images/png/ic_issue.png')
+var imgClose = require('../screens/assets/images/png/ic_btn_cls.png')
+var imageCheck = require('../screens/assets/images/png/ic_chk.png')
 
 var socketRoom ='';
 var socketURL = '';
@@ -19,445 +30,509 @@ var reqTypeOnUse = '';
 var issuerDIDOnUse = '';
 var issuerURLOnUse = '';
 var encryptionKeyOnUse ='';
-var challenger = Math.floor(Math.random() *10000) + 1;
-
+var challenger = String(Math.floor(Math.random() * 10000) + 1);
 
 function createDualSigner (jwtSigner, ethAccount) {
-  return { jwtSigner, ethAccount }
+  	return { jwtSigner, ethAccount }
 }
-function VC({vc}){
-  //date calculate
-  var toDate = vc.exp * 1000
-  var expDate = new Date(toDate)
-  //if(JSON.stringify(vc.vc.type) == '["VerifiableCredential","certificate"]'){
+
+function Card({vc}){
     return (
-    <View>
-      <View style={styles.certificateCard}>
-              <Text style={styles.vcText}>인증서</Text>
-              <Text>만료일 : {expDate.toString()}</Text>
-              <Text>이름 : {vc.vc.credentialSubject.name}</Text>
-              <Text>Email: {vc.vc.credentialSubject.email}</Text>
-              <Text>생일 : {vc.vc.credentialSubject.birthday}</Text>
-              <Text>성별 : {vc.vc.credentialSubject.gender}</Text>
-              <Text>Phone: {vc.vc.credentialSubject.phone}</Text>
-      </View>
-
-    </View>
-    )
-  //} //else {
-  //return (
-    //<View>
-      //<View style={styles.vcCard}>
-              //<Text style={styles.vcText}>운전 면허증</Text>
-              //<Text>이름 : {vc.vc.credentialSubject.name}</Text>
-              //<Text>발급 기관: {vc.vc.credentialSubject.issueAgency}</Text>
-              //<Text>발급 날짜: {vc.vc.credentialSubject.issueDate}</Text>
-              //<Text>ID : {vc.vc.credentialSubject.idNo}</Text>
-      //</View>
-
-    //</View>
-  //)
-  //}
+		<View style={page.card}>
+			<Image style={page.cardImage} source={imgCard}></Image>
+			<Text style={page.cardText}>{vc.vc.type[1]}</Text>
+		</View>
+	)
 }
-export default class VPREQ_SVP_VCsend extends React.Component {
-    state = {
-    password: '',
-    dataKey: '',
-    address: '',
-    privateKey:'',
-    mnemonic:'',
-    VCarray:[],
-    VCjwtArray:[],
 
-    showingData: '',
-    reqType:'',
-    issuerDID:'',
-    checkedArray:[],
-    confirmCheckPassword:'',
-    modalVisible: false
-  }
+function Info({svc}){
+	return (
+		<ScrollView style={page.information}>
+			<View style={page.informationBlock}>
+				<View style={page.informationTitle}>
+					<Image source={imageCheck}></Image>
+					<Text style={page.informationTitleText}>도메인명</Text>
+				</View>
+				<View style={page.informationContent}>
+					<Text style={page.informationContentText}>{svc.domain}</Text>
+				</View>
+			</View>
+			<View style={page.informationBlock}>
+				<View style={page.informationTitle}>
+					<Image source={imageCheck}></Image>
+					<Text style={page.informationTitleText}>사업자명</Text>
+				</View>
+				<View style={page.informationContent}>
+					<Text style={page.informationContentText}>{svc.company}</Text>
+				</View>
+			</View>
+			<View style={page.informationBlock}>
+				<View style={page.informationTitle}>
+					<Image source={imageCheck}></Image>
+					<Text style={page.informationTitleText}>대표자명</Text>
+				</View>
+				<View style={page.informationContent}>
+					<Text style={page.informationContentText}>{svc.ceo}</Text>
+				</View>
+			</View>
+			<View style={page.informationBlock}>
+				<View style={page.informationTitle}>
+					<Image source={imageCheck}></Image>
+					<Text style={page.informationTitleText}>사업자 주소</Text>
+				</View>
+				<View style={page.informationContent}>
+					<Text style={page.informationContentText}>{svc.address}</Text>
+				</View>
+			</View>
+			<View style={page.informationBlock}>
+				<View style={page.informationTitle}>
+					<Image source={imageCheck}></Image>
+					<Text style={page.informationTitleText}>사업자 전화번호</Text>
+				</View>
+				<View style={page.informationContent}>
+					<Text style={page.informationContentText}>{svc.phone}</Text>
+				</View>
+			</View>
+		</ScrollView>
+	)
+}
+
+export default class VPREQ_VCsend extends React.Component {
+	state = {
+		password: '',
+		dataKey: '',
+		address: '',
+		privateKey:'',
+		mnemonic:'',
+		VCarray:[],
+		VCjwtArray:[],
+
+		checkedArray:[],
+		confirmCheckPassword:'',
+		ModalShow : false,
+		ViewMode: 0,
+
+		SVCArray:[],
+	}
   
-  //비밀번호 확인 input control
-  handleConfirmPWchange = confirmCheckPassword => {
-    this.setState({ confirmCheckPassword })
-  }
+  	//비밀번호 확인 input control
+	handleConfirmPWchange = confirmCheckPassword => {
+		this.setState({ confirmCheckPassword })
+	}
 
-  /** getDidData : 
-   *        "현재 state의 password"를 이용하여 암호화된 State를 가져와 복호화 하여 State에 저장함
-   *        settingCheckArray()로 연결
-   * 
-   */
+	// Cancel
+	cancel = () => { 
+    	ws.send('{"type":"exit"}')
+    	this.props.navigation.navigate('VCselect',{password:this.state.password});
+  	}
 
-  getDidData = async () => {
-      await SecureStorage.getItem(passwordInMobile).then((docKey) => {
-        this.setState({dataKey: docKey}, async function() {
-            await SecureStorage.getItem(this.state.dataKey).then((userData) => {
-            if( userData != null){
-              let bytes  = CryptoJS.AES.decrypt(userData, this.state.dataKey);
-              let originalText = bytes.toString(CryptoJS.enc.Utf8);
-              this.setState(JSON.parse(originalText))
-              this.settingCheckArray();
-            }
-            })
-        })
-      })
-  }
+  	setStateData = async() => {
+	  	// Get password
+		await SecureStorage.getItem('userToken').then((pw) => {
+			this.setState({ password:pw }); // Set password
+		})
 
-  /**
-   *  settingCheckArray :
-   *        체크된 array를 따로 구분하기 위한 arrChecked[] 를 state에 포함시킴
-   *        현재 VC의 개수와 같은 길이의 array를 만들고, checked attribute를 false로 포함함
-   */
+		// Get dataKey
+		let pw = this.state.password;
+		await SecureStorage.getItem(pw).then((dk) => {
+			this.setState({ dataKey:dk }); // Set dataKey
+		})
+		
+		// Get userData
+		let dk = this.state.dataKey;
+		await SecureStorage.getItem(dk).then((ud) => {
+			if(ud != null) {
+				// Set state
+				let bytes = CryptoJS.AES.decrypt(ud, dk);
+				let originalText = bytes.toString(CryptoJS.enc.Utf8);
+				console.log(originalText);
+				this.setState(JSON.parse(originalText))
+			}
+		})
 
-  settingCheckArray = () => {
-    arrChecked = [];
-    for (var i = 1; i<=this.state.VCarray.length;i++){
-      arrChecked = arrChecked.concat([{"checked" : false}])
-    } 
-    this.setState({
-      checkedArray: arrChecked
-    })
-  }
-  
-  /**
-   *  close :
-   *      현재 진행상황을 취소하고 VC관리 페이지로 이동
-   * 
-   */
-  close = () => {
-    
-    ws.send('{"type":"exit"}')
-    this.props.navigation.navigate('VCselect',{password:this.state.password});
-  }
+		// VC Reverse
+		this.setState({ 
+			VCarray:this.state.VCarray.reverse(),
+			VCjwtArray:this.state.VCjwtArray.reverse()
+		})
 
+		// Set checkedArray
+		// 체크된 array를 따로 구분하기 위한 arrChecked[] 를 state에 포함시킴
+		// 현재 VC의 개수와 같은 길이의 array를 만들고, checked attribute를 false로 포함함
+		arrChecked = [];
+		for (var i = 1; i <= this.state.VCarray.length; i++){
+			arrChecked = arrChecked.concat([{"checked" : false}])
+		} 
+		this.setState({ checkedArray: arrChecked })
 
-  /**
-   *  VCclick :
-   *        현재 클릭된 VC를 찾아 checkboxClicked()로 보내준다
-   *        
-   */
-  VCclick = e =>{
-    for (var i=0;this.state.VCarray.length;i++){
-      if(e == this.state.VCarray[i]){
-        this.checkboxClicked(i)
-        return
-      }
-    }
-  }
+		// Reset confirmCheckPassword
+		this.setState({confirmCheckPassword:''})
 
-  /**
-   * checkbocClicked :
-   *        현재 index를 parameter로 받아, Array의 원소중 체크가 되어 있는지 확인하여,
-   *        checked 의 값을 false 나 true로 바꿔주고 state에 저장한다.
-   * @param {*} index 
-   */
-  checkboxClicked = index => {
-    this.state.checkedArray[index].checked = !this.state.checkedArray[index].checked
-    arrChecked = this.state.checkedArray
-    this.setState({checkedArray: this.state.checkedArray})
-  }
+		// WebSocket Connection
+		ws = new WebSocket(socketURL);
+		ws.onopen = () => { ws.send('{"type":"authm", "no":"'+socketRoom+'"}'); }
+		ws.onmessage = (e) => { console.log(e); this.sendChallenger(); }
+  	}
 
-  /**
-   * passwordCheck :
-   *      입력된 password의 input값과 현재 state의 password가 일치하는지 확인
-   * 
-   */
-  passwordCheck = () => {
-    if(this.state.confirmCheckPassword == this.state.password){
-     
-      this.setState({modalVisible:false}, function(){
-        this.pickVCinArray()
-      })
-     
-    } else {
-      alert('비밀번호 불일치')
-    }
-  }
-
-  /**
-   * pickVCinArray :
-   *        현재 제출해야 하는 VC를 VCjwtArray에서 가져와 jwt로 제출할 수 있도록
-   *        vcSubmitArr[] 에 포함시킨다.
-   *        
-   *        생성된 vcSubmitArr[]를 makeVCJWTandSign()로 보낸다
-   * 
-   */
-  pickVCinArray = () => {
-    var vcSubmitArr = [];
-    for(var i = 0; i<this.state.VCjwtArray.length;i++){
-      if(this.state.checkedArray[i].checked == true){
-        var jwtString = this.state.VCjwtArray[i].split(',')[1].split(':')[1]
-        vcSubmitArr = vcSubmitArr.concat([jwtString.substring(1,jwtString.length-2)])
-      }
-    }
-    this.makeVCJWT(vcSubmitArr)
-  }
-  
-  /**
-   * makeVCJWT :
-   *        pickVCinArray에서 전달받은 VC의 JWT를 VP로 만들어 제출
-   * @param { pickVCinArray 로부터 전달받은 VCjwt의 array} vcjwtArray 
-   */
-
-  makeVCJWT = async (vcjwtArray) => {
-    const privateKey = this.state.privateKey;
-    const ethAccount = web3.eth.accounts.privateKeyToAccount(privateKey)
-    const dualSigner = createDualSigner(didJWT.SimpleSigner(privateKey.replace('0x','')), ethAccount)
-    const dualDid = new DualDID(dualSigner, 'Issuer(change later)', 'Dualauth.com(change later)',web3,'0x3CF0CB3cD457b959F6027676dF79200C8EF19907')
-    
-    const vp = await dualDid.createVP(vcjwtArray,nonce)
-    
-    var key = CryptoJS.enc.Hex.parse(encryptionKeyOnUse)
-    var cipherText = CryptoJS.AES.encrypt(vp,key,{iv:key}).toString();
-    ws.send('{"type":"vp", "data":"'+cipherText+'"}')
-    ws.onmessage = (e) => {
-            console.log(e)
-            
-    }
-    alert("VP 제출 완료")
-    this.successVPsubmit();
-  }
-
-  /**
-   * checkVCexist :
-   *        현재 선택된 VC가 있는지 확인하고,
-   *        VC가 선택된 경우에만 modal을 open함
-   */
-  checkVCexist = () => {
-    var empty = true;
-    for( var i = 0; i< this.state.checkedArray.length;i++){
-      if(this.state.checkedArray[i].checked == true){
-        empty = false;
-      }
-    }
-    if(empty) {
-      alert("VC를 선택해 주세요")
-    } else if (empty == false) {
-      this.setState({ modalVisible: true})
-    }
-  }
-
-  /**
-   *  successVPsubmit :
-   *      현재 page에서의 VP 전달 과정이 완료된 후, VCselect 페이지로 돌아감
-   * 
-   */
-  successVPsubmit = () => {
-    ws.send('{"type":"exit"}')
-    this.props.navigation.navigate('VCselect',{password:this.state.password});
-  }
-
-  /**
-   *  modalCancel:
-   * 
-   *      현재 modal 창을 닫음
-   * 
-   */
-
-  modalCancel = () => {
-    this.setState({ modalVisible: false})
-  }  
-
-
-  cardStyle = bool => {
-    
-    if(this.state.checkedArray[bool] != null){
-      if(this.state.checkedArray[bool].checked == true){    
-        return{
-          backgroundColor:'#8FF',
-          borderRadius:12,
-          width:300,
-          margin:10,
-          padding:10
-        }
-      } else {
-        return{
-          backgroundColor:'#eff',
-          borderRadius:12,
-          width:300,
-          margin:10,
-          padding:10
-        }
-      }
-    }
-  }
-  
-  /**
-   *  setConnection :
-   *        웹소켓에 연결후, 현재 room Number를 전송함
-   *        이후 challenger를 전달함
-   *  sendChallenger :
-   *        랜덤값인 challenger를 전달함
-   *        받아온 SVP 데이터를 showingData에 저장함
-   */
-
-  setConnection = () => {
-    ws = new WebSocket(socketURL);
-    ws.onopen = () => {
-        ws.send('{"type":"authm", "no":"'+socketRoom+'"}');
-        ws.onmessage = (e) => {
-            this.sendChallenger();
-        }
-    }
-  }
-
-  sendChallenger = () => {
+	// SVP Function
+	sendChallenger = async () => {
       ws.send('{"type":"challenger","data":"'+challenger+'"}');
       ws.onmessage = (e) => {
-          this.setState({showingData: JSON.stringify(e)})
-      }
-  }
+          	const json = JSON.parse(e.data);
+          	if(json.type == "vp") this.verifyVP(json.data);
+     	}
+  	}
 
+	verifyVP = async (vp) => {
+		const key = CryptoJS.enc.Hex.parse(encryptionKeyOnUse);
+		const dec = CryptoJS.AES.decrypt(vp,key,{iv:key}).toString(CryptoJS.enc.Utf8);
+		const json = JSON.parse(dec);
+		const vpJwt = json.data;
+		
+		const privateKey = this.state.privateKey;
+		const ethAccount = web3.eth.accounts.privateKeyToAccount(privateKey)
+		const dualSigner = createDualSigner(didJWT.SimpleSigner(privateKey.replace('0x','')), ethAccount)
+		const dualDid = new DualDID(dualSigner, 'Issuer(change later)', 'Dualauth.com(change later)',web3,'0x76A2dd4228ed65129C4455769a0f09eA8E4EA9Ae')
 
-  render() {
-      
-    LogBox.ignoreAllLogs(true)
-    
-    const { confirmCheckPassword, modalVisible} = this.state
+		const result = await dualDid.verifyVP(vpJwt, challenger);
+		const code = result.code;
+		const data = result.data;
+		const msg = result.msg;
+		const success = result.success;
 
-    const {navigation} = this.props
-    const userRoom = navigation.getParam('roomNo',"value")
-    const userSocket = navigation.getParam('socketUrl',"Url")
-    const userPW = navigation.getParam('userPW',"passwordValue")
-    const userNonce = navigation.getParam('nonce',"nonceVal")
-    const issuerReqType = navigation.getParam('reqType',"reqTypeVal")
-    const issuerDID = navigation.getParam('issuerDID',"issuerDIDVal")
-    const issuerURL = navigation.getParam('issuerURL',"issuerURLVal")
-    const encryptionKey = navigation.getParam('encryptKey',"encryptKeyVal")
-    socketRoom = userRoom;
-    socketURL = userSocket;
-    nonce = userNonce;
-    reqTypeOnUse = issuerReqType;
-    issuerDIDOnUse = issuerDID;
-    issuerURLOnUse = issuerURL;
-    passwordInMobile = userPW;
-    encryptionKeyOnUse = encryptionKey;
+		if(code == "000.0" && success) {
+			const svcs = result.data.verifiablePresentation.verifiableCredential;
+			
+			let svca = [];
+			let svc = null;
 
-    
-    return (
-      <View style={styles.container}>
-        <Modal animationType="slide" transparent={true} visible={modalVisible}>
-          <View style={styles.centeredView}>
-            <View style={styles.modalView}>
-              <Text style={{fontWeight:"bold",fontSize:25}}> 비밀번호를 입력해주세요 </Text>
-              <TextInput
-                name='confirmCheckPassword'
-                value={confirmCheckPassword}
-                placeholder='비밀번호'
-                secureTextEntry
-                onChangeText={this.handleConfirmPWchange}
-                style={styles.inputText}
-              />
-              <View style={styles.modalButtonGroup}>
-              <TouchableHighlight
-                style={styles.modalButton}
-                onPress={this.passwordCheck}
-                >
-                <Text style={styles.textStyle}>확인</Text>
-              </TouchableHighlight>
-              <TouchableHighlight
-                style={styles.modalCancel}
-                onPress={this.modalCancel}
-                >
-                <Text style={styles.textStyle}>취소</Text>
-              </TouchableHighlight>
-              </View>
-            </View>
-          </View>
-        </Modal>
+			for(let i = 0; i < svcs.length; i++){
+				svc = svcs[i].credentialSubject;
+				svca.push(svc);
+			}
+			
+			console.log(svca);
+			this.setState({ SVCArray:svca });
+		}
+    }
 
-        <View>
-            <Text>SVP : {this.state.showingData}</Text>
-            <Text>req Type : {reqTypeOnUse} </Text>
-            <Text>issuerDID : {issuerDIDOnUse} </Text>
-            <Text>issuerURL : {issuerURLOnUse}</Text>
-        </View>
+	nextPage = () => {
+		this.setState({ ViewMode:1 });
+	}
+	// SVP Function
 
-        <Text>VC를 선택해주세요</Text>
-        
-        <View>{this.state.VCarray.map((vc,index) => {return(
-          <View>
-          <TouchableOpacity  style={this.cardStyle(index)} onPress={() => this.VCclick(vc)}><VC vc={vc} key={vc.exp}/>
-          </TouchableOpacity>   
-          </View>
-        )
-        })}
-        
-        </View>
+	// Card Function
+	cardStyle = index => {
+    	if(this.state.checkedArray[index] != null){
+      		if(this.state.checkedArray[index].checked == true){
+        		return{
+		 			borderWidth:1, borderColor:'#1ECB9C', 
+					padding:20, marginBottom:15
+       			}
+			} else {
+				return{
+					borderWidth:1, borderColor:'#333333', 
+					padding:20, marginBottom:15
+				}	
+			}		
+    	}
+  	}
+	
+	cardSelect = e =>{
+		for (var i = 0; this.state.VCarray.length; i++){
+			if(e == this.state.VCarray[i]){
+				this.state.checkedArray[i].checked = !this.state.checkedArray[i].checked
+    			//arrChecked = this.state.checkedArray
+    			this.setState({checkedArray: this.state.checkedArray})
+				return
+			}
+		}
+	}
 
-        <View style={{ flexDirection:"row"}}>
-        <TouchableOpacity style={styles.bottomLeftButton} onPress={this.checkVCexist}><Text style={styles.buttonLeftText}>VP 생성 및 제출</Text></TouchableOpacity>
-        <TouchableOpacity style={styles.bottomButton} onPress={this.close}><Text style={styles.buttonText}>취소</Text></TouchableOpacity>
-        </View>
+	cardSend = () => {
+		var cardSelected = false;
+		for(var i = 0; i< this.state.checkedArray.length; i++){
+			if(this.state.checkedArray[i].checked == true){ cardSelected = true; break; }
+		}
 
-      </View>
-    )
-  }
+		if(!cardSelected) {	alert("VC를 선택해 주세요") } 
+		else { this.setModalShow() }
+	}
+	// Card Function
+
+	// Modal Function
+	setModalShow = () => {
+		this.setState({ModalShow:!this.state.ModalShow})
+	}
+
+	passwordCheck = () => {
+    	if(this.state.confirmCheckPassword == this.state.password){
+			this.setModalShow()
+			this.pickVCinArray()
+   		} else {
+      		alert('비밀번호가 일치하지 않습니다.')
+    	}
+  	}
+
+   	// pickVCinArray
+   	// 현재 제출해야 하는 VC를 VCjwtArray에서 가져와 jwt로 제출할 수 있도록
+   	// vcSubmitArr[] 에 포함시킨다.
+   	// 생성된 vcSubmitArr[]를 makeVCJWTandSign()로 보낸다
+	pickVCinArray = () => {
+		var vcSubmitArr = [];
+		for(var i = 0; i<this.state.VCjwtArray.length;i++){
+			if(this.state.checkedArray[i].checked == true){
+				var jwtString = this.state.VCjwtArray[i].split(',')[1].split(':')[1]
+				vcSubmitArr = vcSubmitArr.concat([jwtString.substring(1,jwtString.length-2)])
+			}
+		}
+		
+		this.makeVPJWT(vcSubmitArr)
+	}
+
+	// makeVPJWT
+	//pickVCinArray에서 전달받은 VC의 JWT를 VP로 만들어 제출
+	// @param { pickVCinArray 로부터 전달받은 VCjwt의 array} vcjwtArray
+	makeVPJWT = async (vcjwtArray) => {
+		const privateKey = this.state.privateKey;
+		const ethAccount = web3.eth.accounts.privateKeyToAccount(privateKey)
+		const dualSigner = createDualSigner(didJWT.SimpleSigner(privateKey.replace('0x','')), ethAccount)
+		const dualDid = new DualDID(dualSigner, 'Issuer(change later)', 'Dualauth.com(change later)',web3,'0x76A2dd4228ed65129C4455769a0f09eA8E4EA9Ae')
+		
+		const vp = await dualDid.createVP(vcjwtArray,nonce)
+		var key = CryptoJS.enc.Hex.parse(encryptionKeyOnUse)
+		var cipherText = CryptoJS.AES.encrypt(vp,key,{iv:key}).toString();
+	
+		ws.send('{"type":"vp", "data":"'+cipherText+'"}')
+		ws.onmessage = (e) => { console.log(e) }
+		
+		this.successVPsubmit();
+	}
+
+	successVPsubmit = () => {
+		ws.send('{"type":"exit"}')
+		this.props.navigation.push('VCselect',{password:this.state.password});
+	}
+	// Modal Function  	
+
+  	render() {
+		LogBox.ignoreAllLogs(true)
+		
+		const { confirmCheckPassword, ModalShow, ViewMode } = this.state
+
+		const {navigation} = this.props
+		const userRoom = navigation.getParam('roomNo',"value")
+		const userSocket = navigation.getParam('socketUrl',"Url")
+		const userPW = navigation.getParam('userPW',"passwordValue")
+		const userNonce = navigation.getParam('nonce',"nonceVal")
+		const issuerReqType = navigation.getParam('reqType',"reqTypeVal")
+		const issuerDID = navigation.getParam('issuerDID',"issuerDIDVal")
+		const issuerURL = navigation.getParam('issuerURL',"issuerURLVal")
+		const encryptionKey = navigation.getParam('encryptKey',"encryptKeyVal")
+
+		socketRoom = userRoom;
+		socketURL = userSocket;
+		nonce = userNonce;
+		reqTypeOnUse = issuerReqType;
+		issuerDIDOnUse = issuerDID;
+		issuerURLOnUse = issuerURL;
+		passwordInMobile = userPW;
+		encryptionKeyOnUse = encryptionKey;
+		
+		if(ViewMode == 0){
+			return (
+				<View style={common.wrap}>
+					<CHeader />
+					<View style={common.contents}>
+						<Text style={page.title}>검증된 서비스 제공자의{'\n'}정보입니다.</Text>
+						{this.state.SVCArray.map((svc,index) => {
+							return (
+								<Info svc={svc} key={index}/>
+							)
+						})}
+					</View>
+					<View style={common.footer}>
+						<View style={page.buttonView}>
+							<TouchableOpacity 
+								style={[page.button, page.buttonLeft]} 
+								activeOpacity={0.8} 
+								onPress={this.nextPage}
+							>
+								<Text style={common.buttonText}>다음</Text>
+							</TouchableOpacity>
+							<TouchableOpacity 
+								style={[page.button, page.buttonRight]} 
+								activeOpacity={0.8} 
+								onPress={this.cancel}
+							>
+								<Text style={common.buttonText}>취소</Text>
+							</TouchableOpacity>
+						</View>
+					</View>
+				</View>
+			)
+		}
+		if(ViewMode == 1){
+			return (
+				<View style={common.wrap}>
+					<CHeader />
+					<ScrollView style={common.contents}>
+						<View>
+							{this.state.VCarray.map((vc,index) => {
+								return ( 
+									<TouchableOpacity style={this.cardStyle(index)} onPress={() => this.cardSelect(vc)}>
+										<Card vc={vc} key={vc.exp}/>
+									</TouchableOpacity>   
+								)
+							})}
+						</View>
+					</ScrollView>
+					<View style={common.footer}>
+						<View style={page.buttonView}>
+							<TouchableOpacity 
+								style={[page.button, page.buttonLeft]} 
+								activeOpacity={0.8} 
+								onPress={this.cardSend}
+							>
+								<Text style={common.buttonText}>제출</Text>
+							</TouchableOpacity>
+							<TouchableOpacity 
+								style={[page.button, page.buttonRight]} 
+								activeOpacity={0.8} 
+								onPress={this.cancel}
+							>
+								<Text style={common.buttonText}>취소</Text>
+							</TouchableOpacity>
+						</View>
+					</View>
+					<Modal
+						style={modal.wrap}
+						animationIn={'slideInUp'}
+						backdropOpacity={0.5}
+						isVisible={ModalShow}
+					>
+						<View style={modal.header}>
+							<TouchableOpacity 
+								style={modal.close} 
+								activeOpacity={0.8} 
+								onPress={this.setModalShow}
+							>
+								<Image source={imgClose}></Image>
+							</TouchableOpacity>
+						</View>
+						<View style={modal.contents}>
+							<Text style={modal.title}>비밀번호를 입력하세요.</Text>
+							<TextInput
+								name='confirmCheckPassword'
+								value={confirmCheckPassword}
+								placeholder='비밀번호'
+								secureTextEntry
+								onChangeText={this.handleConfirmPWchange}
+								style={modal.textInput}
+							/>
+							<TouchableOpacity 
+								style={modal.button} 
+								activeOpacity={0.8} 
+								onPress={this.passwordCheck}
+							>
+								<Text style={modal.buttonText}>확인</Text>
+							</TouchableOpacity>
+						</View>
+					</Modal>
+				</View>
+			)
+		}
+	}
   
-  
-  componentDidMount(){
-   this.getDidData();
-   this.setConnection();
-  }
+  	componentDidMount(){
+   		this.setStateData();
+  	}
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  modalButton: {
-    backgroundColor: '#316BFF',
-    alignContent:'center',
-    justifyContent:'center',
-    alignItems:'center',
-    padding: 15,
-    borderRadius: 12,
-    width:120,
-    margin:20
-  },
-  modalButtonGroup:{
-    flexDirection: 'row'
-  },
-  modalCancel:{
-    backgroundColor: '#f89',
-    
-    alignItems:'center',
-    padding: 15,
-    borderRadius: 12,
-    width:120,
-    margin:20
-  },
-  modalText: {
-    marginBottom: 15,
-    textAlign: "center"
-  },
-  bottomLeftButton:{
-    backgroundColor: '#c3d4ff',
-    paddingTop:10,
-    paddingBottom:10,
-    height:50,
-    marginRight:5,
+const common = StyleSheet.create({
+    wrap : { flex:1, position:'relative', backgroundColor:'#FFFFFF' },
+    header : { padding:20, paddingBottom:0, },
+    contents : { flex:1, position:'relative', padding:20, },
+    footer : { padding:0, },
+    title : { fontSize:22, fontWeight:'bold' },
+    textInput : {
+        width:'100%', fontSize:20, marginBottom:8,
+        paddingTop:15, paddingBottom:15, paddingLeft:12, paddingRight:12, 
+        borderWidth:2, borderRadius:8, borderColor:'#CED2D4',
+    },
+    buttonView : { width:'100%', alignItems:'center', },
+    button : { 
+        width:'100%', alignItems:'center', color:'#FFFFFF',
+        padding:30, backgroundColor:'#1ECB9C', 
+        borderWidth:0, borderRadius:0,
+    },
+    buttonText : { color:'#FFFFFF', fontSize:22, fontWeight:'bold' },
+});
 
-    borderRadius: 12,
-    width:'40%',
-    alignItems:'center'
-  },
-  buttonLeftText: {
-    color: '#316BFF',
-    fontWeight:'bold'
-  },
-  bottomButton: {
-    backgroundColor: '#316BFF',
-    paddingTop:10,
-    paddingBottom:10,
-    marginLeft:5,
-    marginBottom:20,
-    height:50,
-    borderRadius: 12,
-    width:'40%',
-    alignItems:'center'
-  },
-})
+const page = StyleSheet.create({
+	buttonView : { width:'100%', flexDirection:'row', alignItems:'center', },
+	button : { 
+        width:'50%', alignItems:'center', color:'#FFFFFF',
+        padding:30, borderWidth:0, borderRadius:0,
+    },
+	buttonLeft : { backgroundColor:'#1ECB9C', },
+	buttonRight : { backgroundColor:'#999999', },
+	card : { 
+		alignItems:'center', flexDirection:'row'
+	},
+	cardFirst : { marginRight:10 },
+	cardSecond : { },
+	cardImage : { marginRight:10, },
+	cardText : { color:'#333333', fontSize:20, fontWeight:'bold', },
+	title : { fontSize:22, fontWeight:'bold', marginBottom:22, },
+	information : { 
+		borderRadius:8, paddingTop:14, paddingBottom:14, 
+		paddingLeft:24, paddingRight:24, backgroundColor:'#F5F8FB'
+	},
+	informationBlock : { paddingTop:10, paddingBottom:10, },
+	informationTitle : { flexDirection:'row', },
+	informationTitleText : { marginLeft:5, fontSize:15, fontWeight:'bold', },
+	informationContent : { flexDirection:'row', },
+	informationContentText : { color:'#7D848F', marginTop:5, marginLeft:23, flex:1, flexWrap:'wrap', },
+
+	serviceName : { color:'#333333', fontSize:20, fontWeight:'bold', marginBottom:10 },
+	serviceDomain : { color:'#333333', fontSize:20 }
+});
+
+const modal = StyleSheet.create({
+    wrap : {
+        position:'absolute', width:'100%', height:'auto', zIndex:20, 
+        backgroundColor:'#FFFFFF', padding:20, margin:0, bottom: 0, 
+        borderTopRightRadius:16, borderTopLeftRadius:16,
+    },
+    header : { position:'relative', height:50, },
+	close : { position:'absolute', right:0 },
+    contents : {},
+	textInput : {
+        width:'100%', fontSize:20, marginBottom:8,
+        paddingTop:15, paddingBottom:15, paddingLeft:12, paddingRight:12, 
+        borderWidth:2, borderRadius:8, borderColor:'#CED2D4',
+    },
+    title : { 
+		letterSpacing:-0.6, fontSize:22, marginBottom:20, fontWeight:'bold', 
+	},
+	cards : { 
+		width:'100%', marginBottom:20, 
+		flex:1, flexDirection:'row', justifyContent:'flex-start',
+	},
+	card : { 
+		flex:0.5, borderWidth:1, borderColor:'#333333', borderRadius:8,
+		paddingTop:20, paddingBottom:20, alignItems:'center',
+	},
+	cardFirst : { marginRight:10 },
+	cardSecond : { },
+	cardImage : { marginBottom:10 },
+	cardText : { color:'#333333', fontSize:20, fontWeight:'bold', textAlign:'center' },
+    button : { 
+        width:'100%', backgroundColor:'#ffffff', 
+        padding:0, paddingTop:20, paddingBottom:20, 
+        borderWidth:1, borderColor:'#333333', borderRadius:8,
+        flexDirection:'row', justifyContent:'center', alignItems:'center', 
+    },
+    buttonText : { color:'#333333', fontWeight:'bold', fontSize:22, paddingLeft:10, },
+});

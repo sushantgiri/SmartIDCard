@@ -184,17 +184,17 @@ export default class VPREQ_VCsend extends React.Component {
 			}
 		}
 		
-		this.makeVCJWT(vcSubmitArr)
+		this.makeVPJWT(vcSubmitArr)
 	}
 
-	// makeVCJWT
+	// makeVPJWT
 	//pickVCinArray에서 전달받은 VC의 JWT를 VP로 만들어 제출
 	// @param { pickVCinArray 로부터 전달받은 VCjwt의 array} vcjwtArray
-	makeVCJWT = async (vcjwtArray) => {
+	makeVPJWT = async (vcjwtArray) => {
 		const privateKey = this.state.privateKey;
 		const ethAccount = web3.eth.accounts.privateKeyToAccount(privateKey)
 		const dualSigner = createDualSigner(didJWT.SimpleSigner(privateKey.replace('0x','')), ethAccount)
-		const dualDid = new DualDID(dualSigner, 'Issuer(change later)', 'Dualauth.com(change later)',web3,'0x3CF0CB3cD457b959F6027676dF79200C8EF19907')
+		const dualDid = new DualDID(dualSigner, 'Issuer(change later)', 'Dualauth.com(change later)',web3,'0x76A2dd4228ed65129C4455769a0f09eA8E4EA9Ae')
 		const vp = await dualDid.createVP(vcjwtArray,nonce)
 		var key = CryptoJS.enc.Hex.parse(encryptionKeyOnUse)
 		var cipherText = CryptoJS.AES.encrypt(vp,key,{iv:key}).toString();
@@ -234,7 +234,7 @@ export default class VPREQ_VCsend extends React.Component {
 		issuerURLOnUse = issuerURL;
 		passwordInMobile = userPW;
 		encryptionKeyOnUse = encryptionKey;
-		
+
 		return (
 			<View style={common.wrap}>
 				<CHeader />
@@ -313,7 +313,7 @@ export default class VPREQ_VCsend extends React.Component {
 
 const common = StyleSheet.create({
     wrap : { flex:1, position:'relative', backgroundColor:'#FFFFFF' },
-    header : { padding:20, paddingBottom:0, backgroundColor:'red' },
+    header : { padding:20, paddingBottom:0, },
     contents : { flex:1, position:'relative', padding:20, },
     footer : { padding:0, },
     title : { fontSize:22, fontWeight:'bold' },

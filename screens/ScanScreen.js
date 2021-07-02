@@ -67,7 +67,7 @@ export default class ScanScreen extends React.Component {
 							issuerDID = response.data.data.requestData[0].issuer[0].did;
 							issuerURL = response.data.data.requestData[0].issuer[0].url;
 
-							this.props.navigation.navigate('VPREQ_SVP_VCsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqType,issuerDID:issuerDID,issuerURL:issuerURL,encryptKey:encryptKey})
+							this.props.navigation.push('VPREQ_SVP_VCsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqType,issuerDID:issuerDID,issuerURL:issuerURL,encryptKey:encryptKey})
 						} else {
 							// VP req / SVP 사용 / VC 요청(O) / Sign (O)
 							reqType = response.data.data.requestData[0].type;
