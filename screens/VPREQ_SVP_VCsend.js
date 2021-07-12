@@ -1,7 +1,7 @@
 import React from 'react'
 import { 
 	StyleSheet, View, Text, Image, TextInput, ScrollView,
-	TouchableOpacity, TouchableHighlight, LogBox, 
+	TouchableOpacity, TouchableHighlight, LogBox, Animated, Easing
 } from 'react-native'
 
 import CryptoJS from 'react-native-crypto-js';
@@ -20,6 +20,7 @@ const web3 = new Web3('http://182.162.89.51:4313')
 var imgCard = require('../screens/assets/images/png/ic_issue.png')
 var imgClose = require('../screens/assets/images/png/ic_btn_cls.png')
 var imageCheck = require('../screens/assets/images/png/ic_chk.png')
+var imageChain = require('../screens/assets/images/png/ic_chain.png')
 
 var socketRoom ='';
 var socketURL = '';
@@ -113,6 +114,7 @@ export default class VPREQ_VCsend extends React.Component {
 		ViewMode: 0,
 
 		SVCArray:[],
+		spinValue : new Animated.Value(0),
 	}
   
   	//비밀번호 확인 input control
@@ -168,6 +170,19 @@ export default class VPREQ_VCsend extends React.Component {
 		// Reset confirmCheckPassword
 		this.setState({confirmCheckPassword:''})
 
+		// 애니메이션 설정
+		Animated.loop(
+			Animated.timing(
+				this.state.spinValue,
+				{
+					toValue: 1,
+					duration: 3000,
+					easing: Easing.linear,
+					useNativeDriver: true,
+				}
+			)
+		).start()
+
 		// WebSocket Connection
 		ws = new WebSocket(socketURL);
 		ws.onopen = () => { ws.send('{"type":"authm", "no":"'+socketRoom+'"}'); }
@@ -212,12 +227,12 @@ export default class VPREQ_VCsend extends React.Component {
 			}
 			
 			console.log(svca);
-			this.setState({ SVCArray:svca });
+			this.setState({ ViewMode:1, SVCArray:svca });
 		}
     }
 
 	nextPage = () => {
-		this.setState({ ViewMode:1 });
+		this.setState({ ViewMode:2 });
 	}
 	// SVP Function
 
@@ -318,7 +333,14 @@ export default class VPREQ_VCsend extends React.Component {
   	render() {
 		LogBox.ignoreAllLogs(true)
 		
-		const { confirmCheckPassword, ModalShow, ViewMode } = this.state
+		const { confirmCheckPassword, ModalShow, ViewMode, SVPValue } = this.state
+
+		// 애니메이션 수행
+		const spin = this.state.spinValue.interpolate({
+			inputRange: [0, 1],
+			outputRange: ['0deg', '360deg'],
+		});
+		// 애니메이션 수행
 
 		const {navigation} = this.props
 		const userRoom = navigation.getParam('roomNo',"value")
@@ -338,13 +360,69 @@ export default class VPREQ_VCsend extends React.Component {
 		issuerURLOnUse = issuerURL;
 		passwordInMobile = userPW;
 		encryptionKeyOnUse = encryptionKey;
+
+		console.log(spin);
 		
 		if(ViewMode == 0){
 			return (
 				<View style={common.wrap}>
 					<CHeader />
 					<View style={common.contents}>
-						<Text style={page.title}>검증된 서비스 제공자의{'\n'}정보입니다.</Text>
+						<View style={page.header}>
+							<Text style={page.title}>서비스 제공자의 정보를{'\n'}검증 중입니다.</Text>
+							<View style={page.animation}>
+								<Animated.Image
+									style={{transform:[{rotate:spin}]}}
+									source={imageChain}
+								/>
+								<Text style={page.animationText}>검증 중</Text>
+							</View>
+						</View>
+						<View style={page.information}>
+							<View style={page.informationEmpty}>
+								<Animated.Image
+									style={{transform:[{rotate:spin}]}}
+									source={imageChain}
+								/>
+							</View>
+						</View>
+					</View>
+					<View style={common.footer}>
+						<View style={page.buttonView}>
+							<TouchableOpacity 
+								style={[page.button, page.buttonLeft]} 
+								activeOpacity={0.8} 
+								onPress={this.nextPage}
+							>
+								<Text style={common.buttonText}>다음</Text>
+							</TouchableOpacity>
+							<TouchableOpacity 
+								style={[page.button, page.buttonRight]} 
+								activeOpacity={0.8} 
+								onPress={this.cancel}
+							>
+								<Text style={common.buttonText}>취소</Text>
+							</TouchableOpacity>
+						</View>
+					</View>
+				</View>
+			)
+		}
+		if(ViewMode == 1){
+			return (
+				<View style={common.wrap}>
+					<CHeader />
+					<View style={common.contents}>
+						<View style={page.header}>
+							<Text style={page.title}>검증된 서비스 제공자의{'\n'}정보입니다.</Text>
+							<View style={page.animation}>
+								<Animated.Image
+									style={{transform:[{rotate:spin}]}}
+									source={imageChain}
+								/>
+								<Text style={page.animationText}>검증 완료</Text>
+							</View>
+						</View>
 						{this.state.SVCArray.map((svc,index) => {
 							return (
 								<Info svc={svc} key={index}/>
@@ -372,7 +450,7 @@ export default class VPREQ_VCsend extends React.Component {
 				</View>
 			)
 		}
-		if(ViewMode == 1){
+		if(ViewMode == 2){
 			return (
 				<View style={common.wrap}>
 					<CHeader />
@@ -484,19 +562,27 @@ const page = StyleSheet.create({
 	cardSecond : { },
 	cardImage : { marginRight:10, },
 	cardText : { color:'#333333', fontSize:20, fontWeight:'bold', },
+	header : { flexDirection:'row', }, 
 	title : { fontSize:22, fontWeight:'bold', marginBottom:22, },
 	information : { 
 		borderRadius:8, paddingTop:14, paddingBottom:14, 
-		paddingLeft:24, paddingRight:24, backgroundColor:'#F5F8FB'
+		paddingLeft:24, paddingRight:24, backgroundColor:'#F5F8FB',	
 	},
+	informationEmpty : { width:'100%', height:'100%', flexDirection:'row', justifyContent:'center', alignItems:'center', },
 	informationBlock : { paddingTop:10, paddingBottom:10, },
 	informationTitle : { flexDirection:'row', },
-	informationTitleText : { marginLeft:5, fontSize:15, fontWeight:'bold', },
+	informationTitleText : { marginLeft:5, fontSize:20, fontWeight:'bold', },
 	informationContent : { flexDirection:'row', },
-	informationContentText : { color:'#7D848F', marginTop:5, marginLeft:23, flex:1, flexWrap:'wrap', },
-
-	serviceName : { color:'#333333', fontSize:20, fontWeight:'bold', marginBottom:10 },
-	serviceDomain : { color:'#333333', fontSize:20 }
+	informationContentText : { fontSize:18, color:'#7D848F', marginTop:5, marginLeft:23, flex:1, flexWrap:'wrap', },
+	animation : {
+		flexDirection:'row', borderRadius:8, right:0, position:'absolute', padding:10, 
+		backgroundColor:'#7ae4ff', justifyContent:'center', alignItems:'center', 
+		/*
+		background:linear-gradient(132deg, '#dcfff6', '#7ae4ff', '#defff0');
+		backgroundSize:300% 300%, animation: AnimationName 1.5s ease infinite,
+		*/
+	},
+	animationText : { padding:8, paddingRight:0, fontSize:18, fontWeight:'bold', }
 });
 
 const modal = StyleSheet.create({
