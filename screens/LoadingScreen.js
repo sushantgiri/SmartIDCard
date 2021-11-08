@@ -1,9 +1,13 @@
 import React from 'react'
-import { StyleSheet, View, Text, Linking} from 'react-native'
+import { StyleSheet, View, Text, Linking, Image} from 'react-native'
 
 import SecureStorage from 'react-native-secure-storage'
 
 import CLoader from './common/Loader'; // Loader
+
+var mainLogo = require('../screens/assets/images/png/person_icon.png')
+var textLogo = require('../screens/assets/images/png/sidca_icon.png')
+
 
 export default class LoadingScreen extends React.Component {
 
@@ -14,7 +18,9 @@ export default class LoadingScreen extends React.Component {
 
     _bootstrapAsync = async () => {
         const userToken = await SecureStorage.getItem('userToken');
-        this.props.navigation.navigate(userToken ? 'App' : 'Auth');
+        setTimeout(() => {
+            this.props.navigation.navigate(userToken ? 'App' : 'Auth');
+        }, 3000)
     }
 
     //확인용
@@ -29,7 +35,15 @@ export default class LoadingScreen extends React.Component {
         return (
 			<View style={common.wrap}>
 				<View style={common.contents}>
-					<CLoader title={''} />
+                <View style={common.centerLogo}>
+                     <Image source={mainLogo}></Image> 
+                </View>
+
+                <View style={common.bottomLogo}>
+                     <Image source={textLogo}></Image> 
+                </View>
+
+					{/* <CLoader title={''} /> */}
 				</View>
 			</View>
 		) 
@@ -57,4 +71,6 @@ const common = StyleSheet.create({
         borderWidth:0, borderRadius:0,
     },
     buttonText : { color:'#FFFFFF', fontSize:22, fontWeight:'bold' },
+    centerLogo: { justifyContent: 'center', alignItems: 'center', height: '100%' },
+    bottomLogo: { justifyContent: 'center', alignItems: 'center',  margin: -20 },
 });
