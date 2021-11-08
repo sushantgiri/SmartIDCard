@@ -1,5 +1,5 @@
 import React from 'react'
-import { StyleSheet, Text, ScrollView, View, TextInput, TouchableOpacity, Modal, TouchableHighlight} from 'react-native'
+import { StyleSheet, Text, ScrollView, View, TextInput, TouchableOpacity, Modal, TouchableHighlight, Image} from 'react-native'
 
 // Crypto JS 모듈
 import CryptoJS from 'react-native-crypto-js';
@@ -41,6 +41,9 @@ var dataKey ='';
 /**  address Function
  *  랜덤한 Bytes 를 생성하여, Mnemonic, Privatekey, DID address 를 생성
 **/
+
+var imgClose = require('../screens/assets/images/png/arrow_left.png')
+
 function address() {
 	const { randomBytes } = require("crypto");
 	const { Mnemonic, HDKey, EthereumAddress } = require("wallet.ts");
@@ -176,6 +179,14 @@ export default class Signup extends React.Component {
         if(ViewMode == 0){
             return (
                 <View style={common.wrap}>
+                    <TouchableOpacity
+                            style={common.closeButton} 
+						    activeOpacity={0.8}
+						    onPress={() => this.props.navigation.pop()}
+						>
+							<Image source={imgClose}></Image>
+					</TouchableOpacity>
+
                     <View style={common.header}>
                         <Text style={common.title}>지갑 암호 설정</Text>
                     </View>
@@ -267,6 +278,7 @@ export default class Signup extends React.Component {
 const common = StyleSheet.create({
     wrap : { flex:1, position:'relative', backgroundColor:'#FFFFFF' },
     header : { padding:20, paddingBottom:0, },
+    closeButton: {padding: 20},
     contents : { flex:1, position:'relative', padding:20, },
     footer : { padding:0, },
     title : { fontSize:22, fontWeight:'bold' },
@@ -282,6 +294,7 @@ const common = StyleSheet.create({
         borderWidth:0, borderRadius:0,
     },
     buttonText : { color:'#FFFFFF', fontSize:22, fontWeight:'bold' }
+
 });
 
 const signup = StyleSheet.create({

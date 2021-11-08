@@ -24,7 +24,7 @@ export default class Intro extends React.Component {
                 <View style={intro.contents}>
                     
                     <View style={common.buttonView}>        
-                    <TouchableOpacity style={common.button} activeOpacity={0.8}>
+                    <TouchableOpacity style={common.button} activeOpacity={0.8} onPress={this.goToSignup}>
                             <Text style={common.buttonText}>로그인</Text>
                     </TouchableOpacity> 
                     <TouchableOpacity style={common.createWalletButton} activeOpacity={0.8}>
