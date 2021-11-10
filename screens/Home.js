@@ -1,7 +1,10 @@
 import React from 'react'
+import { TabView, TabBar, SceneMap } from 'react-native-tab-view';
+import Carousel from 'react-native-snap-carousel';
+
 import {
 	LogBox, ScrollView, StyleSheet, Text, View, 
-	Image, TouchableOpacity, TextInput
+	Image, TouchableOpacity, TextInput, StatusBar,Dimensions
 } from 'react-native'
 import Swiper from 'react-native-swiper'
 import jwt_decode from "jwt-decode"
@@ -13,6 +16,7 @@ import Modal from 'react-native-modal' // Modal
 import CLoader from './common/Loader'; // Loader
 import CHeader from './common/Header'; // Header
 import {Linking} from 'react-native'
+import { COUPON_ENTRIES } from './static/couponEntries';
 
 var AES = require("react-native-crypto-js").AES;
 
@@ -23,11 +27,16 @@ var imgSearch = require('../screens/assets/images/png/ic_btn_detail.png')
 var imgClose = require('../screens/assets/images/png/ic_btn_cls.png')
 var imgScan = require('../screens/assets/images/png/ic_btn_scan.png')
 var imgCard = require('../screens/assets/images/png/ic_issue.png')
+var myCertificateIcon = require('../screens/assets/images/png/clipboard.png')
+var settingsIcon = require('../screens/assets/images/png/profile_person.png')
+var scanIcon = require('../screens/assets/images/png/scanner.png')
+
 
 var target = []; //삭제 선택된 VC
 
+
 export default class Home extends React.Component {
-  
+
 	state = {
 		password: '',
 		dataKey: '',
@@ -42,13 +51,29 @@ export default class Home extends React.Component {
 		//ModalMode : 0,
 		detailArray : [],
 		confirmCheckPassword:'',
+
+		index: 0,
+		routes: [
+		  { key: 'first', title: 'ID' },
+		  { key: 'second', title: '쿠폰' },
+		],
+
+		idSelection: true,
+
+
+
 	}
+
+	_handleIndexChange = index => this.setState({ index });
+
+	_renderLazyPlaceholder = ({ route }) => <LazyPlaceholder route={route} />;
 
 	//비밀번호 확인 input control
 	handleConfirmPWchange = confirmCheckPassword => {
 		this.setState({ confirmCheckPassword })
 	}
 
+	
 	setStateData = async() => {
 		// Get password
 		await SecureStorage.getItem('userToken').then((pw) => {
@@ -157,6 +182,36 @@ export default class Home extends React.Component {
    		} else {
       		alert('비밀번호가 일치하지 않습니다.')
     	}
+	}
+
+	singleItem = (title, icon) => {
+		return (
+			<View>
+
+				<View>
+					<Image source={icon}></Image>
+					<Text>{title}</Text>
+			     </View>
+
+			</View>
+		)
+	}
+
+	couponView = (imageSource, title, secondarySource) => {
+		return (
+				<View style={coupon.container}>
+					<Image source={imageSource}></Image>
+					<Text style={coupon.title}>{title}</Text>
+					{secondarySource == "" ? 
+					
+					<View style={coupon.issuedButton}>
+						<Image source={require('../screens/assets/images/png/tick_mark.png')}></Image>
+						<Text style={coupon.issuedText}>발급</Text>
+					</View> : 
+					
+					<Image source={secondarySource}></Image> }
+				</View>
+		);
 	}
 
 	setCard = (vc, index) => {
@@ -273,9 +328,11 @@ export default class Home extends React.Component {
 	linktest = () => {
 		Linking.getInitialURL().then(url => { console.log(url) })  
 	}
+
+	
 	
   	render() {
-		const {ViewMode, ModalShow} = this.state
+		const {ViewMode, ModalShow, idSelection} = this.state
 
 		if(ViewMode == 0){
 			return (
@@ -292,16 +349,66 @@ export default class Home extends React.Component {
 			return (
 				<View style={common.wrap}>
 					<CHeader />
-					<View style={common.contents}>
-						<View style={home.image}>
-							<Image source={imgNoData}></Image>
-						</View>
-						<View style={home.info}>
-							<Text style={home.span}>발급받은 인증서가 없습니다</Text>
-							<Text style={home.strong}>인증서를 발급해주세요 👀👇</Text>
-						</View>
+
+				<View style={home.topBarContainer}>
+					
+					<TouchableOpacity
+						onPress={() => { this.setState({idSelection:true})}}>
+					<View style= {this.state.idSelection ? home.firstLineStyle: home.firstLineStyleUnselected}>
+						<Text style={this.state.idSelection ? home.firstTabItem: home.firstTabItemUnselected}>ID</Text>	
 					</View>
-					<View style={common.footer}>
+					</TouchableOpacity>
+
+				
+					<TouchableOpacity
+					onPress={() => { this.setState({idSelection:false})}}>
+					<View style= {!this.state.idSelection ? home.secondLineStyle: home.secondLineStyleUnselected}>
+						<Text style={ !this.state.idSelection ? home.secondTabItem: home.secondTabItemUnselected}>쿠폰</Text>
+					</View>
+					</TouchableOpacity>
+					
+				</View>	
+
+
+				{idSelection && (
+					<View style={common.contents}>
+						<Text>ID</Text>
+					</View>
+				)}
+				
+
+				{!idSelection && (
+					<View style={common.contents}>
+						{	
+						COUPON_ENTRIES.map((entry, index)=>{
+							return(
+								this.couponView(entry.primaryIcon, entry.title, entry.actionIcon)
+							)
+						})
+						}
+
+					</View>
+				)}
+					
+					
+
+					<View style={home.container}>
+					<View style={home.certificateContainer}>
+						<Image source={myCertificateIcon}></Image>
+						<Text>나의 인증서</Text>
+			   		</View>
+
+					   <View style={home.scannerContainer}>
+							<Image source={scanIcon}></Image>
+							</View>
+
+					<View style={home.profileContainer}>
+							<Image source={settingsIcon}></Image>
+							<Text>설정</Text>
+			   		</View>
+
+				</View>
+					{/* <View style={common.footer}>
 						<View style={home.buttonView}>
 							<TouchableOpacity 
 								style={[home.button, home.buttonInline]} 
@@ -311,7 +418,7 @@ export default class Home extends React.Component {
 								<Text style={common.buttonText}>발급</Text>
 							</TouchableOpacity>
 						</View>
-                    </View>
+                    </View> */}
 					{/* TO BE : Common 모듈로 분리 */}
 					<Modal
 						style={modal.wrap}
@@ -442,6 +549,9 @@ export default class Home extends React.Component {
   	}
 }
 
+
+
+
 const common = StyleSheet.create({
     wrap : { flex:1, position:'relative', backgroundColor:'#FFFFFF' },
     header : { padding:20, paddingBottom:0, },
@@ -491,6 +601,113 @@ const home = StyleSheet.create({
 	cardNameSearch : { display:'flex', flexDirection:'row', },
 	cardName : { fontSize:22, fontWeight:'bold', paddingRight:8, color:'#ffffff', },
 	cardExpdate : { fontSize:20, color:'#ffffff', },
+
+	container: {
+		 flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center',
+		 marginBottom: 10
+	},
+
+	topBarContainer: {
+		 flexDirection: 'row', flexWrap: "wrap" 
+	},
+
+	firstLineStyle: {
+		borderBottomWidth: 1, borderColor: '#000000' , marginStart: 43
+	},
+
+	firstLineStyleUnselected: {
+		borderBottomWidth: 0, borderColor: '#ffffff' , marginStart: 43
+	},
+
+	secondLineStyle: {
+		borderBottomWidth: 1, borderColor: '#000000' , marginStart: 20,
+	},
+
+	secondLineStyleUnselected: {
+		borderBottomWidth: 0, borderColor: '#ffffff' , marginStart: 20,
+	},
+
+	firstTabItem: {
+		fontSize: 22, color:'#1A2433', textAlign:'center', padding: 8, fontWeight: 'bold'
+	},
+
+	firstTabItemUnselected: {
+		fontSize: 22, color:'#7D848FB2', textAlign:'center', padding: 8, fontWeight: 'bold'
+	},
+
+	secondTabItem: {
+		fontSize: 22, color:'#1A2433', textAlign:'center', marginStart: 20, padding: 8,
+	},
+
+	secondTabItemUnselected: {
+		fontSize: 22, color:'#7D848FB2', textAlign:'center', marginStart: 20, padding: 8,
+	},
+
+	mainContainer: {
+		flex: 1, flexDirection: 'column', backgroundColor: '#000000'
+	},
+
+	subContainer:{
+		// alignSelf: 'center',	
+		justifyContent: 'center',
+	}, 
+
+	certificateContainer:{
+		flex: 1,
+		justifyContent: 'center',
+		alignItems: 'center',
+	}, 
+
+	scannerContainer: {
+		flex: 1,
+		justifyContent: 'center',
+		alignItems: 'center',
+	},
+
+	profileContainer: {
+		flex: 1,
+		justifyContent: 'center',
+		alignItems: 'center',
+	},
+	  scene: {
+		// flex: 1,
+		// alignItems: 'center',
+		// justifyContent: 'center',
+	  },
+});
+
+const coupon = StyleSheet.create({
+	container:{
+		flexDirection: 'row',
+		borderWidth: 1,
+		borderRadius: 8,
+		padding: 24,
+		borderColor:'#E5EBED',
+		marginBottom: 12,
+	},
+	title: {
+		fontSize: 15,
+		color: '#1A2433E5',
+		marginStart: 16,
+		flex: 1,
+	},
+
+	issuedButton: {
+		flexDirection: 'row',
+		backgroundColor: '#0FD59E',
+		borderRadius: 4,
+		alignItems: 'center',
+		padding:8,
+		paddingStart: 4,
+		paddingEnd: 4,
+	},
+
+	issuedText: {
+		color: '#FFFFFF',
+		fontSize:13,
+	}
+	
+
 });
 
 const modal = StyleSheet.create({

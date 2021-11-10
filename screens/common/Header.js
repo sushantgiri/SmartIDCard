@@ -18,11 +18,11 @@ export default class CHeader extends React.Component {
         return (
             <Header
             placement="center"
-            leftComponent={
-                <TouchableOpacity activeOpacity={0.8} onPress={this.goMenu}>
-                    <Image source={imageMenu}></Image>
-                </TouchableOpacity>
-            }
+            // leftComponent={
+            //     <TouchableOpacity activeOpacity={0.8} onPress={this.goMenu}>
+            //         <Image source={imageMenu}></Image>
+            //     </TouchableOpacity>
+            // }
             centerComponent={''}
             rightComponent={
                 <TouchableOpacity activeOpacity={0.8} onPress={this.goSearch}>
@@ -31,7 +31,7 @@ export default class CHeader extends React.Component {
             }
             containerStyle={{
                 backgroundColor: '#FFFFFF',
-                borderWidth:0,
+                borderWidth:1,
             }}
             />
         )
