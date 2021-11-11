@@ -1,6 +1,6 @@
 'use strict';
 import React from 'react';
-import {View, StyleSheet, Text, TouchableOpacity, LogBox} from 'react-native';
+import {View, StyleSheet, Text, TouchableOpacity, LogBox, Image, Dimensions} from 'react-native';
 
 import QRCodeScanner from 'react-native-qrcode-scanner';
 import axios from 'axios';
@@ -144,30 +144,47 @@ export default class ScanScreen extends React.Component {
 			}
 		})
   	};
+
+	customMarker = () => {
+
+		return(
+			<View style={scan.markerContainer}>
+
+
+			</View>
+		)
+	}  
     
   	// reqType = response.data.data.requestData[0].type;
 	// issuerURL = response.data.data.requestData[0].issuer[0].url;
 
   	render() {
+		 
     	return (
 			<View style={common.wrap}>
+
 				<View style={scan.header}>
-					<Text style={common.title}>QR SCAN</Text>
+					<TouchableOpacity onPress={this.cancel}>
+					<Image source={require('../screens/assets/images/png/close_scanner.png')}></Image>
+					</TouchableOpacity>
 				</View>
 				<View style={scan.contents}>
 					<QRCodeScanner 
                     showMarker={true}
 					ref = {(node) => {this.scanner = node}}
 					onRead={this.onSuccess}
+					customMarker={this.customMarker}
 					/>
+					
 				</View>
-				<View style={scan.footer}>
+				
+				{/* <View style={scan.footer}>
 					<View style={common.buttonView}>
 						<TouchableOpacity style={common.button} activeOpacity={0.8} onPress={this.cancel}>
 							<Text style={common.buttonText}>취소</Text>
 						</TouchableOpacity>
 					</View>
-				</View>
+				</View> */}
 			</View>
     	)
   	}
@@ -198,9 +215,14 @@ const common = StyleSheet.create({
 });
 
 const scan = StyleSheet.create({
-	header : { width:'100%', paddingTop:50, alignItems:'center', },
+	header : { width:'100%', paddingTop:50, alignItems:'flex-end', paddingEnd: 16 },
 	contents : { flex:1, position:'relative', },
+	markerContainer: {borderRadius: 12, borderWidth: 2, borderColor: '#1ECB9C', 
+	width: Dimensions.get('window').width/2, height: Dimensions.get('window').width/2},
+	windowContainer: { flex: 1, position:'relative', backgroundColor: 'rgba(52, 52, 52, 0.8)'}
 });
+
+
 
 const styles = StyleSheet.create({
 	centerText: {
