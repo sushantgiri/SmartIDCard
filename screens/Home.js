@@ -356,17 +356,17 @@ export default class Home extends React.Component {
 					
 					<TouchableOpacity
 						onPress={() => { this.setState({idSelection:true})}}>
-					<View style= {this.state.idSelection ? home.firstLineStyle: home.firstLineStyleUnselected}>
-						<Text style={this.state.idSelection ? home.firstTabItem: home.firstTabItemUnselected}>ID</Text>	
-					</View>
+							<View style= {this.state.idSelection ? home.firstLineStyle: home.firstLineStyleUnselected}>
+									<Text style={this.state.idSelection ? home.firstTabItem: home.firstTabItemUnselected}>ID</Text>	
+							</View>
 					</TouchableOpacity>
 
 				
 					<TouchableOpacity
-					onPress={() => { this.setState({idSelection:false})}}>
-					<View style= {!this.state.idSelection ? home.secondLineStyle: home.secondLineStyleUnselected}>
-						<Text style={ !this.state.idSelection ? home.secondTabItem: home.secondTabItemUnselected}>쿠폰</Text>
-					</View>
+						onPress={() => { this.setState({idSelection:false})}}>
+							<View style= {!this.state.idSelection ? home.secondLineStyle: home.secondLineStyleUnselected}>
+								<Text style={ !this.state.idSelection ? home.secondTabItem: home.secondTabItemUnselected}>쿠폰</Text>
+							</View>
 					</TouchableOpacity>
 					
 				</View>	
@@ -411,9 +411,13 @@ export default class Home extends React.Component {
 						<Text>나의 인증서</Text>
 			   		</View>
 
-					   <View style={home.scannerContainer}>
+					<TouchableOpacity onPress={this.goScan} style={home.touchableContainer}>
+							<View style={home.scannerContainer}>
 							<Image source={scanIcon}></Image>
 							</View>
+
+					</TouchableOpacity>
+					   
 
 					<View style={home.profileContainer}>
 							<Image source={settingsIcon}></Image>
@@ -672,6 +676,12 @@ const home = StyleSheet.create({
 	}, 
 
 	scannerContainer: {
+		// flex: 1,
+		// justifyContent: 'center',
+		// alignItems: 'center',
+	},
+
+	touchableContainer:{
 		flex: 1,
 		justifyContent: 'center',
 		alignItems: 'center',
