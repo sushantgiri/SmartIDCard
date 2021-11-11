@@ -214,6 +214,8 @@ export default class Home extends React.Component {
 		);
 	}
 
+	
+
 	setCard = (vc, index) => {
 		var toDate = vc.exp * 1000
 		var expDate = format(new Date(toDate), "yyyy-MM-dd")
@@ -372,7 +374,18 @@ export default class Home extends React.Component {
 
 				{idSelection && (
 					<View style={common.contents}>
-						<Text>ID</Text>
+
+						
+					<View style={cards.noIDContainer}>
+						<Image source={require('../screens/assets/images/png/no_card_contact.png')}></Image>
+						<Text style={cards.noIDTextPrimary}>발급받기</Text>
+
+					</View>
+
+
+					<Text style={cards.noIDTextSecondary}>아직 발급받은 ID가 없습니다. {"\n"}ID를 발급받아 주세요.</Text>
+					
+						
 					</View>
 				)}
 				
@@ -675,6 +688,31 @@ const home = StyleSheet.create({
 		// justifyContent: 'center',
 	  },
 });
+
+const cards =  StyleSheet.create({
+
+	noIDContainer: {
+		borderColor: '#1ECB9C',
+		borderWidth: 1,
+		backgroundColor: '#EEFCF8',
+		flex: 1,
+		borderRadius: 4,
+		margin: 20,
+		
+		alignItems: 'center',
+		justifyContent: 'center'
+	},
+
+	noIDTextPrimary: {
+		fontSize: 18,
+		fontWeight:'600',
+		marginTop: 12,
+	},
+
+	noIDTextSecondary: {
+		color: '#7D848F', marginTop: 32, fontSize: 14, alignSelf: 'center', textAlign: 'center',marginBottom: 30
+	}
+})
 
 const coupon = StyleSheet.create({
 	container:{
