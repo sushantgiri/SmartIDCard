@@ -32,7 +32,20 @@ var settingsIcon = require('../screens/assets/images/png/profile_person.png')
 var scanIcon = require('../screens/assets/images/png/scanner.png')
 
 
+const { width: viewportWidth } = Dimensions.get('window');
+
+
 var target = []; //삭제 선택된 VC
+
+function wp (percentage) {
+    const value = (percentage * viewportWidth) / 100;
+    return Math.round(value);
+}
+
+const slideWidth = wp(75);
+const itemHorizontalMargin = wp(2);
+
+const itemWidth = slideWidth + itemHorizontalMargin * 2;
 
 
 export default class Home extends React.Component {
@@ -64,9 +77,6 @@ export default class Home extends React.Component {
 
 	}
 
-	_handleIndexChange = index => this.setState({ index });
-
-	_renderLazyPlaceholder = ({ route }) => <LazyPlaceholder route={route} />;
 
 	//비밀번호 확인 input control
 	handleConfirmPWchange = confirmCheckPassword => {
@@ -214,6 +224,40 @@ export default class Home extends React.Component {
 		);
 	}
 
+	setNewCard = (vc, index) => {
+		console.log('Index' + index)
+		if(index  == 0){
+			return (				
+					<View style={common.contents}>
+
+						
+					<View style={cards.noIDContainer}>
+						<Image source={require('../screens/assets/images/png/no_card_contact.png')}></Image>
+						<Text style={cards.noIDTextPrimary}>발급받기</Text>
+
+					</View>
+
+
+					<Text style={cards.noIDTextSecondary}>아직 발급받은 ID가 없습니다. {"\n"}ID를 발급받아 주세요.</Text>
+					
+						
+					</View>
+					
+			)
+		}
+		return (
+			<View style={cards.filledContainer}>
+				<View style={cards.cardHeaderSection}>
+
+					<Image source={require('../screens/assets/images/png/first_icon.png')} style={cards.cardImageStyle}/>
+					<Text style={cards.cardTitle}>Doing Something</Text>
+
+				</View>
+				<View style={cards.dummySpaceArea} />
+				<Text style={cards.cardBottomTitle}>행복 시민증</Text>
+			</View>
+		)
+	}
 	
 
 	setCard = (vc, index) => {
@@ -331,8 +375,6 @@ export default class Home extends React.Component {
 		Linking.getInitialURL().then(url => { console.log(url) })  
 	}
 
-	
-	
   	render() {
 		const {ViewMode, ModalShow, idSelection} = this.state
 
@@ -346,6 +388,7 @@ export default class Home extends React.Component {
 				</View>
 			)
 		}
+
 		
 		if(ViewMode == 1){
 			return (
@@ -484,12 +527,76 @@ export default class Home extends React.Component {
 				</View>
 			)
 		}
+
+
 		
 		if(ViewMode == 2){
 			return (
 				<View style={common.wrap}>
 					<CHeader />
-					<ScrollView style={common.contents}>
+
+					<View style={home.topBarContainer}>
+					
+					<TouchableOpacity
+						onPress={() => { this.setState({idSelection:true})}}>
+							<View style= {this.state.idSelection ? home.firstLineStyle: home.firstLineStyleUnselected}>
+								<Text style={this.state.idSelection ? home.firstTabItem: home.firstTabItemUnselected}>ID</Text>	
+							</View>
+					</TouchableOpacity>
+
+				
+					<TouchableOpacity
+						onPress={() => { this.setState({idSelection:false})}}>
+							<View style= {!this.state.idSelection ? home.secondLineStyle: home.secondLineStyleUnselected}>
+								<Text style={ !this.state.idSelection ? home.secondTabItem: home.secondTabItemUnselected}>쿠폰</Text>
+							</View>
+					</TouchableOpacity>
+					
+				</View>	
+
+				{!idSelection && (
+					<View style={common.contents}>
+						{	
+						COUPON_ENTRIES.map((entry, index)=>{
+							return(
+								this.couponView(entry.primaryIcon, entry.title, entry.actionIcon)
+							)
+						})
+						}
+
+					</View>
+				)}
+
+				{
+					idSelection && (
+				<Carousel
+					data={this.state.VCarray}
+					renderItem = {this.setNewCard}
+					sliderWidth = {viewportWidth}
+					itemWidth = {itemWidth}
+					inactiveSlideScale={0.95}
+					inactiveSlideOpacity={1}
+					enableMomentum={true}
+					activeSlideAlignment={'start'}
+					containerCustomStyle={carousalStyle.slider}
+					contentContainerCustomStyle={carousalStyle.sliderContentContainer}
+					activeAnimationType={'spring'}
+					activeAnimationOptions = {{
+						friction : 4,
+						tension: 40
+					}}
+					/>
+					)
+				}
+
+
+				
+
+
+
+
+
+					{/* <ScrollView style={common.contents}>
 						<Swiper 
 						style={home.cardArea} 
 						loop={false} 
@@ -497,27 +604,28 @@ export default class Home extends React.Component {
 						>
 							{ this.state.VCarray.map((vc, index) => this.setCard(vc, index)) }
 						</Swiper>
-					</ScrollView>
-					<View style={common.footer}>
-						<View style={home.buttonView}>
-							<TouchableOpacity 
-								style={[home.button, home.buttonInline]} 
-								activeOpacity={0.8} 
-								onPress={this.setModalShow}
-							>
-								<Text style={common.buttonText}>사용</Text>
-							</TouchableOpacity>
-							{/*
-							<TouchableOpacity 
-								style={[home.button, home.buttonRight]} 
-								activeOpacity={0.8} 
-								onPress={this.setModalShow}
-							>
-								<Text style={common.buttonText}>발급</Text>
-							</TouchableOpacity>
-							*/}
-						</View>
-                    </View>
+					</ScrollView> */}
+				
+				<View style={home.container}>
+					<View style={home.certificateContainer}>
+						<Image source={myCertificateIcon}></Image>
+						<Text>나의 인증서</Text>
+			   		</View>
+
+					<TouchableOpacity onPress={this.goScan} style={home.touchableContainer}>
+							<View style={home.scannerContainer}>
+							<Image source={scanIcon}></Image>
+							</View>
+
+					</TouchableOpacity>
+					   
+
+					<View style={home.profileContainer}>
+							<Image source={settingsIcon}></Image>
+							<Text>설정</Text>
+			   		</View>
+
+				</View>
 					{/* TO BE : Common 모듈로 분리 */}
 					<Modal
 						style={modal.wrap}
@@ -699,6 +807,17 @@ const home = StyleSheet.create({
 	  },
 });
 
+const carousalStyle = StyleSheet.create({
+	slider:{
+		marginTop: 15,
+		overflow: 'visible'
+	},
+
+	sliderContentContainer: {
+        paddingVertical: 10 // for custom animation
+    },
+})
+
 const cards =  StyleSheet.create({
 
 	noIDContainer: {
@@ -713,6 +832,44 @@ const cards =  StyleSheet.create({
 		justifyContent: 'center'
 	},
 
+	filledContainer: {
+		backgroundColor: '#0C50A0',
+		borderRadius: 4,
+		flex: 1,
+		margin: 20,
+		// flexDirection:'row'
+		// alignItems: 'center',
+		// justifyContent: 'center'
+	},
+
+	cardHeaderSection: {
+		flexDirection: 'row'
+	},
+
+	cardTitle: {
+		fontSize: 14,
+		color: '#FFFFFF',
+		marginTop: 20
+	},
+
+	cardBottomTitle: {
+		fontSize: 18,
+		color: '#ffffff',
+		marginStart: 20,
+		marginBottom: 20,
+		alignSelf:'flex-start',
+	},
+
+	dummySpaceArea:{
+		flex: 1,
+	},
+
+	cardImageStyle: {
+		marginTop: 21,
+		marginStart: 20,
+		marginEnd: 7
+	},
+
 	noIDTextPrimary: {
 		fontSize: 18,
 		fontWeight:'600',
@@ -721,7 +878,9 @@ const cards =  StyleSheet.create({
 
 	noIDTextSecondary: {
 		color: '#7D848F', marginTop: 32, fontSize: 14, alignSelf: 'center', textAlign: 'center',marginBottom: 30
-	}
+	},
+
+
 })
 
 const coupon = StyleSheet.create({
