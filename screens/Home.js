@@ -224,38 +224,60 @@ export default class Home extends React.Component {
 		);
 	}
 
-	setNewCard = (vc, index) => {
-		console.log('Index' + index)
+	setNewCard = ({item, index}) => {
 		if(index  == 0){
-			return (				
+			return (	
+				<View style={cards.cardContainer}>
+
+							<View style={cards.indicatorWrapper}>
+								<Image style={cards.addNewStyle} source={require('../screens/assets/images/png/add_new.png')} />
+								<Text style={cards.lineStyle}> | {item.vc.credentialSubject.name}</Text>
+								<Text style={cards.totalCountStyle}>{this.state.VCarray.length}</Text>
+							</View>
+
+
 					<View style={common.contents}>
 
 						
-					<View style={cards.noIDContainer}>
-						<Image source={require('../screens/assets/images/png/no_card_contact.png')}></Image>
-						<Text style={cards.noIDTextPrimary}>발급받기</Text>
+						<View style={cards.noIDContainer}>
+								<Image source={require('../screens/assets/images/png/no_card_contact.png')}></Image>
+								<Text style={cards.noIDTextPrimary}>발급받기</Text>
 
+						</View>
+
+
+						<Text style={cards.noIDTextSecondary}>아직 발급받은 ID가 없습니다. {"\n"}ID를 발급받아 주세요.</Text>
+
+	
 					</View>
-
-
-					<Text style={cards.noIDTextSecondary}>아직 발급받은 ID가 없습니다. {"\n"}ID를 발급받아 주세요.</Text>
 					
-						
-					</View>
-					
+				</View>				
 			)
 		}
 		return (
-			<View style={cards.filledContainer}>
-				<View style={cards.cardHeaderSection}>
+			<View style={cards.cardContainer}>
 
-					<Image source={require('../screens/assets/images/png/first_icon.png')} style={cards.cardImageStyle}/>
-					<Text style={cards.cardTitle}>Doing Something</Text>
+							<View style={cards.indicatorWrapper}>
+								<Text style={cards.currentIndexStyle}>{index}</Text>
+								<Text style={cards.lineStyle}> | </Text>
+								<Text style={cards.totalCountStyle}>{this.state.VCarray.length}</Text>
+							</View>
 
-				</View>
-				<View style={cards.dummySpaceArea} />
-				<Text style={cards.cardBottomTitle}>행복 시민증</Text>
+
+							<View style={cards.filledContainer}>
+								<View style={cards.cardHeaderSection}>
+
+									<Image source={require('../screens/assets/images/png/first_icon.png')} style={cards.cardImageStyle}/>
+									<Text style={cards.cardTitle}>{item.vc.type[1]}</Text>
+
+								</View>
+								<View style={cards.dummySpaceArea} />
+								<Text style={cards.cardBottomTitle}>{item.vc.credentialSubject.name}</Text>
+							</View>
+
+
 			</View>
+			
 		)
 	}
 	
@@ -569,32 +591,30 @@ export default class Home extends React.Component {
 
 				{
 					idSelection && (
-				<Carousel
-					data={this.state.VCarray}
-					renderItem = {this.setNewCard}
-					sliderWidth = {viewportWidth}
-					itemWidth = {itemWidth}
-					inactiveSlideScale={0.95}
-					inactiveSlideOpacity={1}
-					enableMomentum={true}
-					activeSlideAlignment={'start'}
-					containerCustomStyle={carousalStyle.slider}
-					contentContainerCustomStyle={carousalStyle.sliderContentContainer}
-					activeAnimationType={'spring'}
-					activeAnimationOptions = {{
-						friction : 4,
-						tension: 40
-					}}
+						<View style={cards.cardContainer}>
+							
+
+							<Carousel
+								data={this.state.VCarray}
+								renderItem = {this.setNewCard}
+								sliderWidth = {viewportWidth}
+								itemWidth = {itemWidth}
+								inactiveSlideScale={0.95}
+								inactiveSlideOpacity={1}
+								enableMomentum={true}
+								activeSlideAlignment={'start'}
+								containerCustomStyle={carousalStyle.slider}
+								contentContainerCustomStyle={carousalStyle.sliderContentContainer}
+								activeAnimationType={'spring'}
+								activeAnimationOptions = {{
+								friction : 4,
+								tension: 40
+								}}
 					/>
+
+					</View>
 					)
 				}
-
-
-				
-
-
-
-
 
 					{/* <ScrollView style={common.contents}>
 						<Swiper 
@@ -820,6 +840,32 @@ const carousalStyle = StyleSheet.create({
 
 const cards =  StyleSheet.create({
 
+	cardContainer: {
+		flex: 1,
+		flexDirection:'column'
+	},
+
+	indicatorWrapper: {
+		flexDirection: 'row',
+		marginStart: 20,
+	},
+
+	addNewStyle:{
+		alignSelf:'center'
+	},
+
+	currentIndexStyle: {
+		color: '#1A2433E5',
+		fontSize: 16,
+	},
+	totalCountStyle: {
+		fontSize: 16,
+		color: '#7D848F',
+	},
+	lineStyle: {
+		borderStartColor: 'rgba(125, 132, 143, 0.7)',
+		borderStartWidth: 1
+	},
 	noIDContainer: {
 		borderColor: '#1ECB9C',
 		borderWidth: 1,
