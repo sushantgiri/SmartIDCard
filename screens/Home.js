@@ -128,6 +128,7 @@ export default class Home extends React.Component {
 				}
 			)
 		}
+		
 
 		// VC Reverse
 		this.setState({ 
@@ -144,7 +145,15 @@ export default class Home extends React.Component {
 
 		// Set ViewMode
 		if(this.state.VCarray.length == 0) this.setState({ViewMode:1})
-		else this.setState({ViewMode:2})
+		else{
+			// if(this.state.VCarray[0] !== 'dummy'){
+			// 	var updatedArray = this.state.VCarray.splice(0, 0, 'dummy');
+			// 	this.setState({
+			// 		VCarray:updatedArray
+			// 	})
+			// }
+			this.setState({ViewMode:2})
+		} 
 
 		// Reset confirmCheckPassword
 		this.setState({confirmCheckPassword:''})
@@ -224,41 +233,42 @@ export default class Home extends React.Component {
 		);
 	}
 
+	goToCardDetail = () => this.props.navigation.navigate('HappyCitizenship')
+
 	setNewCard = ({item, index}) => {
-		if(index  == 0){
-			return (	
-				<View style={cards.cardContainer}>
+		// if(index  == 0){
+		// 	return (	
+		// 		<View style={cards.cardContainer}>
 
-							<View style={cards.indicatorWrapper}>
-								<Image style={cards.addNewStyle} source={require('../screens/assets/images/png/add_new.png')} />
-								<Text style={cards.lineStyle}> | {item.vc.credentialSubject.name}</Text>
-								<Text style={cards.totalCountStyle}>{this.state.VCarray.length}</Text>
-							</View>
+		// 					<View style={cards.indicatorWrapper}>
+		// 						<Image style={cards.addNewStyle} source={require('../screens/assets/images/png/add_new.png')} />
+		// 						<Text style={cards.lineStyle}> | </Text>
+		// 						<Text style={cards.totalCountStyle}>{this.state.VCarray.length}</Text>
+		// 					</View>
 
 
-					<View style={common.contents}>
+		// 			<View style={common.contents}>
 
 						
-						<View style={cards.noIDContainer}>
-								<Image source={require('../screens/assets/images/png/no_card_contact.png')}></Image>
-								<Text style={cards.noIDTextPrimary}>발급받기</Text>
+		// 				<View style={cards.noIDContainer}>
+		// 						<Image source={require('../screens/assets/images/png/no_card_contact.png')}></Image>
+		// 						<Text style={cards.noIDTextPrimary}>발급받기</Text>
+		// 				</View>
 
-						</View>
-
-
-						<Text style={cards.noIDTextSecondary}>아직 발급받은 ID가 없습니다. {"\n"}ID를 발급받아 주세요.</Text>
-
-	
-					</View>
+						
+		// 				<Text style={cards.noIDTextSecondary}>아직 발급받은 ID가 없습니다. {"\n"}ID를 발급받아 주세요.</Text>
+						
+		// 			</View>
 					
-				</View>				
-			)
-		}
+		// 		</View>				
+		// 	)
+		// }
 		return (
-			<View style={cards.cardContainer}>
+			<TouchableOpacity onPress={this.props.navigation.push('HappyCitizenship')} style={cards.cardContainer}>
+					<View style={cards.cardContainer}>
 
 							<View style={cards.indicatorWrapper}>
-								<Text style={cards.currentIndexStyle}>{index}</Text>
+								<Text style={cards.currentIndexStyle}>{index + 1}</Text>
 								<Text style={cards.lineStyle}> | </Text>
 								<Text style={cards.totalCountStyle}>{this.state.VCarray.length}</Text>
 							</View>
@@ -277,7 +287,7 @@ export default class Home extends React.Component {
 
 
 			</View>
-			
+			</TouchableOpacity>
 		)
 	}
 	

@@ -1,6 +1,7 @@
 import { createStackNavigator } from 'react-navigation-stack'
 import UICheck from '../screens/UICheck' // UI Check (TEMP)
 import ChangePW from '../screens/ChangePW'
+import HappyCitizenship from '../screens/HappyCitizenship'
 import Home from '../screens/Home'
 import ScanScreen from '../screens/ScanScreen'
 import Setting from '../screens/Setting'
@@ -56,6 +57,7 @@ const AppNavigation = createStackNavigator(
 		VCselect: {screen: Home},
 		Setting: {screen: Setting},
 		ChangePW: {screen: ChangePW},
+		HappyCitizenship:{screen: HappyCitizenship},
 	},
 	
 	{
