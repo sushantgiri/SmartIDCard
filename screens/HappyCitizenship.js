@@ -1,8 +1,38 @@
 import React from 'react'
-import {StyleSheet, View, Text, Image, Dimensions} from 'react-native'
-
+import {StyleSheet, View, Text, Image, Dimensions, Modal} from 'react-native'
+ 
 
 export default class HappyCitizenship extends React.Component {
+
+    state =  {
+        isQrScanning: false,
+    }
+
+    renderQRScanView = () => {
+        return(
+                <Modal
+                    animationType="slide"
+                    transparent={true}
+                    visible={true}>
+
+
+                    <View style={qrTimer.qrContainer}>
+                        <View style={qrTimer.qrChildContainer}>
+                        <Text style={qrTimer.headerTitle}>QR코드</Text>
+                        <Text style={qrTimer.timer}>15</Text>
+                        <Image source={require('../screens/assets/images/png/qr_timer.png')} />
+
+                        <View style={qrTimer.bottomSection}>
+
+                            <Text>행복 시민증</Text>
+
+                        </View>
+                    </View>
+                    </View>
+
+                </Modal>
+        )
+    }
    
 
     render() {
@@ -49,11 +79,57 @@ export default class HappyCitizenship extends React.Component {
                     <Image source={require('../screens/assets/images/png/happy_citizen_search.png')} />
                     <Text style={styles.searchTextStyle}>정보 제공 내역</Text>
                 </View>
+
+                {this.renderQRScanView()}
             </View>
 
         )
     }
 }
+
+
+const qrTimer = StyleSheet.create({
+
+    qrContainer: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: 'rgba(0,0,0,0.5)'
+    },
+
+    qrChildContainer: {
+       flexWrap:'wrap',
+       backgroundColor: '#ffffff',
+       padding: 20,
+       alignItems:'center',
+       borderRadius: 8,
+    },
+
+    headerTitle: {
+        fontSize: 20,
+        color: '#1A2433',
+        fontWeight: '600',
+        marginTop: 24,
+    },
+
+    timer: {
+        fontSize: 15,
+        color:'#1ECB9C',
+        fontWeight:'600',
+        marginTop: 16,
+        marginBottom: 16,
+    },
+
+    bottomSection: {
+        borderRadius: 8,
+        alignItems: 'center',
+        backgroundColor: 'rgba(30, 203, 156, 0.16)',
+        padding: 18,
+        marginTop: 12,
+        width: 180
+    }
+    
+})
 
 
 
