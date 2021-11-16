@@ -233,7 +233,10 @@ export default class Home extends React.Component {
 		);
 	}
 
-	goToCardDetail = () => this.props.navigation.navigate('HappyCitizenship')
+	// goToCardDetail = () => this.props.navigation.navigate('HappyCitizenship')
+
+	goToCardDetail = () => this.props.navigation.navigate('VPInfo')
+
 
 	setNewCard = ({item, index}) => {
 		// if(index  == 0){
@@ -264,7 +267,7 @@ export default class Home extends React.Component {
 		// 	)
 		// }
 		return (
-			<TouchableOpacity onPress={this.props.navigation.push('HappyCitizenship')} style={cards.cardContainer}>
+			<TouchableOpacity onPress={() => {this.props.navigation.push('HappyCitizenship')}} style={cards.cardContainer}>
 					<View style={cards.cardContainer}>
 
 							<View style={cards.indicatorWrapper}>
@@ -400,7 +403,8 @@ export default class Home extends React.Component {
 
 	goScan = () => {
 		this.setState({ModalShow:false}) // Modal Hide
-		this.props.navigation.push('ScanScreen', {password:this.state.password}) // Scan Move
+		this.props.navigation.push('SelectOptions')
+		// this.props.navigation.push('ScanScreen', {password:this.state.password}) // Scan Move
 	}
 
 	linktest = () => {

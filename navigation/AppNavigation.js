@@ -22,6 +22,8 @@ import VPREQ_SVP_SIGN_VCsend from '../screens/VPREQ_SVP_SIGN_VCsend'
 import VPREQ_SVP_VCsend from '../screens/VPREQ_SVP_VCsend'
 import VPREQ_SVP_NULLsend from '../screens/VPREQ_SVP_NULLsend'
 import VCverify from '../screens/VCverify'
+import VPInfo from '../screens/VPInfo'
+import SelectOptions from '../screens/SelectOptions'
 
 const AppNavigation = createStackNavigator(
 	{
@@ -58,6 +60,8 @@ const AppNavigation = createStackNavigator(
 		Setting: {screen: Setting},
 		ChangePW: {screen: ChangePW},
 		HappyCitizenship:{screen: HappyCitizenship},
+		VPInfo: {screen: VPInfo},
+		SelectOptions: {screen: SelectOptions},
 	},
 	
 	{

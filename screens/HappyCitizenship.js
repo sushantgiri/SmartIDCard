@@ -1,5 +1,5 @@
 import React from 'react'
-import {StyleSheet, View, Text, Image, Dimensions, Modal} from 'react-native'
+import {StyleSheet, View, Text, Image, Dimensions, Modal, TouchableOpacity} from 'react-native'
  
 
 export default class HappyCitizenship extends React.Component {
@@ -13,7 +13,7 @@ export default class HappyCitizenship extends React.Component {
                 <Modal
                     animationType="slide"
                     transparent={true}
-                    visible={true}>
+                    visible={false}>
 
 
                     <View style={qrTimer.qrContainer}>
@@ -40,8 +40,13 @@ export default class HappyCitizenship extends React.Component {
             <View style={styles.container}>
                 <View style={styles.header_background}>
 
+                <TouchableOpacity  
+                onPress={() => {
+                     this.props.navigation.pop();
+                    }}>
                     <Image style={styles.backButtonStyle} source={require('../screens/assets/images/png/back_icon.png')} />
 
+                </TouchableOpacity>
                     <Text style={styles.headerTitleStyle}>행복 시민증</Text>
 
                     <Image source={require('../screens/assets/images/png/qr_scan_icon.png')} />
