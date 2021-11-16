@@ -45,3 +45,11 @@ export const VPEntries = [
         }
     },
 ]
+
+export const CardEntries = [
+    {
+        cardIcon: 'secondary.png',
+        cardLabel : '본인 인증서'
+    },
+    
+]
