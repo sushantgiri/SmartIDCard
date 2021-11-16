@@ -24,6 +24,7 @@ import VPREQ_SVP_NULLsend from '../screens/VPREQ_SVP_NULLsend'
 import VCverify from '../screens/VCverify'
 import VPInfo from '../screens/VPInfo'
 import SelectOptions from '../screens/SelectOptions'
+import VerifiedServiceProviders from '../screens/VerifiedServiceProviders'
 
 const AppNavigation = createStackNavigator(
 	{
@@ -62,6 +63,7 @@ const AppNavigation = createStackNavigator(
 		HappyCitizenship:{screen: HappyCitizenship},
 		VPInfo: {screen: VPInfo},
 		SelectOptions: {screen: SelectOptions},
+		VerifiedServiceProviders: {screen: VerifiedServiceProviders},
 	},
 	
 	{

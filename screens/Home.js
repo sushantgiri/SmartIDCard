@@ -403,7 +403,9 @@ export default class Home extends React.Component {
 
 	goScan = () => {
 		this.setState({ModalShow:false}) // Modal Hide
-		this.props.navigation.push('SelectOptions')
+		// this.props.navigation.push('SelectOptions')
+		this.props.navigation.push('VerifiedServiceProviders')
+
 		// this.props.navigation.push('ScanScreen', {password:this.state.password}) // Scan Move
 	}
 
