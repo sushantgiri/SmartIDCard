@@ -26,6 +26,7 @@ import VPInfo from '../screens/VPInfo'
 import SelectOptions from '../screens/SelectOptions'
 import VerifiedServiceProviders from '../screens/VerifiedServiceProviders'
 import CertificateSelectAndSubmit from '../screens/CertificateSelectAndSubmit'
+import CardScanning from '../screens/CardScanning'
 
 const AppNavigation = createStackNavigator(
 	{
@@ -66,6 +67,7 @@ const AppNavigation = createStackNavigator(
 		SelectOptions: {screen: SelectOptions},
 		VerifiedServiceProviders: {screen: VerifiedServiceProviders},
 		CertificateSelectAndSubmit:{screen:CertificateSelectAndSubmit},
+		CardScanning: {screen: CardScanning},
 	},
 	
 	{
