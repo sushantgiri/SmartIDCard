@@ -405,9 +405,9 @@ export default class Home extends React.Component {
 		this.setState({ModalShow:false}) // Modal Hide
 		// this.props.navigation.push('SelectOptions')
 		// this.props.navigation.push('VerifiedServiceProviders')
-		// this.props.navigation.push('CertificateSelectAndSubmit')
+		this.props.navigation.push('CertificateSelectAndSubmit')
 		// this.props.navigation.push('CardScanning')
-		this.props.navigation.push('SettingsScreen')
+		// this.props.navigation.push('SettingsScreen')
 		// this.props.navigation.push('ScanScreen', {password:this.state.password}) // Scan Move
 	}
 
