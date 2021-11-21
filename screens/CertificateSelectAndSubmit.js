@@ -24,8 +24,6 @@ export default class CertificateSelectAndSubmit extends React.Component {
     }
 
    
-
-
     renderItemDetail = (entry) => {
         return(
             <View style={certificateStyles.itemContainer}>

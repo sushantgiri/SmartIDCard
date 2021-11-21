@@ -20,6 +20,8 @@ export default class CheckPassword extends React.Component {
         ModalShow: true
     }
 
+	
+
     componentDidMount(){
         this.setStateData();
     }
@@ -153,23 +155,52 @@ export default class CheckPassword extends React.Component {
 			onRequestClose={() => {
 			// this.closeButtonFunction()
 		 }}>
-		<View
-			 style={{
-			 height: '50%',
-			marginTop: 'auto',
-		}}>
+			 <View style={{
+				 backgroundColor: 'rgba(0, 0, 0, 0.8)',
+				 height: '100%',
+			 }}>
 
-		 <View>
-				<Text>This is Half Modal</Text>
-		</View>
-		<TouchableOpacity
-		onPress={() => {
-			// this.modalCancel()
-		}}>
-		<Text>Close</Text>
-		</TouchableOpacity>
-</View>
-</Modal>
+
+						<View
+								style={{
+								height: '40%',
+								marginTop: 'auto',
+								borderTopStartRadius: 24,
+								borderTopEndRadius: 24,
+								backgroundColor: '#ffffff'
+							}}>
+
+								<TouchableOpacity style= {modal.closeIconContainer} onPress={() => {
+
+								}}>
+									<Image source={imgClose} style={modal.closeIconStyle} />
+								</TouchableOpacity>
+
+								<Text style={modal.labelStyle}>비밀번호를 입력하세요</Text>
+
+								<TextInput
+									name='confirmCheckPassword'
+									// value={confirmCheckPassword}
+									placeholder='비밀번호'
+									secureTextEntry
+									onChangeText={this.handleConfirmPWchange}
+									style={modal.textInput}
+								/>
+
+										<TouchableOpacity onPress={() => {
+
+										}}>
+
+
+										<View style={modal.buttonContainer}>
+										<Text style={modal.buttonLabelStyle}>제출</Text>
+										</View>
+
+										</TouchableOpacity>
+						</View>
+
+				</View>			
+			</Modal>
         )
 
     }
@@ -177,44 +208,30 @@ export default class CheckPassword extends React.Component {
 }
 
 const modal = StyleSheet.create({
-    wrap : {
-        position:'absolute', width:'100%', height:'auto', zIndex:20, 
-        backgroundColor:'#FFFFFF', padding:20, margin:0, bottom: 0, 
-        borderTopRightRadius:16, borderTopLeftRadius:16,
-    },
-    header : { position:'relative', height:50, },
-	close : { position:'absolute', right:0 },
-    contents : {},
-    title : { letterSpacing:-0.6, fontSize:22, marginBottom:20, fontWeight:'bold', },
-	text : { letterSpacing:-0.6, fontSize:20, marginBottom:20, },
-	textInput : {
-        width:'100%', fontSize:20, marginBottom:8,
-        paddingTop:15, paddingBottom:15, paddingLeft:12, paddingRight:12, 
-        borderWidth:2, borderRadius:8, borderColor:'#CED2D4',
-    },
-	cards : {  },
-	card : { 
-		width:'100%', borderWidth:1, borderColor:'#333333', borderRadius:8,
-		padding:20, flexDirection:'row', marginBottom:20,
-	},
-	cardImage : { marginRight:10 },
-	cardText : { color:'#333333', fontSize:20, fontWeight:'bold', textAlign:'center' },
-    scan : { 
-        width:'100%', backgroundColor:'#ffffff', 
-        padding:0, paddingTop:20, paddingBottom:20, 
-        borderWidth:1, borderColor:'#333333', borderRadius:8,
-        flexDirection:'row', justifyContent:'center', alignItems:'center', 
-    },
-    scanText : { color:'#333333', fontWeight:'bold', fontSize:22, paddingLeft:10, },
-	button : { 
-        width:'100%', backgroundColor:'#ffffff', 
-        padding:0, paddingTop:20, paddingBottom:20, 
-        borderWidth:1, borderColor:'#333333', borderRadius:8,
-        flexDirection:'row', justifyContent:'center', alignItems:'center', 
-    },
-    buttonText : { color:'#333333', fontWeight:'bold', fontSize:22, paddingLeft:10, },
 
-    buttonContainer: {
+	closeIconContainer: {
+		marginTop: 16,
+		marginEnd: 24,
+		marginBottom: 12,
+	},
+	closeIconStyle: {
+		alignSelf: 'flex-end',
+	},
+
+	labelStyle: {
+		color:'#1A2433',
+		fontSize: 18,
+		marginStart: 24,
+	},
+
+	textInput : {
+        fontSize:16, marginBottom:8,
+        paddingTop:15, paddingBottom:15, paddingLeft:12, paddingRight:12, 
+        borderWidth:1, borderRadius:6, borderColor:'#CED2D5',marginTop: 24,
+		marginStart: 24, marginEnd: 24
+    },
+
+	buttonContainer: {
         backgroundColor: '#1ECB9C',
         borderRadius: 8,
         paddingTop: 15,
@@ -234,9 +251,7 @@ const modal = StyleSheet.create({
         alignSelf: 'center'
     },
 
-    cardItem : { 
-		width:'80%', height:400, backgroundColor:'#1ECB9C',
-    	borderRadius:12, position:'relative', marginLeft:'10%', marginRight:'10%',
-		paddingTop:20, paddingBottom:20, paddingLeft:30, paddingRight:30,
-	},
+
+
+	
 });
