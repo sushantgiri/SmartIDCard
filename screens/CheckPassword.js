@@ -1,11 +1,15 @@
 import React from 'react';
 import {Text, View, Modal, TouchableOpacity, StyleSheet, Image, TextInput} from 'react-native';
-
+import PropTypes from 'prop-types';
 
 var imgClose = require('../screens/assets/images/png/ic_btn_cls.png')
 
 
 export default class CheckPassword extends React.Component {
+
+	constructor(props){
+		super(props);
+	}
 
     state = {
         confirmShow: false,
@@ -102,47 +106,13 @@ export default class CheckPassword extends React.Component {
 	}
 
 
-    cardConfirm = (vc) => {
-		for (var i = 0; this.state.VCarray.length; i++){
-			if(vc == this.state.VCarray[i]){
-				if(this.state.detailArray[i].mode == 2) this.state.detailArray[i].mode = 1;
-				else this.state.detailArray[i].mode = 2;
-    			this.setState({detailArray: this.state.detailArray})
-				return
-			}
-		}
-	}
-
     //비밀번호 확인 input control
 	handleConfirmPWchange = confirmCheckPassword => {
 		this.setState({ confirmCheckPassword })
 	}
 
-    cardDelete = (vc) => {
-		if(this.state.confirmCheckPassword == this.state.password){
-			this.setState(this.state.VCjwtArray.splice(this.state.VCarray.indexOf(vc),1))
-        	this.setState(this.state.VCarray.splice(this.state.VCarray.indexOf(vc),1))
+    
 
-			// Set detailArray
-			var detailArray = [];
-			for (var i = 1; i <= this.state.VCarray.length; i++){
-				detailArray = detailArray.concat([{"mode" : 0}])
-			} 
-			this.setState({ detailArray : detailArray })
-
-			let cipherData = CryptoJS.AES.encrypt(JSON.stringify(this.state), this.state.dataKey).toString();
-        	SecureStorage.setItem(this.state.dataKey, cipherData);
-
-			this.setStateData()
-   		} else {
-      		alert('비밀번호가 일치하지 않습니다.')
-    	}
-	}
-
-    	// Modal Function
-	setModalShow = () => {
-		this.setState({ModalShow:!this.state.ModalShow})
-	}
 
     render(){
 
@@ -151,7 +121,7 @@ export default class CheckPassword extends React.Component {
 			<Modal
 			animationType="slide"
 			transparent={true}
-			visible={this.state.modalVisible}
+			visible={this.props.showModal}
 			onRequestClose={() => {
 			// this.closeButtonFunction()
 		 }}>
@@ -170,9 +140,7 @@ export default class CheckPassword extends React.Component {
 								backgroundColor: '#ffffff'
 							}}>
 
-								<TouchableOpacity style= {modal.closeIconContainer} onPress={() => {
-
-								}}>
+								<TouchableOpacity style= {modal.closeIconContainer} onPress={this.props.onCloseButtonPressed}>
 									<Image source={imgClose} style={modal.closeIconStyle} />
 								</TouchableOpacity>
 
@@ -206,6 +174,11 @@ export default class CheckPassword extends React.Component {
     }
   
 }
+
+CheckPassword.propTypes = {
+	showModal: PropTypes.bool.isRequired,
+	onCloseButtonPressed: PropTypes.func.isRequired
+};
 
 const modal = StyleSheet.create({
 

@@ -20,7 +20,20 @@ export default class CertificateSelectAndSubmit extends React.Component {
         mnemonic:'',
         VCarray:[],
         VCjwtArray:[],
+        showPasswordModal: false,
       
+    }
+
+    hidePasswordModal = () => {
+        this.setState({
+            showPasswordModal: false
+        })
+    }
+
+    showPasswordModal = () => {
+        this.setState({
+            showPasswordModal: true
+        })
     }
 
    
@@ -63,7 +76,7 @@ export default class CertificateSelectAndSubmit extends React.Component {
                     </View>
 
                 <TouchableOpacity onPress={() => {
-
+                        this.showPasswordModal()
                     }}>
 
 
@@ -73,7 +86,12 @@ export default class CertificateSelectAndSubmit extends React.Component {
 
                 </TouchableOpacity>
 
-                <CheckPassword />
+                <CheckPassword 
+                
+                showModal={this.state.showPasswordModal} 
+                onCloseButtonPressed = {() => {
+                    this.hidePasswordModal()
+                }}/>
 
                 
 
