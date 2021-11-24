@@ -128,6 +128,12 @@ export default class Home extends React.Component {
 				}
 			)
 		}
+
+		if(this.state.VCarray.length > 0){
+			this.setState(prevState => ({
+				VCarray: [...prevState.VCarray, "new value"]
+			  }))
+		}
 		
 
 		// VC Reverse
@@ -239,35 +245,38 @@ export default class Home extends React.Component {
 
 
 	setNewCard = ({item, index}) => {
-		// if(index  == 0){
-		// 	return (	
-		// 		<View style={cards.cardContainer}>
+		if(index  == 0){
+			return (	
+				<View style={cards.cardContainer}>
 
-		// 					<View style={cards.indicatorWrapper}>
-		// 						<Image style={cards.addNewStyle} source={require('../screens/assets/images/png/add_new.png')} />
-		// 						<Text style={cards.lineStyle}> | </Text>
-		// 						<Text style={cards.totalCountStyle}>{this.state.VCarray.length}</Text>
-		// 					</View>
+							<View style={cards.indicatorWrapper}>
+								<Image style={cards.addNewStyle} source={require('../screens/assets/images/png/add_new.png')} />
+								<Text style={cards.lineStyle}> | </Text>
+								<Text style={cards.totalCountStyle}>{this.state.VCarray.length}</Text>
+							</View>
 
 
-		// 			<View style={common.contents}>
-
-						
-		// 				<View style={cards.noIDContainer}>
-		// 						<Image source={require('../screens/assets/images/png/no_card_contact.png')}></Image>
-		// 						<Text style={cards.noIDTextPrimary}>발급받기</Text>
-		// 				</View>
+					<View style={common.contents}>
 
 						
-		// 				<Text style={cards.noIDTextSecondary}>아직 발급받은 ID가 없습니다. {"\n"}ID를 발급받아 주세요.</Text>
+						<View style={cards.noIDContainer}>
+								<Image source={require('../screens/assets/images/png/no_card_contact.png')}></Image>
+								<Text style={cards.noIDTextPrimary}>발급받기</Text>
+						</View>
+
 						
-		// 			</View>
+						<Text style={cards.noIDTextSecondary}>아직 발급받은 ID가 없습니다. {"\n"}ID를 발급받아 주세요.</Text>
+						
+					</View>
 					
-		// 		</View>				
-		// 	)
-		// }
+				</View>				
+			)
+		}
 		return (
-			<TouchableOpacity onPress={() => {this.props.navigation.push('HappyCitizenship')}} style={cards.cardContainer}>
+			<TouchableOpacity onPress={() => {
+				console.log
+				this.props.navigation.push('HappyCitizenship', {vc: item.vc});
+				}} style={cards.cardContainer}>
 					<View style={cards.cardContainer}>
 
 							<View style={cards.indicatorWrapper}>
@@ -403,9 +412,9 @@ export default class Home extends React.Component {
 
 	goScan = () => {
 		this.setState({ModalShow:false}) // Modal Hide
-		// this.props.navigation.push('SelectOptions')
+		this.props.navigation.push('SelectOptions')
 		// this.props.navigation.push('VerifiedServiceProviders')
-		this.props.navigation.push('CertificateSelectAndSubmit')
+		// this.props.navigation.push('CertificateSelectAndSubmit')
 		// this.props.navigation.push('CardScanning')
 		// this.props.navigation.push('SettingsScreen')
 		// this.props.navigation.push('ScanScreen', {password:this.state.password}) // Scan Move

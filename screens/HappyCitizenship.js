@@ -1,6 +1,8 @@
 import React from 'react'
 import {StyleSheet, View, Text, Image, Dimensions, Modal, TouchableOpacity} from 'react-native'
- 
+import {format} from "date-fns" // Date Format
+
+var closeIcon = require('../screens/assets/images/png/close_scanner.png')
 
 export default class HappyCitizenship extends React.Component {
 
@@ -8,26 +10,51 @@ export default class HappyCitizenship extends React.Component {
         isQrScanning: false,
     }
 
+    constructor(props){
+        super(props)
+    }
+
+    showQRScan = () => {
+        this.setState({
+            isQrScanning: true
+        })
+    }
+
+    hideQRScan = () => {
+        this.setState({
+            isQrScanning: false
+        })
+    }
+
     renderQRScanView = () => {
         return(
                 <Modal
                     animationType="slide"
                     transparent={true}
-                    visible={false}>
+                    visible={this.state.isQrScanning}>
 
 
                     <View style={qrTimer.qrContainer}>
                         <View style={qrTimer.qrChildContainer}>
-                        <Text style={qrTimer.headerTitle}>QR코드</Text>
-                        <Text style={qrTimer.timer}>15</Text>
-                        <Image source={require('../screens/assets/images/png/qr_timer.png')} />
+                                <Text style={qrTimer.headerTitle}>QR코드</Text>
+                                <Text style={qrTimer.timer}>15</Text>
+                                <Image source={require('../screens/assets/images/png/qr_timer.png')} />
 
-                        <View style={qrTimer.bottomSection}>
+                                <View style={qrTimer.bottomSection}>
 
-                            <Text>행복 시민증</Text>
+                                    <Text>행복 시민증</Text>
 
-                        </View>
-                    </View>
+                                </View>
+
+                       
+                         </View>
+
+                         <TouchableOpacity
+                            onPress={() => {
+                                this.hideQRScan()
+                            }}>
+                                <Image source={closeIcon} style={qrTimer.closeIconStyle}/>
+                        </TouchableOpacity>
                     </View>
 
                 </Modal>
@@ -36,6 +63,12 @@ export default class HappyCitizenship extends React.Component {
    
 
     render() {
+
+        const vc = this.props.navigation.getParam('vc');
+
+        // var toDate = vc.exp * 1000
+		// var expDate = format(new Date(toDate), "yyyy-MM-dd")
+
         return(
             <View style={styles.container}>
                 <View style={styles.header_background}>
@@ -49,7 +82,12 @@ export default class HappyCitizenship extends React.Component {
                 </TouchableOpacity>
                     <Text style={styles.headerTitleStyle}>행복 시민증</Text>
 
+                <TouchableOpacity
+                    onPress= {() => {
+                            this.showQRScan()
+                    }}>   
                     <Image source={require('../screens/assets/images/png/qr_scan_icon.png')} />
+                </TouchableOpacity>
 
                 </View>
 
@@ -63,19 +101,36 @@ export default class HappyCitizenship extends React.Component {
                     <View style={styles.contentsContentContainer}>
 
                         <View style={styles.contentsChildSection}>
-                            <Text style={styles.contentsLabel}>성인여부</Text>
-                            <Text style={styles.contentsValue}>성인</Text>
+                            <Text style={styles.contentsLabel}>이름 :</Text>
+                            <Text style={styles.contentsValue}>{vc.credentialSubject.name}</Text>
                         </View>
 
                         <View style={styles.contentsChildSection}>
-                            <Text style={styles.contentsLabel}>성명</Text>
-                            <Text style={styles.contentsValue}>홍길동</Text>
+                            <Text style={styles.contentsLabel}>생년월일 :</Text>
+                            <Text style={styles.contentsValue}>{vc.credentialSubject.birthday}</Text>
                         </View>
 
                         <View style={styles.contentsChildSection}>
-                            <Text style={styles.contentsLabel}>생년월일</Text>
-                            <Text style={styles.contentsValue}>1990.01.23</Text>
+                            <Text style={styles.contentsLabel}>성별 :</Text>
+                            <Text style={styles.contentsValue}>{vc.credentialSubject.gender}</Text>
                         </View>
+
+
+                        <View style={styles.contentsChildSection}>
+                            <Text style={styles.contentsLabel}>휴대폰번호 :</Text>
+                            <Text style={styles.contentsValue}>{vc.credentialSubject.phone}</Text>
+                        </View>
+
+                        <View style={styles.contentsChildSection}>
+                            <Text style={styles.contentsLabel}>이메일주소 :</Text>
+                            <Text style={styles.contentsValue}>{vc.credentialSubject.email}</Text>
+                        </View>
+
+                        <View style={styles.contentsChildSection}>
+                            <Text style={styles.contentsLabel}>주소 :</Text>
+                            <Text style={styles.contentsValue}>{vc.credentialSubject.address}</Text>
+                        </View>
+
 
                     </View>
                 </View>
@@ -132,6 +187,10 @@ const qrTimer = StyleSheet.create({
         padding: 18,
         marginTop: 12,
         width: 180
+    },
+
+    closeIconStyle: {
+        marginTop: 28
     }
     
 })
@@ -183,7 +242,7 @@ const styles = StyleSheet.create({
         borderRadius:8,
         backgroundColor:'#F6F8FA',
         marginTop: 12,
-        marginStart: 24,
+        // marginStart: 24,
         marginEnd: 24,
         paddingBottom: 16,
     },
