@@ -18,6 +18,8 @@ import CHeader from './common/Header'; // Header
 import {Linking} from 'react-native'
 import { COUPON_ENTRIES } from './static/couponEntries';
 import SettingsScreen from './SettingsScreen';
+import ReactNativeBiometrics from 'react-native-biometrics'
+
 
 var AES = require("react-native-crypto-js").AES;
 
@@ -83,6 +85,22 @@ export default class Home extends React.Component {
 	//비밀번호 확인 input control
 	handleConfirmPWchange = confirmCheckPassword => {
 		this.setState({ confirmCheckPassword })
+	}
+
+	callBiometricAuthentication = () => {
+		ReactNativeBiometrics.isSensorAvailable()
+			.then((resultObject) => {
+			const { available, biometryType } = resultObject
+			if (available && biometryType === ReactNativeBiometrics.TouchID) {
+			console.log('TouchID is supported')
+			} else if (available && biometryType === ReactNativeBiometrics.FaceID) {
+			console.log('FaceID is supported')
+			} else if (available && biometryType === ReactNativeBiometrics.Biometrics) {
+			console.log('Biometrics is supported')
+			} else {
+			console.log('Biometrics not supported')
+			}
+		})
 	}
 
 	

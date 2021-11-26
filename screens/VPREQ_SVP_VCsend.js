@@ -3,6 +3,7 @@ import {
 	StyleSheet, View, Text, Image, TextInput, ScrollView,
 	TouchableOpacity, TouchableHighlight, LogBox, Animated, Easing
 } from 'react-native'
+import ReactNativeBiometrics from 'react-native-biometrics'
 
 import CryptoJS from 'react-native-crypto-js';
 import SecureStorage from 'react-native-secure-storage'
@@ -52,6 +53,8 @@ function Card({vc}){
 	)
 }
 
+
+
 function Info({svc}){
 	return (
 		<ScrollView>
@@ -99,6 +102,72 @@ export default class VPREQ_VCsend extends React.Component {
   	//비밀번호 확인 input control
 	handleConfirmPWchange = confirmCheckPassword => {
 		this.setState({ confirmCheckPassword })
+	}
+
+	biometricAuthentication = () =>{
+		ReactNativeBiometrics.isSensorAvailable()
+				.then((resultObject) => {
+					const { available, biometryType } = resultObject
+					if (available && biometryType === ReactNativeBiometrics.TouchID) {
+						this.createSimplePrompt()
+					} else if (available && biometryType === ReactNativeBiometrics.FaceID) {
+						this.createSimplePrompt()
+					} else if (available && biometryType === ReactNativeBiometrics.Biometrics) {
+						this.createSimplePrompt()
+					} else {
+					console.log('Biometrics not supported')
+					}
+				})
+	}
+
+	createSimplePrompt = () => {
+		ReactNativeBiometrics.simplePrompt({promptMessage: 'Authenticate your Smart ID Card'})
+				.then((resultObject) => {
+					const { success } = resultObject
+
+					if (success) {
+						
+					} else {
+					console.log('user cancelled biometric prompt')
+					}
+				})
+				.catch(() => {
+					console.log('biometrics failed')
+				})
+	}
+	createSignatire = () => {
+			let epochTimeSeconds = Math.round((new Date()).getTime() / 1000).toString()
+			let payload = epochTimeSeconds + 'SMART_ID_CARD'
+
+			ReactNativeBiometrics.createSignature({
+				promptMessage: 'Authenticate your Smart ID Card',
+				payload: payload
+			})
+			.then((resultObject) => {
+				const { success, signature } = resultObject
+
+				if (success) {
+
+				}
+			})
+	}
+
+	createKeys = () => {
+		ReactNativeBiometrics.biometricKeysExist()
+				.then((resultObject) => {
+					const { keysExist } = resultObject
+
+					if (keysExist) {
+
+					} else {
+					ReactNativeBiometrics.createKeys('Confirm fingerprint')
+						.then((resultObject) => {
+							const { publicKey } = resultObject
+							console.log(publicKey)
+							// sendPublicKeyToServer(publicKey)
+						})
+					}
+				})
 	}
 
 	// Cancel
@@ -479,7 +548,10 @@ export default class VPREQ_VCsend extends React.Component {
 				})}
 				</View>
 
-			<TouchableOpacity onPress={() => {this.setModalShow()}}>
+			<TouchableOpacity onPress={() => {
+				this.biometricAuthentication()
+						// this.setModalShow()
+				}}>
 
 
 			 <View style={certificateStyles.buttonContainer}>

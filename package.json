@@ -43,6 +43,7 @@
     "react-native-aes-cipher": "1.0.9",
     "react-native-animatable": "^1.3.3",
     "react-native-app-link": "1.0.0",
+    "react-native-biometrics": "^2.1.4",
     "react-native-bip39": "2.3.0",
     "react-native-camera": "3.40.0",
     "react-native-check-box": "2.1.7",
