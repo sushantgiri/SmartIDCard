@@ -17,6 +17,7 @@ import CLoader from './common/Loader'; // Loader
 import CHeader from './common/Header'; // Header
 import {Linking} from 'react-native'
 import { COUPON_ENTRIES } from './static/couponEntries';
+import SettingsScreen from './SettingsScreen';
 
 var AES = require("react-native-crypto-js").AES;
 
@@ -72,6 +73,7 @@ export default class Home extends React.Component {
 		],
 
 		idSelection: true,
+		isSettingsSelected: false,
 
 
 
@@ -104,8 +106,12 @@ export default class Home extends React.Component {
 				let bytes = CryptoJS.AES.decrypt(ud, dk);
 				let originalText = bytes.toString(CryptoJS.enc.Utf8);
 				this.setState(JSON.parse(originalText))
+
 			}
 		})
+
+
+
 
 		// VC Check
 		const {navigation} = this.props
@@ -404,6 +410,11 @@ export default class Home extends React.Component {
 	}
 	// Card Function
 
+	setSettingsShow = () => {
+		this.setState({
+			isSettingsSelected:  !this.state.isSettingsSelected
+		})
+	}
 	// Modal Function
 	setModalShow = () => {
 		this.setState({ModalShow:!this.state.ModalShow})
@@ -425,7 +436,7 @@ export default class Home extends React.Component {
 	}
 
   	render() {
-		const {ViewMode, ModalShow, idSelection} = this.state
+		const {ViewMode, ModalShow, idSelection, isSettingsSelected} = this.state
 
 		if(ViewMode == 0){
 			return (
@@ -442,29 +453,34 @@ export default class Home extends React.Component {
 		if(ViewMode == 1){
 			return (
 				<View style={common.wrap}>
+					{!isSettingsSelected  && (
 					<CHeader />
+					)}
 
-				<View style={home.topBarContainer}>
+						{!isSettingsSelected && (
+							<View style={home.topBarContainer}>
+											
+											<TouchableOpacity
+												onPress={() => { this.setState({idSelection:true})}}>
+													<View style= {this.state.idSelection ? home.firstLineStyle: home.firstLineStyleUnselected}>
+															<Text style={this.state.idSelection ? home.firstTabItem: home.firstTabItemUnselected}>ID</Text>	
+													</View>
+											</TouchableOpacity>
+
+										
+											<TouchableOpacity
+												onPress={() => { this.setState({idSelection:false})}}>
+													<View style= {!this.state.idSelection ? home.secondLineStyle: home.secondLineStyleUnselected}>
+														<Text style={ !this.state.idSelection ? home.secondTabItem: home.secondTabItemUnselected}>쿠폰</Text>
+													</View>
+											</TouchableOpacity>
+											
+										</View>
+						)}
 					
-					<TouchableOpacity
-						onPress={() => { this.setState({idSelection:true})}}>
-							<View style= {this.state.idSelection ? home.firstLineStyle: home.firstLineStyleUnselected}>
-									<Text style={this.state.idSelection ? home.firstTabItem: home.firstTabItemUnselected}>ID</Text>	
-							</View>
-					</TouchableOpacity>
-
-				
-					<TouchableOpacity
-						onPress={() => { this.setState({idSelection:false})}}>
-							<View style= {!this.state.idSelection ? home.secondLineStyle: home.secondLineStyleUnselected}>
-								<Text style={ !this.state.idSelection ? home.secondTabItem: home.secondTabItemUnselected}>쿠폰</Text>
-							</View>
-					</TouchableOpacity>
-					
-				</View>	
 
 
-				{idSelection && (
+				{!isSettingsSelected && idSelection && (
 					<View style={common.contents}>
 
 						
@@ -482,7 +498,7 @@ export default class Home extends React.Component {
 				)}
 				
 
-				{!idSelection && (
+				{!isSettingsSelected && !idSelection && (
 					<View style={common.contents}>
 						{	
 						COUPON_ENTRIES.map((entry, index)=>{
@@ -494,14 +510,24 @@ export default class Home extends React.Component {
 
 					</View>
 				)}
+
+				{isSettingsSelected && (
+					<View style={common.contents}>
+						<SettingsScreen address={this.state.address}/>
+					</View>	
+				)}
 					
 					
 
 					<View style={home.container}>
-					<View style={home.certificateContainer}>
-						<Image source={myCertificateIcon}></Image>
-						<Text>나의 인증서</Text>
-			   		</View>
+					<TouchableOpacity
+					style={home.certificateContainer}
+						onPress={() => this.setSettingsShow()}>	
+							<View style={home.certificateContainer}>
+								<Image source={myCertificateIcon}></Image>
+								<Text>나의 인증서</Text>
+							</View>
+					</TouchableOpacity>
 
 					<TouchableOpacity onPress={this.goScan} style={home.touchableContainer}>
 							<View style={home.scannerContainer}>
@@ -510,11 +536,14 @@ export default class Home extends React.Component {
 
 					</TouchableOpacity>
 					   
-
-					<View style={home.profileContainer}>
+				<TouchableOpacity
+				style={home.profileContainer}
+						onPress={() => this.setSettingsShow()}>	
+						<View style={home.profileContainer}>
 							<Image source={settingsIcon}></Image>
 							<Text>설정</Text>
 			   		</View>
+				</TouchableOpacity>
 
 				</View>
 					{/* <View style={common.footer}>
@@ -582,28 +611,34 @@ export default class Home extends React.Component {
 		if(ViewMode == 2){
 			return (
 				<View style={common.wrap}>
+					{!isSettingsSelected  && (
 					<CHeader />
+					)}
+					{!isSettingsSelected && (
 
-					<View style={home.topBarContainer}>
+							<View style={home.topBarContainer}>
+
+												
+							<TouchableOpacity
+								onPress={() => { this.setState({idSelection:true})}}>
+									<View style= {this.state.idSelection ? home.firstLineStyle: home.firstLineStyleUnselected}>
+										<Text style={this.state.idSelection ? home.firstTabItem: home.firstTabItemUnselected}>ID</Text>	
+									</View>
+							</TouchableOpacity>
+
+
+							<TouchableOpacity
+								onPress={() => { this.setState({idSelection:false})}}>
+									<View style= {!this.state.idSelection ? home.secondLineStyle: home.secondLineStyleUnselected}>
+										<Text style={ !this.state.idSelection ? home.secondTabItem: home.secondTabItemUnselected}>쿠폰</Text>
+									</View>
+							</TouchableOpacity>
+
+							</View>	
+					)}
 					
-					<TouchableOpacity
-						onPress={() => { this.setState({idSelection:true})}}>
-							<View style= {this.state.idSelection ? home.firstLineStyle: home.firstLineStyleUnselected}>
-								<Text style={this.state.idSelection ? home.firstTabItem: home.firstTabItemUnselected}>ID</Text>	
-							</View>
-					</TouchableOpacity>
 
-				
-					<TouchableOpacity
-						onPress={() => { this.setState({idSelection:false})}}>
-							<View style= {!this.state.idSelection ? home.secondLineStyle: home.secondLineStyleUnselected}>
-								<Text style={ !this.state.idSelection ? home.secondTabItem: home.secondTabItemUnselected}>쿠폰</Text>
-							</View>
-					</TouchableOpacity>
-					
-				</View>	
-
-				{!idSelection && (
+				{!isSettingsSelected && !idSelection && (
 					<View style={common.contents}>
 						{	
 						COUPON_ENTRIES.map((entry, index)=>{
@@ -617,7 +652,7 @@ export default class Home extends React.Component {
 				)}
 
 				{
-					idSelection && (
+					!isSettingsSelected && idSelection && (
 						<View style={cards.cardContainer}>
 							
 
@@ -642,6 +677,11 @@ export default class Home extends React.Component {
 					</View>
 					)
 				}
+					{isSettingsSelected && (
+					<View style={common.contents}>
+						<SettingsScreen address={this.state.address}/>
+					</View>	
+				)}
 
 					{/* <ScrollView style={common.contents}>
 						<Swiper 
@@ -654,10 +694,14 @@ export default class Home extends React.Component {
 					</ScrollView> */}
 				
 				<View style={home.container}>
+				<TouchableOpacity
+						onPress={() => this.setSettingsShow()}
+						style={home.certificateContainer}>	
 					<View style={home.certificateContainer}>
-						<Image source={myCertificateIcon}></Image>
+						<Image source={myCertificateIcon} ></Image>
 						<Text>나의 인증서</Text>
 			   		</View>
+				</TouchableOpacity>
 
 					<TouchableOpacity onPress={this.goScan} style={home.touchableContainer}>
 							<View style={home.scannerContainer}>
@@ -666,11 +710,16 @@ export default class Home extends React.Component {
 
 					</TouchableOpacity>
 					   
-
+					<TouchableOpacity
+						onPress={() => this.setSettingsShow()} style={home.profileContainer}>			
 					<View style={home.profileContainer}>
-							<Image source={settingsIcon}></Image>
+							<Image source={settingsIcon}  style={
+							{ tintColor: this.state.isSettingsSelected ?  'black'
+						: 'gray'}
+							}></Image>
 							<Text>설정</Text>
 			   		</View>
+					   </TouchableOpacity>
 
 				</View>
 					{/* TO BE : Common 모듈로 분리 */}

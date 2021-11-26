@@ -1,5 +1,6 @@
 import React from 'react';
 import {Text, View, StyleSheet, Image, Dimensions} from 'react-native';
+import PropTypes from 'prop-types';
 
 var contactsIcon = require('../screens/assets/images/png/contact_icon.png')
 var rightIcon = require('../screens/assets/images/png/right_icon.png')
@@ -22,8 +23,10 @@ export default class SettingsScreen extends React.Component {
         )
     }
 
+
     state = {
-        cardArray: ['이용안내', '서비스 소개', '문의']
+        cardArray: ['이용안내', '서비스 소개', '문의'],
+    
     }
 
     render(){
@@ -44,7 +47,7 @@ export default class SettingsScreen extends React.Component {
                     </View>
 
                     <View style={settingsScreenStyle.actualAddressContainer}>
-                        <Text style={settingsScreenStyle.addressLabel}>ethr:x22993d02093829dk92839o019934a...</Text>
+                        <Text style={settingsScreenStyle.addressLabel}>{this.props.address}</Text>
                     </View>
 
                 </View>
@@ -127,6 +130,10 @@ export default class SettingsScreen extends React.Component {
     }
 }
 
+SettingsScreen.propTypes = {
+	address: PropTypes.string.isRequired
+};
+
 const refreshSection = StyleSheet.create({
 
         refreshContainer: {
@@ -134,7 +141,7 @@ const refreshSection = StyleSheet.create({
             alignItems: 'center',
             padding: 12,
             marginTop: 24,
-            marginStart: 30
+            // marginStart: 30
         },
 
         refreshLabel: {
@@ -148,15 +155,15 @@ const refreshSection = StyleSheet.create({
 const infoSection = StyleSheet.create( {
 
     infoContainer: {
-        marginStart: 24,
-        marginEnd: 24,
+        // marginStart: 24,
+        // marginEnd: 24,
 
     },
 
     announceContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginStart:24,
+        // marginStart:24,
         marginTop: 24,
     },
 
@@ -164,7 +171,7 @@ const infoSection = StyleSheet.create( {
         flexDirection: 'row',
         alignItems: 'center',
         marginTop: 24,        
-        marginStart:24,
+        // marginStart:24,
         marginBottom: 24,
     },
 
@@ -191,7 +198,7 @@ const listStyle = StyleSheet.create({
 
     cardContainer: {
         flexDirection: 'row',
-        marginStart: 24,
+        // marginStart: 24,
     },
 
     cardItemHolder: {
@@ -217,7 +224,7 @@ const listStyle = StyleSheet.create({
     },
 
     lineStyle: {
-        width: Dimensions.get('window').width,
+        width: Dimensions.get('window').width + 48,
         height: 1,
         backgroundColor: '#EAEDF0'
     }
@@ -228,7 +235,7 @@ const settingsScreenStyle = StyleSheet.create({
     rootContainer: {
         backgroundColor: '#EEF0F5',
         flex: 1,
-        marginTop: 20,
+        // marginTop: 20,
     },
 
     firstContainer: {
@@ -238,7 +245,7 @@ const settingsScreenStyle = StyleSheet.create({
     secondContainer: {
         marginTop: 12,
         backgroundColor: '#ffffff',
-        paddingEnd: 24,
+        // paddingEnd: 24,
         paddingTop: 24,
         flex: 1,
     },
@@ -247,13 +254,13 @@ const settingsScreenStyle = StyleSheet.create({
         color: '#44424A',
         fontSize: 24,
         fontWeight: '600',
-        marginStart: 24,
+        // marginStart: 24,
         marginTop: 16,
     },
 
     addressContainer: {
-        marginStart: 24,
-        marginEnd: 24,
+        // marginStart: 24,
+        // marginEnd: 24,
         marginTop:28,
     },
 
@@ -292,7 +299,7 @@ const settingsScreenStyle = StyleSheet.create({
     headSetRowContainer: {
         flexDirection: 'row',
         marginBottom: 17,
-        marginStart: 24,
+        // marginStart: 24,
     },
 
     headsetLabel: {
