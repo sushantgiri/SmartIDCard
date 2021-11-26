@@ -33,66 +33,44 @@ var issuerURLOnUse = '';
 var encryptionKeyOnUse ='';
 var challenger = String(Math.floor(Math.random() * 10000) + 1);
 
+var closeIcon = require('../screens/assets/images/png/close_scanner.png');
+var loadingIcon = require('../screens/assets/images/png/refresh_loading.png');
+var cardIcon = require('../screens/assets/images/png/secondary.png')
+
+
 function createDualSigner (jwtSigner, ethAccount) {
   	return { jwtSigner, ethAccount }
 }
 
 function Card({vc}){
     return (
-		<View style={page.card}>
-			<Image style={page.cardImage} source={imgCard}></Image>
-			<Text style={page.cardText}>{vc.vc.type[1]}</Text>
-		</View>
+		<View style={certificateStyles.itemActualContainer}>
+						<Image source={cardIcon} />
+						<Text style={certificateStyles.cardLabelStyle}>{vc.vc.type[1]}</Text>
+		</View> 
+			
 	)
 }
 
 function Info({svc}){
 	return (
-		<ScrollView style={page.information}>
-			<View style={page.informationBlock}>
-				<View style={page.informationTitle}>
-					<Image source={imageCheck}></Image>
-					<Text style={page.informationTitleText}>도메인명</Text>
-				</View>
-				<View style={page.informationContent}>
-					<Text style={page.informationContentText}>{svc.domain}</Text>
-				</View>
-			</View>
-			<View style={page.informationBlock}>
-				<View style={page.informationTitle}>
-					<Image source={imageCheck}></Image>
-					<Text style={page.informationTitleText}>사업자명</Text>
-				</View>
-				<View style={page.informationContent}>
-					<Text style={page.informationContentText}>{svc.company}</Text>
-				</View>
-			</View>
-			<View style={page.informationBlock}>
-				<View style={page.informationTitle}>
-					<Image source={imageCheck}></Image>
-					<Text style={page.informationTitleText}>대표자명</Text>
-				</View>
-				<View style={page.informationContent}>
-					<Text style={page.informationContentText}>{svc.ceo}</Text>
-				</View>
-			</View>
-			<View style={page.informationBlock}>
-				<View style={page.informationTitle}>
-					<Image source={imageCheck}></Image>
-					<Text style={page.informationTitleText}>사업자 주소</Text>
-				</View>
-				<View style={page.informationContent}>
-					<Text style={page.informationContentText}>{svc.address}</Text>
-				</View>
-			</View>
-			<View style={page.informationBlock}>
-				<View style={page.informationTitle}>
-					<Image source={imageCheck}></Image>
-					<Text style={page.informationTitleText}>사업자 전화번호</Text>
-				</View>
-				<View style={page.informationContent}>
-					<Text style={page.informationContentText}>{svc.phone}</Text>
-				</View>
+		<ScrollView>
+			<View style={providersStyle.detailContainer}>
+
+							<Text style={providersStyle.labelStyle}>도메인명</Text>
+							<Text style={providersStyle.valueStyle} >{svc.domain}</Text>
+	
+							<Text style={providersStyle.labelStyle}>사업자명</Text>
+							<Text style={providersStyle.valueStyle}>{svc.company}</Text>
+	
+							<Text style={providersStyle.labelStyle}>대표자명</Text>
+							<Text style={providersStyle.valueStyle}>{svc.ceo}</Text>
+	
+							<Text style={providersStyle.labelStyle}>사업자주소</Text>
+							<Text style={providersStyle.valueStyle}>{svc.address}</Text>
+	
+							<Text style={providersStyle.labelStyle}>사업자전화번호</Text>
+							<Text style={providersStyle.valueStyle}>{svc.phone}</Text>
 			</View>
 		</ScrollView>
 	)
@@ -115,6 +93,7 @@ export default class VPREQ_VCsend extends React.Component {
 
 		SVCArray:[],
 		spinValue : new Animated.Value(0),
+		showPasswordModal: false,
 	}
   
   	//비밀번호 확인 input control
@@ -241,13 +220,41 @@ export default class VPREQ_VCsend extends React.Component {
     	if(this.state.checkedArray[index] != null){
       		if(this.state.checkedArray[index].checked == true){
         		return{
-		 			borderWidth:1, borderColor:'#1ECB9C', 
-					padding:20, marginBottom:15
+
+					borderRadius:8,
+					borderWidth:1,
+					borderColor: '#1ECB9C',
+					paddingTop: 15,
+					paddingBottom: 15,
+					paddingStart:20,
+					paddingEnd: 20,
+					flexDirection: 'row',
+					marginStart: 21,
+					marginEnd: 21,
+					alignItems: 'center',
+					marginBottom: 21,
+
+		 			// borderWidth:1, borderColor:'#1ECB9C', 
+					// padding:20, marginBottom:15
        			}
 			} else {
 				return{
-					borderWidth:1, borderColor:'#333333', 
-					padding:20, marginBottom:15
+
+					borderRadius:8,
+					borderWidth:1,
+					borderColor: '#E5EBED',
+					paddingTop: 15,
+					paddingBottom: 15,
+					paddingStart:20,
+					paddingEnd: 20,
+					flexDirection: 'row',
+					marginStart: 21,
+					marginEnd: 21,
+					alignItems: 'center',
+					marginBottom: 21,
+
+					// borderWidth:1, borderColor:'#333333', 
+					// padding:20, marginBottom:15
 				}	
 			}		
     	}
@@ -328,6 +335,19 @@ export default class VPREQ_VCsend extends React.Component {
 		ws.send('{"type":"exit"}')
 		this.props.navigation.push('VCselect',{password:this.state.password});
 	}
+
+	hidePasswordModal = () => {
+        this.setState({
+            showPasswordModal: false
+        })
+    }
+
+    showPasswordModal = () => {
+        this.setState({
+            showPasswordModal: true
+        })
+    }
+
 	// Modal Function  	
 
   	render() {
@@ -364,126 +384,112 @@ export default class VPREQ_VCsend extends React.Component {
 		console.log(spin);
 		
 		if(ViewMode == 0){
+
 			return (
-				<View style={common.wrap}>
-					<CHeader />
-					<View style={common.contents}>
-						<View style={page.header}>
-							<Text style={page.title}>서비스 제공자의 정보를{'\n'}검증 중입니다.</Text>
-							<View style={page.animation}>
-								<Animated.Image
-									style={{transform:[{rotate:spin}]}}
-									source={imageChain}
-								/>
-								<Text style={page.animationText}>검증 중</Text>
-							</View>
-						</View>
-						<View style={page.information}>
-							<View style={page.informationEmpty}>
-								<Animated.Image
-									style={{transform:[{rotate:spin}]}}
-									source={imageChain}
-								/>
-							</View>
-						</View>
-					</View>
-					<View style={common.footer}>
-						<View style={page.buttonView}>
-							<TouchableOpacity 
-								style={[page.button, page.buttonLeft]} 
-								activeOpacity={0.8} 
-								onPress={this.nextPage}
-							>
-								<Text style={common.buttonText}>다음</Text>
-							</TouchableOpacity>
-							<TouchableOpacity 
-								style={[page.button, page.buttonRight]} 
-								activeOpacity={0.8} 
-								onPress={this.cancel}
-							>
-								<Text style={common.buttonText}>취소</Text>
-							</TouchableOpacity>
-						</View>
-					</View>
+				<ScrollView style={providersStyle.scrollContainer}>
+                <View  style={providersStyle.rootContainer}>
+					<TouchableOpacity
+						onPress={this.cancel}>
+                    <View style={providersStyle.closeContainer}>
+                        <Image source={closeIcon} />
+                    </View>
+					</TouchableOpacity>
+
+                    <Text style={providersStyle.headerStyle}>검증된 서비스 제공자의 정보입니다.</Text>
+
+                    <View style={providersStyle.statusContainer}>
+
+                        <Text style={providersStyle.statusLabel}>검증여부 확인</Text>
+                        <View style={providersStyle.loadingContainer}>
+                            <Text style={providersStyle.loadingLabelStyle}>{'진행중...'} </Text>
+                        </View>
+                    </View>
+
+				<View style={{height: '100%',flexDirection: 'column'}}>
+					<Image source={loadingIcon} style={providersStyle.refreshStyle} />
 				</View>
-			)
+                </View>
+            </ScrollView>
+			)	
 		}
 		if(ViewMode == 1){
-			return (
-				<View style={common.wrap}>
-					<CHeader />
-					<View style={common.contents}>
-						<View style={page.header}>
-							<Text style={page.title}>검증된 서비스 제공자의{'\n'}정보입니다.</Text>
-							<View style={page.animation}>
-								<Animated.Image
-									style={{transform:[{rotate:spin}]}}
-									source={imageChain}
-								/>
-								<Text style={page.animationText}>검증 완료</Text>
+				return (
+					<ScrollView>
+					<View  style={providersStyle.rootContainer}>
+					<TouchableOpacity
+						onPress={this.cancel}>
+						<View style={providersStyle.closeContainer}>
+							<Image source={closeIcon} />
+						</View>
+					</TouchableOpacity>
+	
+						<Text style={providersStyle.headerStyle}>검증된 서비스 제공자의 정보입니다.</Text>
+	
+						<View style={providersStyle.verifiedStatusContainer}>
+	
+							<Text style={providersStyle.statusLabel}>검증여부 확인</Text>
+							<View style={providersStyle.verifiedContainer}>
+								<Text style={providersStyle.verifiedLabelStyle}>검증실패</Text>
 							</View>
 						</View>
+	
+						
+
 						{this.state.SVCArray.map((svc,index) => {
 							return (
 								<Info svc={svc} key={index}/>
 							)
 						})}
-					</View>
-					<View style={common.footer}>
-						<View style={page.buttonView}>
-							<TouchableOpacity 
-								style={[page.button, page.buttonLeft]} 
-								activeOpacity={0.8} 
-								onPress={this.nextPage}
-							>
-								<Text style={common.buttonText}>다음</Text>
+							<TouchableOpacity onPress={this.nextPage}>
+								<View style={providersStyle.buttonContainer}>
+									<Text style={providersStyle.buttonLabelStyle}>다음</Text>
+								</View>
+		
 							</TouchableOpacity>
-							<TouchableOpacity 
-								style={[page.button, page.buttonRight]} 
-								activeOpacity={0.8} 
-								onPress={this.cancel}
-							>
-								<Text style={common.buttonText}>취소</Text>
-							</TouchableOpacity>
+						<View>
+	
+	
 						</View>
+	
 					</View>
-				</View>
-			)
+				</ScrollView>
+				)
 		}
 		if(ViewMode == 2){
-			return (
-				<View style={common.wrap}>
-					<CHeader />
-					<ScrollView style={common.contents}>
-						<View>
-							{this.state.VCarray.map((vc,index) => {
-								return ( 
-									<TouchableOpacity style={this.cardStyle(index)} onPress={() => this.cardSelect(vc)}>
-										<Card vc={vc} key={vc.exp}/>
-									</TouchableOpacity>   
-								)
-							})}
-						</View>
-					</ScrollView>
-					<View style={common.footer}>
-						<View style={page.buttonView}>
-							<TouchableOpacity 
-								style={[page.button, page.buttonLeft]} 
-								activeOpacity={0.8} 
-								onPress={this.cardSend}
-							>
-								<Text style={common.buttonText}>제출</Text>
-							</TouchableOpacity>
-							<TouchableOpacity 
-								style={[page.button, page.buttonRight]} 
-								activeOpacity={0.8} 
-								onPress={this.cancel}
-							>
-								<Text style={common.buttonText}>취소</Text>
-							</TouchableOpacity>
-						</View>
+
+			return(
+				<View style={certificateStyles.rootContainer}>
+
+        
+				<TouchableOpacity  onPress={this.cancel}>
+					<View style={certificateStyles.closeContainer}>
+						<Image source={closeIcon} />
 					</View>
-					<Modal
+				</TouchableOpacity>
+
+				<Text style={certificateStyles.headerStyle}>검증된 서비스 제공자의 정보입니다.</Text>
+
+				<View style={certificateStyles.listWrapper}>
+				{this.state.VCarray.map((vc, index)=>{
+						return(
+							<TouchableOpacity style={this.cardStyle(index)} onPress={() => this.cardSelect(vc)}>
+									<Card vc={vc} key={vc.exp}/>
+							</TouchableOpacity>
+						)
+				})}
+				</View>
+
+			<TouchableOpacity onPress={() => {this.setModalShow()}}>
+
+
+			 <View style={certificateStyles.buttonContainer}>
+				<Text style={certificateStyles.buttonLabelStyle}>제출</Text>
+			  </View>
+
+			</TouchableOpacity>
+
+
+			 		<Modal
 						style={modal.wrap}
 						animationIn={'slideInUp'}
 						backdropOpacity={0.5}
@@ -499,7 +505,7 @@ export default class VPREQ_VCsend extends React.Component {
 							</TouchableOpacity>
 						</View>
 						<View style={modal.contents}>
-							<Text style={modal.title}>비밀번호를 입력하세요.</Text>
+							<Text style={modal.title}>비밀번호를 입력하세요</Text>
 							<TextInput
 								name='confirmCheckPassword'
 								value={confirmCheckPassword}
@@ -517,8 +523,80 @@ export default class VPREQ_VCsend extends React.Component {
 							</TouchableOpacity>
 						</View>
 					</Modal>
-				</View>
+
+
+			
+
+		</View>
 			)
+			// return (
+			// 	<View style={common.wrap}>
+			// 		<CHeader />
+			// 		<ScrollView style={common.contents}>
+			// 			<View>
+			// 				{this.state.VCarray.map((vc,index) => {
+			// 					return ( 
+			// 						<TouchableOpacity style={this.cardStyle(index)} onPress={() => this.cardSelect(vc)}>
+										// <Card vc={vc} key={vc.exp}/>
+			// 						</TouchableOpacity>   
+			// 					)
+			// 				})}
+			// 			</View>
+			// 		</ScrollView>
+			// 		<View style={common.footer}>
+			// 			<View style={page.buttonView}>
+			// 				<TouchableOpacity 
+			// 					style={[page.button, page.buttonLeft]} 
+			// 					activeOpacity={0.8} 
+			// 					onPress={this.cardSend}
+			// 				>
+			// 					<Text style={common.buttonText}>제출</Text>
+			// 				</TouchableOpacity>
+			// 				<TouchableOpacity 
+			// 					style={[page.button, page.buttonRight]} 
+			// 					activeOpacity={0.8} 
+			// 					onPress={this.cancel}
+			// 				>
+			// 					<Text style={common.buttonText}>취소</Text>
+			// 				</TouchableOpacity>
+			// 			</View>
+			// 		</View>
+			// 		<Modal
+			// 			style={modal.wrap}
+			// 			animationIn={'slideInUp'}
+			// 			backdropOpacity={0.5}
+			// 			isVisible={ModalShow}
+			// 		>
+			// 			<View style={modal.header}>
+			// 				<TouchableOpacity 
+			// 					style={modal.close} 
+			// 					activeOpacity={0.8} 
+			// 					onPress={this.setModalShow}
+			// 				>
+			// 					<Image source={imgClose}></Image>
+			// 				</TouchableOpacity>
+			// 			</View>
+			// 			<View style={modal.contents}>
+			// 				<Text style={modal.title}>비밀번호를 입력하세요.</Text>
+			// 				<TextInput
+			// 					name='confirmCheckPassword'
+			// 					value={confirmCheckPassword}
+			// 					placeholder='비밀번호'
+			// 					secureTextEntry
+			// 					onChangeText={this.handleConfirmPWchange}
+			// 					style={modal.textInput}
+			// 				/>
+			// 				<TouchableOpacity 
+			// 					style={modal.button} 
+			// 					activeOpacity={0.8} 
+			// 					onPress={this.passwordCheck}
+			// 				>
+			// 					<Text style={modal.buttonText}>확인</Text>
+			// 				</TouchableOpacity>
+			// 			</View>
+			// 		</Modal>
+			// 	</View>
+			// )
 		}
 	}
   
@@ -595,12 +673,20 @@ const modal = StyleSheet.create({
 	close : { position:'absolute', right:0 },
     contents : {},
 	textInput : {
-        width:'100%', fontSize:20, marginBottom:8,
+        // width:'100%', fontSize:20, marginBottom:8,
+        // paddingTop:15, paddingBottom:15, paddingLeft:12, paddingRight:12, 
+        // borderWidth:2, borderRadius:8, borderColor:'#CED2D4',
+
+		fontSize:16, marginBottom:8,
         paddingTop:15, paddingBottom:15, paddingLeft:12, paddingRight:12, 
-        borderWidth:2, borderRadius:8, borderColor:'#CED2D4',
+        borderWidth:1, borderRadius:6, borderColor:'#CED2D5',marginTop: 24,
+		// marginStart: 24, marginEnd: 24
     },
     title : { 
-		letterSpacing:-0.6, fontSize:22, marginBottom:20, fontWeight:'bold', 
+		color:'#1A2433',
+		fontSize: 18,
+		// marginStart: 24,
+		// letterSpacing:-0.6, fontSize:22, marginBottom:20, fontWeight:'bold', 
 	},
 	cards : { 
 		width:'100%', marginBottom:20, 
@@ -615,10 +701,252 @@ const modal = StyleSheet.create({
 	cardImage : { marginBottom:10 },
 	cardText : { color:'#333333', fontSize:20, fontWeight:'bold', textAlign:'center' },
     button : { 
-        width:'100%', backgroundColor:'#ffffff', 
-        padding:0, paddingTop:20, paddingBottom:20, 
-        borderWidth:1, borderColor:'#333333', borderRadius:8,
-        flexDirection:'row', justifyContent:'center', alignItems:'center', 
+        // width:'100%', backgroundColor:'#ffffff', 
+        // padding:0, paddingTop:20, paddingBottom:20, 
+        // borderWidth:1, borderColor:'#333333', borderRadius:8,
+        // flexDirection:'row', justifyContent:'center', alignItems:'center',
+		
+		backgroundColor: '#1ECB9C',
+        borderRadius: 8,
+        paddingTop: 15,
+        paddingBottom:15,
+        paddingStart: 32,
+        paddingEnd:32,
+        marginBottom: 20,
+        // marginStart: 24,
+        // marginEnd: 24,
+        marginTop: 24,
     },
-    buttonText : { color:'#333333', fontWeight:'bold', fontSize:22, paddingLeft:10, },
+    buttonText : {
+		//  color:'#333333', fontWeight:'bold', fontSize:22, paddingLeft:10,
+
+		 color: '#FFFFFF',
+        fontWeight:'600',
+        fontSize: 18,
+        alignSelf: 'center'
+		
+		},
 });
+
+
+const providersStyle = StyleSheet.create({
+
+	scrollContainer: {
+		backgroundColor: '#ffffff',
+        flex: 1,
+	},
+
+    rootContainer: {
+        backgroundColor: '#ffffff',
+        flex: 1,
+    },
+
+    closeContainer: {
+        flexDirection:'row',
+        marginTop: 20,
+        padding: 20,
+        marginBottom: 20,
+        justifyContent: 'flex-end',
+    },
+
+    headerStyle:{
+        color: '#1A2433',
+        fontSize: 18,
+        marginStart: 24,
+        marginBottom: 22,
+    },
+
+	verifiedStatusContainer:{
+		borderRadius: 8,
+        backgroundColor:'#FEF2EF',
+        marginStart: 24,
+        marginEnd: 24,
+        padding: 16,
+        flexDirection: 'row',
+        alignItems:'center',
+        justifyContent:'space-between'
+	},
+
+    statusContainer: {
+        borderRadius: 8,
+        backgroundColor:'#EFF8FF',
+        marginStart: 24,
+        marginEnd: 24,
+        padding: 16,
+        flexDirection: 'row',
+         alignItems:'center',
+         justifyContent:'space-between'
+    },
+
+    statusLabel: {
+        color: '#44424A',
+        fontWeight: '600',
+        fontSize: 16,
+    },
+
+	verifiedContainer: {
+		borderRadius: 20,
+		backgroundColor: '#F7AF9B'
+	},
+
+	verifiedLabelStyle: {
+		color: '#E1451A',
+        fontSize: 16,
+        fontWeight: '600',
+        paddingStart: 12,
+        paddingEnd: 12,
+        paddingTop: 8,
+        paddingBottom: 8,
+	},
+
+    loadingContainer: {
+        borderRadius: 20,
+        backgroundColor: '#C8E7FF',
+    },
+
+    loadingLabelStyle: {
+        color: '#0083FF',
+        fontSize: 16,
+        fontWeight: '600',
+        paddingStart: 12,
+        paddingEnd: 12,
+        paddingTop: 8,
+        paddingBottom: 8,
+    },
+
+    detailContainer: {
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#E5EBED',
+        marginStart: 27,
+        marginEnd: 27,
+        padding: 18,
+        marginTop: 21,
+
+    },
+
+	refreshStyle: {
+		alignSelf:'center',
+		marginTop:50
+	},
+
+    labelStyle: {
+        color: 'rgba(26, 36, 51, 0.9)',
+        fontWeight: '600',
+        fontSize:16,
+        marginBottom: 8,
+
+    },
+
+    valueStyle: {
+        color: 'rgba(153, 153, 153, 0.9)',
+        fontSize: 15,
+        fontWeight: '500',
+        marginBottom: 18,
+    },
+
+    buttonContainer: {
+        backgroundColor: '#1ECB9C',
+        borderRadius: 8,
+        paddingTop: 15,
+        paddingBottom:15,
+        paddingStart: 32,
+        paddingEnd:32,
+        marginBottom: 20,
+        marginStart: 24,
+        marginEnd: 24,
+        marginTop: 24,
+    },
+
+    buttonLabelStyle: {
+        color: '#FFFFFF',
+        fontWeight:'600',
+        fontSize: 18,
+        alignSelf: 'center'
+    },
+
+	
+})
+
+const certificateStyles = StyleSheet.create({
+
+    rootContainer: {
+        backgroundColor: '#ffffff',
+        flex: 1,
+    },
+
+    closeContainer: {
+        flexDirection:'row',
+        marginTop: 20,
+        padding: 20,
+        marginBottom: 20,
+        justifyContent: 'flex-end',
+
+    },
+
+    headerStyle:{
+        color: '#1A2433',
+        fontSize: 18,
+        marginStart: 24,
+        marginBottom: 22,
+
+    },
+
+	itemActualContainer: {
+		flexDirection: 'row',
+		alignItems: 'center',
+	},
+
+    itemContainer: {
+        borderRadius:8,
+        borderWidth:1,
+        borderColor: '#E5EBED',
+        paddingTop: 15,
+        paddingBottom: 15,
+        paddingStart:20,
+        paddingEnd: 20,
+        flexDirection: 'row',
+        marginStart: 21,
+        marginEnd: 21,
+        alignItems: 'center',
+        marginBottom: 21,
+    },
+
+    cardLabelStyle: {
+        color: 'rgba(26, 36, 51, 0.9)',
+        fontSize: 16,
+        fontWeight: '500',
+        marginStart: 35,
+
+    },
+    listWrapper: {
+        flex: 1,
+    },
+
+    buttonContainer: {
+        backgroundColor: '#1ECB9C',
+        borderRadius: 8,
+        paddingTop: 15,
+        paddingBottom:15,
+        paddingStart: 32,
+        paddingEnd:32,
+        marginBottom: 20,
+        marginStart: 24,
+        marginEnd: 24,
+        marginTop: 24,
+    },
+
+    buttonLabelStyle: {
+        color: '#FFFFFF',
+        fontWeight:'600',
+        fontSize: 18,
+        alignSelf: 'center'
+    },
+
+    cardItem : { 
+		width:'80%', height:400, backgroundColor:'#1ECB9C',
+    	borderRadius:12, position:'relative', marginLeft:'10%', marginRight:'10%',
+		paddingTop:20, paddingBottom:20, paddingLeft:30, paddingRight:30,
+	},
+
+})

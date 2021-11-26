@@ -8,6 +8,116 @@ export default class VerifiedServiceProviders extends React.Component {
 
     state = {
         isVerified: false,
+
+        password: '',
+		dataKey: '',
+		address: '',
+		privateKey:'',
+		mnemonic:'',
+
+		VCarray:[],
+		VCjwtArray:[],
+		checkedArray:[],
+        SVCArray:[],
+		confirmCheckPassword:'',
+    }
+
+    setStateData = async() => {
+        // Get password
+      await SecureStorage.getItem('userToken').then((pw) => {
+          this.setState({ password:pw }); // Set password
+      })
+
+      // Get dataKey
+      let pw = this.state.password;
+      await SecureStorage.getItem(pw).then((dk) => {
+          this.setState({ dataKey:dk }); // Set dataKey
+      })
+      
+      // Get userData
+      let dk = this.state.dataKey;
+      await SecureStorage.getItem(dk).then((ud) => {
+          if(ud != null) {
+              // Set state
+              let bytes = CryptoJS.AES.decrypt(ud, dk);
+              let originalText = bytes.toString(CryptoJS.enc.Utf8);
+              console.log(originalText);
+              this.setState(JSON.parse(originalText))
+          }
+      })
+
+      // VC Reverse
+      this.setState({ 
+          VCarray:this.state.VCarray.reverse(),
+          VCjwtArray:this.state.VCjwtArray.reverse()
+      })
+
+      // Set checkedArray
+      // 체크된 array를 따로 구분하기 위한 arrChecked[] 를 state에 포함시킴
+      // 현재 VC의 개수와 같은 길이의 array를 만들고, checked attribute를 false로 포함함
+      arrChecked = [];
+      for (var i = 1; i <= this.state.VCarray.length; i++){
+          arrChecked = arrChecked.concat([{"checked" : false}])
+      } 
+      this.setState({ checkedArray: arrChecked })
+
+      // Reset confirmCheckPassword
+      this.setState({confirmCheckPassword:''})
+
+      // WebSocket Connection
+      ws = new WebSocket(socketURL);
+      ws.onopen = () => { ws.send('{"type":"authm", "no":"'+socketRoom+'"}'); }
+      ws.onmessage = (e) => { console.log(e); this.sendChallenger(); }
+    }
+
+
+    	// Cancel
+	cancel = () => { 
+    	ws.send('{"type":"exit"}')
+    	this.props.navigation.navigate('VCselect',{password:this.state.password});
+  	}
+
+
+	// SVP Function
+	sendChallenger = async () => {
+        ws.send('{"type":"challenger","data":"'+challenger+'"}');
+        ws.onmessage = (e) => {
+                const json = JSON.parse(e.data);
+                if(json.type == "vp") this.verifyVP(json.data);
+           }
+    }
+
+    verifyVP = async (vp) => {
+		const key = CryptoJS.enc.Hex.parse(encryptionKeyOnUse);
+		const dec = CryptoJS.AES.decrypt(vp,key,{iv:key}).toString(CryptoJS.enc.Utf8);
+		const json = JSON.parse(dec);
+		const vpJwt = json.data;
+		
+		const privateKey = this.state.privateKey;
+		const ethAccount = web3.eth.accounts.privateKeyToAccount(privateKey)
+		const dualSigner = createDualSigner(didJWT.SimpleSigner(privateKey.replace('0x','')), ethAccount)
+		const dualDid = new DualDID(dualSigner, 'Issuer(change later)', 'Dualauth.com(change later)',web3,'0x76A2dd4228ed65129C4455769a0f09eA8E4EA9Ae')
+
+		const result = await dualDid.verifyVP(vpJwt, challenger);
+		const code = result.code;
+		const data = result.data;
+		const msg = result.msg;
+		const success = result.success;
+
+		if(code == "000.0" && success) {
+			const svcs = result.data.verifiablePresentation.verifiableCredential;
+			
+			let svca = [];
+			let svc = null;
+
+			for(let i = 0; i < svcs.length; i++){
+				svc = svcs[i].credentialSubject;
+				svca.push(svc);
+			}
+			
+			console.log(svca);
+			this.setState({ ViewMode:1, SVCArray:svca });
+		}
     }
 
 
