@@ -19,6 +19,7 @@ var encryptKey = '';
 export default class ScanScreen extends React.Component {
 	// cancel
 	cancel = () => { 
+		this.props.navigation.pop();
     	this.props.navigation.navigate('VCselect');
   	}
 
@@ -123,7 +124,7 @@ export default class ScanScreen extends React.Component {
 						reqType = response.data.data.requestData[0].type;
 						issuerDID = response.data.data.requestData[0].issuer[0].did;
 						issuerURL = response.data.data.requestData[0].issuer[0].url;
-
+						this.props.navigation.pop();
 						this.props.navigation.navigate('VCREQ_SVP_VCsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqType,issuerDID:issuerDID,issuerURL:issuerURL,encryptKey:encryptKey})
 					}
 				} else {
@@ -190,8 +191,12 @@ export default class ScanScreen extends React.Component {
   	}
 
 	componentDidMount(){
+		this.scanner.enable()
 		this.scanner.reactivate()
   	}
+	  componentWillUnmount(){
+		  this.scanner.disable()
+	  }
 }
 
 const common = StyleSheet.create({

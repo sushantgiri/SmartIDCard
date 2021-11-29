@@ -4,7 +4,8 @@ import Carousel from 'react-native-snap-carousel';
 
 import {
 	LogBox, ScrollView, StyleSheet, Text, View, 
-	Image, TouchableOpacity, TextInput, StatusBar,Dimensions
+	Image, TouchableOpacity, TextInput, StatusBar,Dimensions,
+	ToastAndroid, Platform, AlertIOS
 } from 'react-native'
 import Swiper from 'react-native-swiper'
 import jwt_decode from "jwt-decode"
@@ -87,20 +88,80 @@ export default class Home extends React.Component {
 		this.setState({ confirmCheckPassword })
 	}
 
-	callBiometricAuthentication = () => {
+	biometricAuthentication = () =>{
 		ReactNativeBiometrics.isSensorAvailable()
+				.then((resultObject) => {
+					const { available, biometryType } = resultObject
+					if (available && biometryType === ReactNativeBiometrics.TouchID) {
+						this.createSimplePrompt()
+					} else if (available && biometryType === ReactNativeBiometrics.FaceID) {
+						this.createSimplePrompt()
+					} else if (available && biometryType === ReactNativeBiometrics.Biometrics) {
+						this.createSimplePrompt()
+					} else {
+					console.log('Biometrics not supported')
+					}
+				})
+	}
+
+	showMessage = (message) => {
+		if (Platform.OS === 'android') {
+			ToastAndroid.show(message, ToastAndroid.SHORT)
+		  } else {
+			AlertIOS.alert(message);
+		  }
+	}
+
+	createSimplePrompt = () => {
+		ReactNativeBiometrics.simplePrompt({promptMessage: 'Authenticate your Smart ID Card'})
+				.then((resultObject) => {
+					const { success } = resultObject
+
+					if (success) {
+						this.showMessage("Authentication Successful")
+
+					} else {
+						this.showMessage("User cancelled")
+
+					}
+				})
+				.catch(() => {
+					this.showMessage("Biometrics failed")
+				})
+	}
+	createSignatire = () => {
+			let epochTimeSeconds = Math.round((new Date()).getTime() / 1000).toString()
+			let payload = epochTimeSeconds + 'SMART_ID_CARD'
+
+			ReactNativeBiometrics.createSignature({
+				promptMessage: 'Authenticate your Smart ID Card',
+				payload: payload
+			})
 			.then((resultObject) => {
-			const { available, biometryType } = resultObject
-			if (available && biometryType === ReactNativeBiometrics.TouchID) {
-			console.log('TouchID is supported')
-			} else if (available && biometryType === ReactNativeBiometrics.FaceID) {
-			console.log('FaceID is supported')
-			} else if (available && biometryType === ReactNativeBiometrics.Biometrics) {
-			console.log('Biometrics is supported')
-			} else {
-			console.log('Biometrics not supported')
-			}
-		})
+				const { success, signature } = resultObject
+
+				if (success) {
+
+				}
+			})
+	}
+
+	createKeys = () => {
+		ReactNativeBiometrics.biometricKeysExist()
+				.then((resultObject) => {
+					const { keysExist } = resultObject
+
+					if (keysExist) {
+
+					} else {
+					ReactNativeBiometrics.createKeys('Confirm fingerprint')
+						.then((resultObject) => {
+							const { publicKey } = resultObject
+							console.log(publicKey)
+							// sendPublicKeyToServer(publicKey)
+						})
+					}
+				})
 	}
 
 	
@@ -785,6 +846,7 @@ export default class Home extends React.Component {
  	componentDidMount(){
 		this.linktest();
 		this.setStateData();
+		this.biometricAuthentication()
   	}
 }
 

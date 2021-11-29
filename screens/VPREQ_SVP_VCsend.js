@@ -1,7 +1,8 @@
 import React from 'react'
 import { 
 	StyleSheet, View, Text, Image, TextInput, ScrollView,
-	TouchableOpacity, TouchableHighlight, LogBox, Animated, Easing
+	TouchableOpacity, TouchableHighlight, LogBox, Animated, Easing,
+	ToastAndroid, Platform, AlertIOS
 } from 'react-native'
 import ReactNativeBiometrics from 'react-native-biometrics'
 
@@ -120,19 +121,31 @@ export default class VPREQ_VCsend extends React.Component {
 				})
 	}
 
+	showMessage = (message) => {
+		if (Platform.OS === 'android') {
+			ToastAndroid.show(message, ToastAndroid.SHORT)
+		  } else {
+			AlertIOS.alert(message);
+		  }
+	}
+
 	createSimplePrompt = () => {
 		ReactNativeBiometrics.simplePrompt({promptMessage: 'Authenticate your Smart ID Card'})
 				.then((resultObject) => {
 					const { success } = resultObject
 
 					if (success) {
-						
+						this.showMessage("Authentication Successful")
+
+						this.pickVCinArray()
+
 					} else {
-					console.log('user cancelled biometric prompt')
+						this.showMessage("User cancelled")
+
 					}
 				})
 				.catch(() => {
-					console.log('biometrics failed')
+					this.showMessage("Biometrics failed")
 				})
 	}
 	createSignatire = () => {
@@ -549,8 +562,8 @@ export default class VPREQ_VCsend extends React.Component {
 				</View>
 
 			<TouchableOpacity onPress={() => {
-				this.biometricAuthentication()
-						// this.setModalShow()
+				// this.biometricAuthentication()
+						this.setModalShow()
 				}}>
 
 
