@@ -32,7 +32,9 @@ var imgClose = require('../screens/assets/images/png/ic_btn_cls.png')
 var imgScan = require('../screens/assets/images/png/ic_btn_scan.png')
 var imgCard = require('../screens/assets/images/png/ic_issue.png')
 var myCertificateIcon = require('../screens/assets/images/png/clipboard.png')
+var myCertificateSelectedIcon = require('../screens/assets/images/png/clipboard_unselected.png')
 var settingsIcon = require('../screens/assets/images/png/profile_person.png')
+var settingsSelectedIcon = require('../screens/assets/images/png/profile_person_selected.png')
 var scanIcon = require('../screens/assets/images/png/scanner.png')
 
 
@@ -603,7 +605,7 @@ export default class Home extends React.Component {
 					style={home.certificateContainer}
 						onPress={() => this.setSettingsShow()}>	
 							<View style={home.certificateContainer}>
-								<Image source={myCertificateIcon}></Image>
+								<Image source={this.state.isSettingsSelected ? myCertificateSelectedIcon : myCertificateIcon}></Image>
 								<Text>나의 인증서</Text>
 							</View>
 					</TouchableOpacity>
@@ -619,7 +621,7 @@ export default class Home extends React.Component {
 				style={home.profileContainer}
 						onPress={() => this.setSettingsShow()}>	
 						<View style={home.profileContainer}>
-							<Image source={settingsIcon}></Image>
+							<Image source={this.state.isSettingsSelected ? settingsSelectedIcon : settingsIcon}></Image>
 							<Text>설정</Text>
 			   		</View>
 				</TouchableOpacity>
