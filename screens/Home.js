@@ -31,8 +31,8 @@ var imgSearch = require('../screens/assets/images/png/ic_btn_detail.png')
 var imgClose = require('../screens/assets/images/png/ic_btn_cls.png')
 var imgScan = require('../screens/assets/images/png/ic_btn_scan.png')
 var imgCard = require('../screens/assets/images/png/ic_issue.png')
-var myCertificateIcon = require('../screens/assets/images/png/clipboard.png')
-var myCertificateSelectedIcon = require('../screens/assets/images/png/clipboard_unselected.png')
+var myCertificateIcon = require('../screens/assets/images/png/clipboard_unselected.png')
+var myCertificateSelectedIcon = require('../screens/assets/images/png/clipboard.png')
 var settingsIcon = require('../screens/assets/images/png/profile_person.png')
 var settingsSelectedIcon = require('../screens/assets/images/png/profile_person_selected.png')
 var scanIcon = require('../screens/assets/images/png/scanner.png')
@@ -336,11 +336,11 @@ export default class Home extends React.Component {
 			return (	
 				<View style={cards.cardContainer}>
 
-							<View style={cards.indicatorWrapper}>
+							{/* <View style={cards.indicatorWrapper}>
 								<Image style={cards.addNewStyle} source={require('../screens/assets/images/png/add_new.png')} />
 								<Text style={cards.lineStyle}> | </Text>
 								<Text style={cards.totalCountStyle}>{this.state.VCarray.length}</Text>
-							</View>
+							</View> */}
 
 
 					<View style={common.contents}>
@@ -352,7 +352,7 @@ export default class Home extends React.Component {
 						</View>
 
 						
-						<Text style={cards.noIDTextSecondary}>아직 발급받은 ID가 없습니다. {"\n"}ID를 발급받아 주세요.</Text>
+						{/* <Text style={cards.noIDTextSecondary}>아직 발급받은 ID가 없습니다. {"\n"}ID를 발급받아 주세요.</Text> */}
 						
 					</View>
 					
@@ -367,9 +367,9 @@ export default class Home extends React.Component {
 					<View style={cards.cardContainer}>
 
 							<View style={cards.indicatorWrapper}>
-								<Text style={cards.currentIndexStyle}>{index + 1}</Text>
+								<Text style={cards.currentIndexStyle}>{index}</Text>
 								<Text style={cards.lineStyle}> | </Text>
-								<Text style={cards.totalCountStyle}>{this.state.VCarray.length}</Text>
+								<Text style={cards.totalCountStyle}>{this.state.VCarray.length -1 }</Text>
 							</View>
 
 
