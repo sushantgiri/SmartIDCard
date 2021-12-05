@@ -848,7 +848,7 @@ export default class Home extends React.Component {
  	componentDidMount(){
 		this.linktest();
 		this.setStateData();
-		this.biometricAuthentication()
+		// this.biometricAuthentication()
   	}
 }
 

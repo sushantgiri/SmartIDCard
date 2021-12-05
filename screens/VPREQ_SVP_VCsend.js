@@ -549,7 +549,7 @@ export default class VPREQ_VCsend extends React.Component {
 					</View>
 				</TouchableOpacity>
 
-				<Text style={certificateStyles.headerStyle}>검증된 서비스 제공자의 정보입니다.</Text>
+				<Text style={certificateStyles.headerStyle}>인증서를 선택하시고 제출하세요.</Text>
 
 				<View style={certificateStyles.listWrapper}>
 				{this.state.VCarray.map((vc, index)=>{
