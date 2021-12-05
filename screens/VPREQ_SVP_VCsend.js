@@ -116,6 +116,7 @@ export default class VPREQ_VCsend extends React.Component {
 					} else if (available && biometryType === ReactNativeBiometrics.Biometrics) {
 						this.createSimplePrompt()
 					} else {
+						this.setModalShow()
 					console.log('Biometrics not supported')
 					}
 				})
@@ -146,6 +147,7 @@ export default class VPREQ_VCsend extends React.Component {
 				})
 				.catch(() => {
 					this.showMessage("Biometrics failed")
+					this.setModalShow()
 				})
 	}
 	createSignatire = () => {
@@ -562,8 +564,8 @@ export default class VPREQ_VCsend extends React.Component {
 				</View>
 
 			<TouchableOpacity onPress={() => {
-				// this.biometricAuthentication()
-						this.setModalShow()
+				this.biometricAuthentication()
+						// this.setModalShow()
 				}}>
 
 

@@ -606,7 +606,7 @@ export default class Home extends React.Component {
 						onPress={() => this.setSettingsShow()}>	
 							<View style={home.certificateContainer}>
 								<Image source={this.state.isSettingsSelected ? myCertificateSelectedIcon : myCertificateIcon}></Image>
-								<Text>나의 인증서</Text>
+								<Text>{this.state.isSettingsSelected ? '나의 인증서' : '나의 인증서'}</Text>
 							</View>
 					</TouchableOpacity>
 
@@ -622,7 +622,7 @@ export default class Home extends React.Component {
 						onPress={() => this.setSettingsShow()}>	
 						<View style={home.profileContainer}>
 							<Image source={this.state.isSettingsSelected ? settingsSelectedIcon : settingsIcon}></Image>
-							<Text>설정</Text>
+							<Text>{this.state.isSettingsSelected ? '설정' : '설정' }</Text>
 			   		</View>
 				</TouchableOpacity>
 
