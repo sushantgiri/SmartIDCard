@@ -1,5 +1,5 @@
 import React from 'react';
-import {Text, View, StyleSheet, Image, Dimensions} from 'react-native';
+import {Text, View, StyleSheet, Image, Dimensions, Switch} from 'react-native';
 import PropTypes from 'prop-types';
 
 var contactsIcon = require('../screens/assets/images/png/contact_icon.png')
@@ -18,14 +18,35 @@ export default class SettingsScreen extends React.Component {
               <View style={listStyle.card} /> 
               <Text style={listStyle.cardItemLabel}>{entry}</Text>
             </View>
-            
-
         )
+    }
+
+    toggleSwitch = () => {
+        this.setState({
+            isBiometricEnabled: !this.state.isBiometricEnabled,
+        })
+        this.setState({
+            isPasswordEnabled: !this.state.isBiometricEnabled ? false: true
+        })
+        // this.togglePasswordSwitch()
+    }
+
+    togglePasswordSwitch = () => {
+        this.setState({
+            isPasswordEnabled: !this.state.isPasswordEnabled,
+        })
+
+        this.setState({
+            isBiometricEnabled: !this.state.isPasswordEnabled ? false : true
+        })
+        // this.toggleSwitch()
     }
 
 
     state = {
         cardArray: ['이용안내', '서비스 소개', '문의'],
+        isBiometricEnabled: true,
+        isPasswordEnabled: false,
     
     }
 
@@ -49,6 +70,47 @@ export default class SettingsScreen extends React.Component {
                     <View style={settingsScreenStyle.actualAddressContainer}>
                         <Text style={settingsScreenStyle.addressLabel}>{this.props.address}</Text>
                     </View>
+
+                </View>
+
+
+            <View>
+                <View style={settingsOptions.mainContainer}>
+
+                    <View style={settingsOptions.mainSubContainer}>
+                        <View style={settingsOptions.item_square}/>
+                        <Text style={settingsOptions.item_title}>얼굴인식</Text>
+                    </View>
+
+                
+                    <Switch
+                        style={settingsOptions.switchStyle}
+                        trackColor={{ false: "#E6EBF3", true: "#EEFCF8" }}
+                        thumbColor={this.state.isBiometricEnabled ? "#109D77" : "#f4f3f4"}
+                        ios_backgroundColor="#3e3e3e"
+                        onValueChange={this.toggleSwitch}
+                        value={this.state.isBiometricEnabled} />
+
+                </View>
+
+                <View style={settingsOptions.mainContainer}>
+
+                    <View style={settingsOptions.mainSubContainer}>
+                        <View style={settingsOptions.item_square}/>
+                        <Text style={settingsOptions.item_title}>지문</Text>
+                    </View>
+
+                
+                    <Switch
+                        style={settingsOptions.switchStyle}
+                        trackColor={{ false: "#E6EBF3", true: "#EEFCF8" }}
+                        thumbColor={this.state.isPasswordEnabled ? "#109D77" : "#f4f3f4"}
+                        ios_backgroundColor="#3e3e3e"
+                        onValueChange={this.togglePasswordSwitch}
+                        value={this.state.isPasswordEnabled} />
+
+                </View>
+
 
                 </View>
 
@@ -133,6 +195,36 @@ export default class SettingsScreen extends React.Component {
 SettingsScreen.propTypes = {
 	address: PropTypes.string.isRequired
 };
+
+const settingsOptions = StyleSheet.create({
+    mainContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent:'space-between',
+        padding: 8,
+        marginBottom: 12,
+    },
+
+    mainSubContainer: {
+        flexDirection: 'row',
+        alignItems: 'center'
+    },
+    item_square: {
+        borderRadius: 4,
+        padding: 12,
+        marginEnd: 14,
+        backgroundColor: '#C5C8CB'
+    },
+
+    item_title: {
+        color: '#1A2433',
+        fontSize: 16,
+    },
+
+    switchStyle: {
+        justifyContent: 'flex-end'
+    }
+})
 
 const refreshSection = StyleSheet.create({
 
