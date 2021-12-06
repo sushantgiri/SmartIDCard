@@ -98,6 +98,7 @@ export default class VPREQ_VCsend extends React.Component {
 		SVCArray:[],
 		spinValue : new Animated.Value(0),
 		showPasswordModal: false,
+		isBiometricEnabled: false,
 	}
   
   	//비밀번호 확인 input control
@@ -192,6 +193,10 @@ export default class VPREQ_VCsend extends React.Component {
   	}
 
   	setStateData = async() => {
+
+		await SecureStorage.getItem('isBiometricsEnabled').then((isBio) => {
+			this.setState({isBiometricEnabled: isBio === 'true'}); // Set Biometrics
+		})
 	  	// Get password
 		await SecureStorage.getItem('userToken').then((pw) => {
 			this.setState({ password:pw }); // Set password
@@ -564,8 +569,7 @@ export default class VPREQ_VCsend extends React.Component {
 				</View>
 
 			<TouchableOpacity onPress={() => {
-				this.biometricAuthentication()
-						// this.setModalShow()
+				{this.state.isBiometricEnabled ? this.biometricAuthentication(): this.setModalShow()}
 				}}>
 
 

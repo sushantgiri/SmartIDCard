@@ -31,10 +31,10 @@ var imgSearch = require('../screens/assets/images/png/ic_btn_detail.png')
 var imgClose = require('../screens/assets/images/png/ic_btn_cls.png')
 var imgScan = require('../screens/assets/images/png/ic_btn_scan.png')
 var imgCard = require('../screens/assets/images/png/ic_issue.png')
-var myCertificateIcon = require('../screens/assets/images/png/clipboard_unselected.png')
-var myCertificateSelectedIcon = require('../screens/assets/images/png/clipboard.png')
-var settingsIcon = require('../screens/assets/images/png/profile_person.png')
-var settingsSelectedIcon = require('../screens/assets/images/png/profile_person_selected.png')
+var myCertificateUnselectedIcon = require('../screens/assets/images/png/clip_unselected.png')
+var myCertificateSelectedIcon = require('../screens/assets/images/png/clip_selected.png')
+var settingsUnselectedIcon = require('../screens/assets/images/png/profile_unselected.png')
+var settingsSelectedIcon = require('../screens/assets/images/png/profile_selected.png')
 var scanIcon = require('../screens/assets/images/png/scanner.png')
 
 
@@ -605,8 +605,8 @@ export default class Home extends React.Component {
 					style={home.certificateContainer}
 						onPress={() => this.setSettingsShow()}>	
 							<View style={home.certificateContainer}>
-								<Image source={this.state.isSettingsSelected ? myCertificateSelectedIcon : myCertificateIcon}></Image>
-								<Text>{this.state.isSettingsSelected ? '나의 인증서' : '나의 인증서'}</Text>
+								<Image source={this.state.isSettingsSelected ?myCertificateUnselectedIcon : myCertificateSelectedIcon}></Image>
+								<Text>{this.state.isSettingsSelected ? "나의 인증서" : "나의 인증서"}</Text>
 							</View>
 					</TouchableOpacity>
 
@@ -621,8 +621,8 @@ export default class Home extends React.Component {
 				style={home.profileContainer}
 						onPress={() => this.setSettingsShow()}>	
 						<View style={home.profileContainer}>
-							<Image source={this.state.isSettingsSelected ? settingsSelectedIcon : settingsIcon}></Image>
-							<Text>{this.state.isSettingsSelected ? '설정' : '설정' }</Text>
+							<Image source={this.state.isSettingsSelected ? settingsSelectedIcon : settingsUnselectedIcon}></Image>
+							<Text>{this.state.isSettingsSelected ? "설정" : "설정" }</Text>
 			   		</View>
 				</TouchableOpacity>
 
@@ -776,13 +776,13 @@ export default class Home extends React.Component {
 				
 				<View style={home.container}>
 				<TouchableOpacity
-						onPress={() => this.setSettingsShow()}
-						style={home.certificateContainer}>	
-					<View style={home.certificateContainer}>
-						<Image source={myCertificateIcon} ></Image>
-						<Text>나의 인증서</Text>
-			   		</View>
-				</TouchableOpacity>
+					style={home.certificateContainer}
+						onPress={() => this.setSettingsShow()}>	
+							<View style={home.certificateContainer}>
+								<Image source={this.state.isSettingsSelected ?  myCertificateUnselectedIcon : myCertificateSelectedIcon}></Image>
+								<Text>{this.state.isSettingsSelected ? "나의 인증서" : "나의 인증서"}</Text>
+							</View>
+					</TouchableOpacity>
 
 					<TouchableOpacity onPress={this.goScan} style={home.touchableContainer}>
 							<View style={home.scannerContainer}>
@@ -791,16 +791,14 @@ export default class Home extends React.Component {
 
 					</TouchableOpacity>
 					   
-					<TouchableOpacity
-						onPress={() => this.setSettingsShow()} style={home.profileContainer}>			
-					<View style={home.profileContainer}>
-							<Image source={settingsIcon}  style={
-							{ tintColor: this.state.isSettingsSelected ?  'black'
-						: 'gray'}
-							}></Image>
-							<Text>설정</Text>
+				<TouchableOpacity
+				style={home.profileContainer}
+						onPress={() => this.setSettingsShow()}>	
+						<View style={home.profileContainer}>
+							<Image source={this.state.isSettingsSelected ? settingsSelectedIcon : settingsUnselectedIcon}></Image>
+							<Text>{this.state.isSettingsSelected ? "설정" : "설정" }</Text>
 			   		</View>
-					   </TouchableOpacity>
+				</TouchableOpacity>
 
 				</View>
 					{/* TO BE : Common 모듈로 분리 */}
@@ -907,7 +905,7 @@ const home = StyleSheet.create({
 
 	container: {
 		 flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center',
-		 marginBottom: 10
+		 marginBottom: 10, backgroundColor: '#ffffff'
 	},
 
 	topBarContainer: {

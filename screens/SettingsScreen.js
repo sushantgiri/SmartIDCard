@@ -1,6 +1,7 @@
 import React from 'react';
-import {Text, View, StyleSheet, Image, Dimensions, Switch} from 'react-native';
+import {Text, View, StyleSheet, Image, Dimensions, Switch, ScrollView} from 'react-native';
 import PropTypes from 'prop-types';
+import SecureStorage from 'react-native-secure-storage'
 
 var contactsIcon = require('../screens/assets/images/png/contact_icon.png')
 var rightIcon = require('../screens/assets/images/png/right_icon.png')
@@ -10,7 +11,15 @@ var newCircleIcon = require('../screens/assets/images/png/new_circle.png')
 var cardStackIcon = require('../screens/assets/images/png/cardStack.png')
 var refreshIcon = require('../screens/assets/images/png/refresh.png')
 
+
 export default class SettingsScreen extends React.Component {
+
+    state = {
+        cardArray: ['이용안내', '서비스 소개', '문의'],
+        isBiometricEnabled: true,
+        isPasswordEnabled: false
+    
+    }
 
     renderCardItem = (entry) => {
         return(
@@ -21,37 +30,71 @@ export default class SettingsScreen extends React.Component {
         )
     }
 
+    setStateData = async() => {
+
+        await SecureStorage.getItem('isBiometricsEnabled').then((isBio) => {
+			this.setState({isBiometricEnabled: isBio === 'true'}); // Set Biometrics
+		});
+
+        await SecureStorage.getItem('isPasswordEnabled').then((isPass) => {
+			this.setState({isPasswordEnabled: isPass === 'true'}); // Set password
+		}) ;
+
+    }
+
+    saveSettingsState = async() => {
+
+        console.log('isBio' , this.state.isBiometricEnabled)
+        console.log('isPass', this.state.isPasswordEnabled)
+       
+        SecureStorage.setItem('isBiometricsEnabled', ''+this.state.isBiometricEnabled);
+        SecureStorage.setItem('isPasswordEnabled', ''+this.state.isPasswordEnabled);
+    }
+
+
+
+    componentDidMount(){
+        console.log('isBioFirst' , this.state.isBiometricEnabled)
+        console.log('isPassFirst', this.state.isPasswordEnabled)
+        this.setStateData();
+
+    }
+
+
+
     toggleSwitch = () => {
-        this.setState({
-            isBiometricEnabled: !this.state.isBiometricEnabled,
-        })
-        this.setState({
-            isPasswordEnabled: !this.state.isBiometricEnabled ? false: true
-        })
-        // this.togglePasswordSwitch()
+        this.state.isBiometricEnabled = !this.state.isBiometricEnabled
+        this.setState({isBiometricEnabled: this.state.isBiometricEnabled})
+
+        if(this.state.isBiometricEnabled){
+            this.state.isPasswordEnabled = false
+            this.setState({isPasswordEnabled: this.state.isPasswordEnabled})
+        }
+    
+        this.saveSettingsState();
     }
 
     togglePasswordSwitch = () => {
-        this.setState({
-            isPasswordEnabled: !this.state.isPasswordEnabled,
-        })
+        this.state.isPasswordEnabled = !this.state.isPasswordEnabled
+        this.setState({isPasswordEnabled: this.state.isPasswordEnabled})
 
-        this.setState({
-            isBiometricEnabled: !this.state.isPasswordEnabled ? false : true
-        })
-        // this.toggleSwitch()
-    }
-
-
-    state = {
-        cardArray: ['이용안내', '서비스 소개', '문의'],
-        isBiometricEnabled: true,
-        isPasswordEnabled: false,
+        if(this.state.isPasswordEnabled){
+            this.state.isBiometricEnabled = false
+            this.setState({isBiometricEnabled: this.state.isBiometricEnabled})
+        }
     
+        this.saveSettingsState();
     }
+
+
+    
 
     render(){
         return(
+            <ScrollView 
+            showsVerticalScrollIndicator={false}
+            style={settingsScreenStyle.bottomFix}>
+
             <View style={settingsScreenStyle.rootContainer}>
 
                 <View style={settingsScreenStyle.firstContainer}>
@@ -188,6 +231,7 @@ export default class SettingsScreen extends React.Component {
                 </View>
 
             </View>
+            </ScrollView>
         )
     }
 }
@@ -323,6 +367,13 @@ const listStyle = StyleSheet.create({
 })
 
 const settingsScreenStyle = StyleSheet.create({
+
+    bottomFix: {
+     width: '100%',
+    //  position: 'absolute', 
+     bottom: 0,
+     backgroundColor: '#EEF0F5',        
+    },
 
     rootContainer: {
         backgroundColor: '#EEF0F5',
