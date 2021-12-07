@@ -1,14 +1,65 @@
 import React from 'react';
-import {Text, View, TouchableOpacity, StyleSheet, Dimensions, Image} from 'react-native'
+import {Text, View, TouchableOpacity, StyleSheet, Dimensions, Image, Animated} from 'react-native'
 
 
 var headerIcon = require('../screens/assets/images/png/card_icon.png')
+var okIcon = require('../screens/assets/images/png/ok.png')
 
 export default class CardScanning extends React.Component {
 
+    state = {
+        fadeAnimation:  new Animated.Value(0),
+        slideAnimation: new Animated.Value(0),
+    }
+
+    componentDidMount(){
+        // this.slideIn()
+        this.fadeIn()
+        
+    }
+
+    slideIn = () => {
+        Animated.timing(this.state.slideAnimation, {
+            toValue: 1,
+            duration: 2000,
+        }).start();
+    }
+
+    fadeIn = () => {
+        Animated.timing(this.state.fadeAnimation, {
+          toValue: 1,
+          duration: 4000
+        }).start(() => {
+            this.props.navigation.push('VCselect',{password:this.state.password});
+
+        });
+      };
+
     render(){
+        let {slideAnimation} = this.state;
         return (
             <View style={cardScanningStyles.rootContainer}>
+
+        {/* <Animated.View
+          style={{
+            transform: [
+              {
+                translateY: slideAnimation.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [-600, 0]
+                })
+              }
+            ],
+            height: 1,
+            width: 200,
+            margin: 5,
+            borderRadius: 12,
+            backgroundColor: "#347a2a",
+            justifyContent: "center"
+          }}
+        >
+
+        </Animated.View > */}
                 
             <View >
 
@@ -30,12 +81,41 @@ export default class CardScanning extends React.Component {
 
             <Text style={cardScanningStyles.loaderLabelStyle}>인증서를 스캔중입니다...</Text>
 
+            <Animated.View
+                        style={[
+                            cardScanningStyles.fadingContainer,
+                            {
+                            opacity: this.state.fadeAnimation
+                            }
+                        ]}>
+                            <Image source={okIcon} style={cardScanningStyles.fadingImage} />
+                        <Text style={cardScanningStyles.fadingText}>인증이 완료되었습니다.</Text>
+             </Animated.View>
+
             </View>
         )
     }
 }
 
 const cardScanningStyles = StyleSheet.create({
+
+    fadingContainer: {
+        paddingVertical: 24,
+        paddingHorizontal: 24,
+        borderRadius: 8,
+        backgroundColor: '#ffffff',
+        flexDirection: 'row',
+        elevation: 8,
+        margin: 20
+      },
+
+      fadingText: {
+            fontSize: 16,
+      },
+
+      fadingImage: {
+            marginEnd: 8,
+      },
 
     rootContainer : {
         backgroundColor: '#ffffff',
