@@ -1,5 +1,8 @@
 import React from 'react'
-import { StyleSheet, Text, ScrollView, View, TextInput, TouchableOpacity, Modal, TouchableHighlight, Image} from 'react-native'
+import { StyleSheet, Text, ScrollView, View, TextInput, TouchableOpacity, Modal, TouchableHighlight, Image, 
+    ToastAndroid,
+    Platform,
+    AlertIOS} from 'react-native'
 
 // Crypto JS 모듈
 import CryptoJS from 'react-native-crypto-js';
@@ -101,6 +104,14 @@ async function did () {
 	console.log("<- verifyJWT ------------------------------->")
 	console.log(JSON.stringify((await dualDid.verifyJWT(did.jwt)), null, 4))
 }
+
+function notifyMessage(msg) {
+    if (Platform.OS === 'android') {
+      ToastAndroid.show(msg, ToastAndroid.SHORT)
+    } else {
+      AlertIOS.alert(msg);
+    }
+  }
 
 export default class Signup extends React.Component {
     state = {
@@ -243,8 +254,15 @@ export default class Signup extends React.Component {
                         </View> */}
                         <View style={signup.bBox}>
                             <Text style={signup.bBoxText}>{this.state.mnemonic}</Text>
-                            <TouchableOpacity style={signup.bBoxButton} activeOpacity={0.8} onPress={()=>Clipboard.setString(this.state.mnemonic)}>
-                                <Text style={signup.bBoxButtonText}>복구코드 복사하기</Text>
+                            <TouchableOpacity style={signup.bBoxButton} activeOpacity={0.8} onPress={()=>{
+                                Clipboard.setString(this.state.mnemonic);
+                                notifyMessage('Text copied to clipboard\n' + this.state.mnemonic)
+
+                            }
+                               
+                                
+                                }>
+                                <Text selectable={true} style={signup.bBoxButtonText}>복구코드 복사하기</Text>
                             </TouchableOpacity>
                         </View>
                         <View style={signup.cBox}>
