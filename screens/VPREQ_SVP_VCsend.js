@@ -273,16 +273,17 @@ export default class VPREQ_VCsend extends React.Component {
 
 		// WebSocket Connection
 		ws = new WebSocket(socketURL);
+		console.log('Socket Room', socketRoom);
 		ws.onopen = () => { ws.send('{"type":"authm", "no":"'+socketRoom+'"}'); }
 		ws.onmessage = (e) => {
 			 console.log('Testing....' ,e); 
-			 if(e.isTrusted){
-				this.sendChallenger(); 
-			 }else{
-				this.setState({ViewMode: 3})
-			 }
+			//  if(e.isTrusted){
+			// 	this.sendChallenger(); 
+			//  }else{
+			// 	this.setState({ViewMode: 3})
+			//  }
 
-			// this.sendChallenger(); 
+			this.sendChallenger(); 
 			 }
 		ws.onerror = (e) => {
 			// an error occurred
