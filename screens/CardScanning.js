@@ -1,5 +1,7 @@
 import React from 'react';
 import {Text, View, TouchableOpacity, StyleSheet, Dimensions, Image, Animated} from 'react-native'
+import LottieView from 'lottie-react-native';
+import BarcodeMask from './components';
 
 
 var headerIcon = require('../screens/assets/images/png/card_icon.png')
@@ -9,36 +11,78 @@ export default class CardScanning extends React.Component {
 
     state = {
         fadeAnimation:  new Animated.Value(0),
+        fadeOutAnimation:  new Animated.Value(0),
         slideAnimation: new Animated.Value(0),
+        fadedOut: false,
+
+        lineStart: new Animated.Value(0),
+        lineEnd: new Animated.Value(0)
+
     }
 
     componentDidMount(){
         // this.slideIn()
-        this.fadeIn()
-        
+        // this.fadeIn(); 
+        this.fadeOut();       
+    }
+
+    lineAnimation = () => {
+        // Animated.loop(
+        //     Animated.sequence([
+        //       Animated.timing(this.state[propertyToChange], {
+        //         toValue: endValue,
+        //         duration: lineAnimationDuration,
+        //         useNativeDriver
+        //       }),
+        //       Animated.timing(this.state[propertyToChange], {
+        //         toValue: startValue,
+        //         duration: lineAnimationDuration,
+        //         useNativeDriver
+        //       })
+        //     ])
+        //   );
+        // this.animation.start();
     }
 
     slideIn = () => {
         Animated.timing(this.state.slideAnimation, {
             toValue: 1,
             duration: 2000,
-        }).start();
+        }).start(() => {
+
+        });
     }
 
     fadeIn = () => {
         Animated.timing(this.state.fadeAnimation, {
           toValue: 1,
-          duration: 4000
+          duration: 2000
         }).start(() => {
+            
             this.props.navigation.push('VCselect',{password:this.state.password});
-
         });
+      };
+
+      fadeOut = () => {
+        setTimeout(() => {
+            this.fadeIn()
+            this.setState({
+                fadedOut: true,
+            });
+        }, 500)
+        
       };
 
     render(){
         let {slideAnimation} = this.state;
         return (
             <View style={cardScanningStyles.rootContainer}>
+                   <BarcodeMask height={Dimensions.get('window').height/2}
+                backgroundColor='#30E5BD'
+                lineAnimationDuration={500}/>
+
+
+            
 
         {/* <Animated.View
           style={{
@@ -63,7 +107,8 @@ export default class CardScanning extends React.Component {
                 
             <View >
 
-                <View style={cardScanningStyles.childContainer}>
+         
+                {/* <View style={cardScanningStyles.childContainer}>
 
                     <View style={cardScanningStyles.subChildContainer}>
 
@@ -75,11 +120,14 @@ export default class CardScanning extends React.Component {
 
                     </View>
 
-                </View>
+                </View> */}
 
             </View>
 
-            <Text style={cardScanningStyles.loaderLabelStyle}>인증서를 스캔중입니다...</Text>
+           
+
+           {!this.state.fadedOut && (<Text style={cardScanningStyles.loaderLabelStyle}>인증서를 스캔중입니다...</Text>)}
+
 
             <Animated.View
                         style={[
@@ -106,7 +154,15 @@ const cardScanningStyles = StyleSheet.create({
         backgroundColor: '#ffffff',
         flexDirection: 'row',
         elevation: 8,
-        margin: 20
+        margin: 20,
+        position:'absolute',
+        bottom: 0,
+        flex: 1,
+        width: Dimensions.get('window').width - 40,
+      },
+
+      fadingSubContainer: {
+
       },
 
       fadingText: {
@@ -167,7 +223,14 @@ const cardScanningStyles = StyleSheet.create({
         fontSize: 20,
         fontWeight: '600',
         marginTop: 40,
-        alignSelf: 'center'
+        alignSelf: 'center',
+        position: 'absolute',
+        bottom: Dimensions.get('window').width/3,
+    },
+
+    fadingTextStyle: {
+        position: 'absolute',
+        bottom: Dimensions.get('window').width/3,
     },
 
     lineStyle: {

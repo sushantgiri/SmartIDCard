@@ -131,6 +131,7 @@ export default class VCselect extends React.Component {
     if(receivedVC != "VCvalue"){
       const decodedVC = JSON.stringify(receivedVC).substring(28,JSON.stringify(receivedVC).length-2)
       const VCform = jwt_decode(decodedVC)
+      console.log('VCForm', VCform);
       this.setState({
         VCarray: this.state.VCarray.concat([VCform]),
         VCjwtArray: this.state.VCjwtArray.concat([receivedVC])

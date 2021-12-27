@@ -135,10 +135,13 @@ export default class HappyCitizenship extends React.Component {
                     </View>
                 </View>
 
-                <View style={styles.searchContainer}>
+                <TouchableOpacity 
+                    style={styles.searchContainer}
+                    onPress={() => {this.props.navigation.navigate('VPInfo')}}
+                    >
                     <Image source={require('../screens/assets/images/png/happy_citizen_search.png')} />
                     <Text style={styles.searchTextStyle}>정보 제공 내역</Text>
-                </View>
+                </TouchableOpacity>
 
                 {this.renderQRScanView()}
             </View>
@@ -274,6 +277,17 @@ const styles = StyleSheet.create({
         marginEnd: 24,
         padding:12,
 
+    },
+
+    vpInfoContainer: {
+        borderRadius: 4,
+        backgroundColor:'#DBF6EF',
+        flexDirection: 'row',
+        justifyContent:'center',
+        marginTop: 12,
+        marginStart:24,
+        marginEnd: 24,
+        padding:12,
     },
 
     searchTextStyle: {

@@ -2,7 +2,7 @@ import React from 'react'
 import { 
 	StyleSheet, View, Text, Image, TextInput, ScrollView,
 	TouchableOpacity, TouchableHighlight, LogBox, Animated, Easing,
-	ToastAndroid, Platform, AlertIOS
+	ToastAndroid, Platform, AlertIOS, Dimensions
 } from 'react-native'
 import ReactNativeBiometrics from 'react-native-biometrics'
 
@@ -23,6 +23,7 @@ var imgCard = require('../screens/assets/images/png/ic_issue.png')
 var imgClose = require('../screens/assets/images/png/ic_btn_cls.png')
 var imageCheck = require('../screens/assets/images/png/ic_chk.png')
 var imageChain = require('../screens/assets/images/png/ic_chain.png')
+var verifyingLoader = require('../screens/assets/images/png/verifying_loader.png')
 
 var socketRoom ='';
 var socketURL = '';
@@ -37,7 +38,8 @@ var challenger = String(Math.floor(Math.random() * 10000) + 1);
 
 var closeIcon = require('../screens/assets/images/png/close_scanner.png');
 var loadingIcon = require('../screens/assets/images/png/refresh_loading.png');
-var cardIcon = require('../screens/assets/images/png/secondary.png')
+var cardIcon = require('../screens/assets/images/png/secondary.png');
+var verificationFailedIcon = require('../screens/assets/images/png/verification_failed.png');
 
 
 function createDualSigner (jwtSigner, ethAccount) {
@@ -96,9 +98,12 @@ export default class VPREQ_VCsend extends React.Component {
 		ViewMode: 0,
 
 		SVCArray:[],
+		SVCTimeArray:[],
 		spinValue : new Animated.Value(0),
 		showPasswordModal: false,
 		isBiometricEnabled: false,
+		isFaceEnabled: false,
+        isFingerPrintEnabled: false,
 	}
   
   	//비밀번호 확인 input control
@@ -111,11 +116,14 @@ export default class VPREQ_VCsend extends React.Component {
 				.then((resultObject) => {
 					const { available, biometryType } = resultObject
 					if (available && biometryType === ReactNativeBiometrics.TouchID) {
+						console.log('TouchID');
 						this.createSimplePrompt()
 					} else if (available && biometryType === ReactNativeBiometrics.FaceID) {
 						this.createSimplePrompt()
+						console.log('FaceID');
 					} else if (available && biometryType === ReactNativeBiometrics.Biometrics) {
 						this.createSimplePrompt()
+						console.log('Biometrics');
 					} else {
 						this.setModalShow()
 					console.log('Biometrics not supported')
@@ -188,7 +196,9 @@ export default class VPREQ_VCsend extends React.Component {
 
 	// Cancel
 	cancel = () => { 
-    	ws.send('{"type":"exit"}')
+		if(ws != null){
+			ws.send('{"type":"exit"}')
+		}
     	this.props.navigation.navigate('VCselect',{password:this.state.password});
   	}
 
@@ -196,6 +206,16 @@ export default class VPREQ_VCsend extends React.Component {
 
 		await SecureStorage.getItem('isBiometricsEnabled').then((isBio) => {
 			this.setState({isBiometricEnabled: isBio === 'true'}); // Set Biometrics
+		})
+
+		await SecureStorage.getItem('isFaceEnabled').then((isFaceEnabled) => {
+			console.log('Face Data', isFaceEnabled);
+			this.setState({isFaceEnabled: isFaceEnabled === 'true'}); // Set Biometrics
+		})
+
+		await SecureStorage.getItem('isFingerPrintEnabled').then((isFingerPrintEnabled) => {
+			console.log('FingerPrint Data', isFingerPrintEnabled);
+			this.setState({isFingerPrintEnabled: isFingerPrintEnabled === 'true'}); // Set Biometrics
 		})
 	  	// Get password
 		await SecureStorage.getItem('userToken').then((pw) => {
@@ -254,7 +274,26 @@ export default class VPREQ_VCsend extends React.Component {
 		// WebSocket Connection
 		ws = new WebSocket(socketURL);
 		ws.onopen = () => { ws.send('{"type":"authm", "no":"'+socketRoom+'"}'); }
-		ws.onmessage = (e) => { console.log(e); this.sendChallenger(); }
+		ws.onmessage = (e) => {
+			 console.log('Testing....' ,e); 
+			 if(e.isTrusted){
+				this.sendChallenger(); 
+			 }else{
+				this.setState({ViewMode: 3})
+			 }
+
+			// this.sendChallenger(); 
+			 }
+		ws.onerror = (e) => {
+			// an error occurred
+			console.log(e.message);
+			this.setState({ViewMode: 3})
+		  };
+
+		ws.onclose = (e) => {
+			// connection closed
+			console.log(e.code, e.reason);
+		  };
   	}
 
 	// SVP Function
@@ -262,7 +301,10 @@ export default class VPREQ_VCsend extends React.Component {
       ws.send('{"type":"challenger","data":"'+challenger+'"}');
       ws.onmessage = (e) => {
           	const json = JSON.parse(e.data);
-          	if(json.type == "vp") this.verifyVP(json.data);
+			 console.log('JSON',json) 
+          	if(json.type == "vp") {
+				  this.verifyVP(json.data);
+			}
      	}
   	}
 
@@ -278,10 +320,15 @@ export default class VPREQ_VCsend extends React.Component {
 		const dualDid = new DualDID(dualSigner, 'Issuer(change later)', 'Dualauth.com(change later)',web3,'0x76A2dd4228ed65129C4455769a0f09eA8E4EA9Ae')
 
 		const result = await dualDid.verifyVP(vpJwt, challenger);
+		console.log('Result---->', result)
 		const code = result.code;
 		const data = result.data;
 		const msg = result.msg;
 		const success = result.success;
+		const isTrusted = result.isTrusted;
+
+		console.log('')
+		
 
 		if(code == "000.0" && success) {
 			const svcs = result.data.verifiablePresentation.verifiableCredential;
@@ -294,8 +341,10 @@ export default class VPREQ_VCsend extends React.Component {
 				svca.push(svc);
 			}
 			
-			console.log(svca);
+			console.log('SVCAArray', svca);
 			this.setState({ ViewMode:1, SVCArray:svca });
+		}else{
+			this.setState({ViewMode: 3})
 		}
     }
 
@@ -421,9 +470,58 @@ export default class VPREQ_VCsend extends React.Component {
 	}
 
 	successVPsubmit = () => {
-		ws.send('{"type":"exit"}')
-		this.props.navigation.push('CardScanning');
+		this.saveSVCLocally()
+		// ws.send('{"type":"exit"}')
+		ws.close()
+
+		console.log('SVCA-Array', this.state.SVCArray);
+
+		this.props.navigation.push('CardScanningTest');
 		// this.props.navigation.push('VCselect',{password:this.state.password});
+	}
+
+	saveSVCLocally = async() => {
+			let today = new Date().toLocaleDateString()
+	
+			var SVCTimeArrayLocal = await SecureStorage.getItem('svca');
+			if(SVCTimeArrayLocal){
+
+				JSON.parse(SVCTimeArrayLocal).map((timeStamp, index) =>{
+					if(timeStamp[today] != null && timeStamp[today] != 'undefined'){
+						var data = timeStamp[today];
+						var newData = data.concat(this.state.SVCArray[0]);
+	
+						var object = {};
+						object[today] = newData;
+					   
+						this.state.SVCTimeArray[index] = object;
+	
+						this.setState({});
+	
+						console.log('Repeating Time....', this.state.SVCTimeArray);
+						SecureStorage.setItem('svca', JSON.stringify(this.state.SVCTimeArray));
+
+
+						console.log('Time Array', this.state.SVCTimeArray);
+						console.log('Data', newData);
+					 
+					}
+				})
+
+
+			}else{
+				var object = {};
+                object[today] = this.state.SVCArray;
+				this.setState(
+                    {
+                        SVCTimeArray: this.state.SVCTimeArray.concat(object),
+                    },
+                )				
+				console.log('First Time....', this.state.SVCTimeArray);
+
+				SecureStorage.setItem('svca', JSON.stringify(this.state.SVCTimeArray));
+
+			}
 	}
 
 	hidePasswordModal = () => {
@@ -475,6 +573,8 @@ export default class VPREQ_VCsend extends React.Component {
 		
 		if(ViewMode == 0){
 
+			
+
 			return (
 				<ScrollView style={providersStyle.scrollContainer}>
                 <View  style={providersStyle.rootContainer}>
@@ -491,12 +591,12 @@ export default class VPREQ_VCsend extends React.Component {
 
                         <Text style={providersStyle.statusLabel}>검증여부 확인</Text>
                         <View style={providersStyle.loadingContainer}>
-                            <Text style={providersStyle.loadingLabelStyle}>{'진행중...'} </Text>
+                            <Text style={providersStyle.loadingNewLabelStyle}>{'진행중...'} </Text>
                         </View>
                     </View>
 
-				<View style={{height: '100%',flexDirection: 'column'}}>
-					<Image source={loadingIcon} style={providersStyle.refreshStyle} />
+				<View style={providersStyle.detailContainer}>
+					<Image source={verifyingLoader} style={providersStyle.refreshStyle} />
 				</View>
                 </View>
             </ScrollView>
@@ -515,11 +615,11 @@ export default class VPREQ_VCsend extends React.Component {
 	
 						<Text style={providersStyle.headerStyle}>검증된 서비스 제공자의 정보입니다.</Text>
 	
-						<View style={providersStyle.verifiedStatusContainer}>
+						<View style={providersStyle.verifiedNewStatusContainer}>
 	
 							<Text style={providersStyle.statusLabel}>검증여부 확인</Text>
-							<View style={providersStyle.verifiedContainer}>
-								<Text style={providersStyle.verifiedLabelStyle}>검증실패</Text>
+							<View style={providersStyle.verifiedNewContainer}>
+								<Text style={providersStyle.verifiedNewLabelStyle}>인증완료</Text>
 							</View>
 						</View>
 	
@@ -570,7 +670,7 @@ export default class VPREQ_VCsend extends React.Component {
 				</View>
 
 			<TouchableOpacity onPress={() => {
-				{this.state.isBiometricEnabled ? this.biometricAuthentication(): this.setModalShow()}
+				{this.state.isFaceEnabled ? this.biometricAuthentication(): this.setModalShow()}
 				}}>
 
 
@@ -690,10 +790,48 @@ export default class VPREQ_VCsend extends React.Component {
 			// 	</View>
 			// )
 		}
+
+		if(ViewMode == 3) {
+
+			return (
+				<ScrollView style={providersStyle.scrollContainer}>
+                <View  style={providersStyle.rootContainer}>
+					<TouchableOpacity
+						onPress={this.cancel}>
+                    <View style={providersStyle.closeContainer}>
+                        <Image source={closeIcon} />
+                    </View>
+					</TouchableOpacity>
+
+                    <Text style={providersStyle.headerStyle}>검증된 서비스 제공자의 정보입니다.</Text>
+
+                    <View style={providersStyle.errorStatusContainer}>
+
+                        <Text style={providersStyle.statusLabel}>검증여부 확인</Text>
+                        <View style={providersStyle.errorContainer}>
+                            <Text style={providersStyle.errorLabelStyle}>{'검증실패'} </Text>
+                        </View>
+                    </View>
+					<View style={{flexDirection:'column',height: Dimensions.get('window').height/2, justifyContent:'center'}}>
+						<Image source={verificationFailedIcon} style={providersStyle.failedImageStyle}/>
+					</View>
+					<TouchableOpacity onPress={this.cancel}>
+								<View style={providersStyle.buttonContainer}>
+									<Text style={providersStyle.buttonLabelStyle}>닫기</Text>
+								</View>
+		
+				    </TouchableOpacity>
+
+                </View>
+            </ScrollView>
+			)
+			
+		}
 	}
   
   	componentDidMount(){
    		this.setStateData();
+		console.log("Triggered1");
   	}
 }
 
@@ -848,6 +986,10 @@ const providersStyle = StyleSheet.create({
         marginBottom: 22,
     },
 
+	loadingStyle: {
+		
+	},
+
 	verifiedStatusContainer:{
 		borderRadius: 8,
         backgroundColor:'#FEF2EF',
@@ -859,9 +1001,32 @@ const providersStyle = StyleSheet.create({
         justifyContent:'space-between'
 	},
 
+	verifiedNewStatusContainer:{
+		borderRadius: 8,
+        backgroundColor:'#EFF8FF',
+        marginStart: 24,
+        marginEnd: 24,
+        padding: 16,
+        flexDirection: 'row',
+        alignItems:'center',
+        justifyContent:'space-between'
+	},
+
+	errorStatusContainer:{
+		borderRadius: 8,
+        backgroundColor:'#FEF2EF',
+        marginStart: 24,
+        marginEnd: 24,
+        padding: 16,
+        flexDirection: 'row',
+        alignItems:'center',
+        justifyContent:'space-between'
+	},
+
+
     statusContainer: {
         borderRadius: 8,
-        backgroundColor:'#EFF8FF',
+        backgroundColor:'#EEFCF8',
         marginStart: 24,
         marginEnd: 24,
         padding: 16,
@@ -876,10 +1041,23 @@ const providersStyle = StyleSheet.create({
         fontSize: 16,
     },
 
+	errorLabel: {
+        color: '#E1451A',
+        fontWeight: '600',
+        fontSize: 16,
+    },
+
 	verifiedContainer: {
 		borderRadius: 20,
 		backgroundColor: '#F7AF9B'
 	},
+
+	verifiedNewContainer: {
+		borderRadius: 20,
+		backgroundColor: '#C8E7FF'
+	},
+
+
 
 	verifiedLabelStyle: {
 		color: '#E1451A',
@@ -891,13 +1069,61 @@ const providersStyle = StyleSheet.create({
         paddingBottom: 8,
 	},
 
+	verifiedNewLabelStyle: {
+		color: '#0083FF',
+        fontSize: 16,
+        fontWeight: '600',
+        paddingStart: 12,
+        paddingEnd: 12,
+        paddingTop: 8,
+        paddingBottom: 8,
+	},
+
+	errorLabelStyle: {
+		color: '#E1451A',
+        fontSize: 16,
+        fontWeight: '600',
+        paddingStart: 12,
+        paddingEnd: 12,
+        paddingTop: 8,
+        paddingBottom: 8,
+	},
+
+	failedImageStyle: {
+		alignSelf: 'center',
+	},
     loadingContainer: {
         borderRadius: 20,
-        backgroundColor: '#C8E7FF',
+        backgroundColor: '#BAEEE1',
     },
+
+	errorContainer: {
+		borderRadius: 20,
+        backgroundColor: '#F7AF9B',
+	},
 
     loadingLabelStyle: {
         color: '#0083FF',
+        fontSize: 16,
+        fontWeight: '600',
+        paddingStart: 12,
+        paddingEnd: 12,
+        paddingTop: 8,
+        paddingBottom: 8,
+    },
+
+	loadingNewLabelStyle: {
+        color: '#1ECB9C',
+        fontSize: 16,
+        fontWeight: '600',
+        paddingStart: 12,
+        paddingEnd: 12,
+        paddingTop: 8,
+        paddingBottom: 8,
+    },
+
+	errorLabelStyle: {
+        color: '#E1451A',
         fontSize: 16,
         fontWeight: '600',
         paddingStart: 12,
@@ -918,8 +1144,8 @@ const providersStyle = StyleSheet.create({
     },
 
 	refreshStyle: {
-		alignSelf:'center',
-		marginTop:50
+		marginTop:20,
+		marginBottom: 20,
 	},
 
     labelStyle: {

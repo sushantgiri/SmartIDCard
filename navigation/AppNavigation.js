@@ -27,6 +27,7 @@ import SelectOptions from '../screens/SelectOptions'
 import VerifiedServiceProviders from '../screens/VerifiedServiceProviders'
 import CertificateSelectAndSubmit from '../screens/CertificateSelectAndSubmit'
 import CardScanning from '../screens/CardScanning'
+import CardScanningTest from '../screens/CardScanningTest'
 import SettingsScreen  from '../screens/SettingsScreen'
 import AnimatedLoading from '../screens/AnimatedLoading'
 
@@ -70,6 +71,7 @@ const AppNavigation = createStackNavigator(
 		VerifiedServiceProviders: {screen: VerifiedServiceProviders},
 		CertificateSelectAndSubmit:{screen:CertificateSelectAndSubmit},
 		CardScanning: {screen: CardScanning},
+		CardScanningTest: {screen: CardScanningTest},
 		SettingsScreen: {screen: SettingsScreen},
 		AnimatedLoading: {screen: AnimatedLoading},
 	},

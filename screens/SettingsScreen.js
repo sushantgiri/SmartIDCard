@@ -17,7 +17,9 @@ export default class SettingsScreen extends React.Component {
     state = {
         cardArray: ['이용안내', '서비스 소개', '문의'],
         isBiometricEnabled: true,
-        isPasswordEnabled: false
+        isPasswordEnabled: false,
+        isFaceEnabled: false,
+        isFingerPrintEnabled: false,
     
     }
 
@@ -40,6 +42,14 @@ export default class SettingsScreen extends React.Component {
 			this.setState({isPasswordEnabled: isPass === 'true'}); // Set password
 		}) ;
 
+        await SecureStorage.getItem('isFaceEnabled').then((isFaceEnabled) => {
+			this.setState({isFaceEnabled: isFaceEnabled === 'true'}); // Set Biometrics
+		});
+
+        await SecureStorage.getItem('isFingerPrintEnabled').then((isFingerPrintEnabled) => {
+			this.setState({isFingerPrintEnabled: isFingerPrintEnabled === 'true'}); // Set password
+		}) ;
+
     }
 
     saveSettingsState = async() => {
@@ -49,6 +59,9 @@ export default class SettingsScreen extends React.Component {
        
         SecureStorage.setItem('isBiometricsEnabled', ''+this.state.isBiometricEnabled);
         SecureStorage.setItem('isPasswordEnabled', ''+this.state.isPasswordEnabled);
+
+        SecureStorage.setItem('isFaceEnabled', ''+this.state.isFaceEnabled);
+        SecureStorage.setItem('isFingerPrintEnabled', ''+this.state.isFingerPrintEnabled);
     }
 
 
@@ -60,16 +73,29 @@ export default class SettingsScreen extends React.Component {
 
     }
 
+    toggleFaceSwitch = () => {
+        this.state.isFaceEnabled = !this.state.isFaceEnabled
+        this.setState({isFaceEnabled: this.state.isFaceEnabled})
+
+        this.saveSettingsState();
+    }
+
+    toggleFingerPrintSwitch = () => {
+        this.state.isFingerPrintEnabled = !this.state.isFingerPrintEnabled
+        this.setState({isFingerPrintEnabled: this.state.isFingerPrintEnabled})
+        this.saveSettingsState();
+    }
+
 
 
     toggleSwitch = () => {
         this.state.isBiometricEnabled = !this.state.isBiometricEnabled
         this.setState({isBiometricEnabled: this.state.isBiometricEnabled})
 
-        if(this.state.isBiometricEnabled){
-            this.state.isPasswordEnabled = false
-            this.setState({isPasswordEnabled: this.state.isPasswordEnabled})
-        }
+        // if(this.state.isBiometricEnabled){
+        //     this.state.isPasswordEnabled = false
+        //     this.setState({isPasswordEnabled: this.state.isPasswordEnabled})
+        // }
     
         this.saveSettingsState();
     }
@@ -78,10 +104,10 @@ export default class SettingsScreen extends React.Component {
         this.state.isPasswordEnabled = !this.state.isPasswordEnabled
         this.setState({isPasswordEnabled: this.state.isPasswordEnabled})
 
-        if(this.state.isPasswordEnabled){
-            this.state.isBiometricEnabled = false
-            this.setState({isBiometricEnabled: this.state.isBiometricEnabled})
-        }
+        // if(this.state.isPasswordEnabled){
+        //     this.state.isBiometricEnabled = false
+        //     this.setState({isBiometricEnabled: this.state.isBiometricEnabled})
+        // }
     
         this.saveSettingsState();
     }
@@ -122,21 +148,21 @@ export default class SettingsScreen extends React.Component {
 
                     <View style={settingsOptions.mainSubContainer}>
                         <View style={settingsOptions.item_square}/>
-                        <Text style={settingsOptions.item_title}>얼굴인식</Text>
+                        <Text style={settingsOptions.item_title}>생체인식</Text>
                     </View>
 
                 
                     <Switch
                         style={settingsOptions.switchStyle}
                         trackColor={{ false: "#E6EBF3", true: "#EEFCF8" }}
-                        thumbColor={this.state.isBiometricEnabled ? "#109D77" : "#f4f3f4"}
+                        thumbColor={this.state.isFaceEnabled ? "#109D77" : "#f4f3f4"}
                         ios_backgroundColor="#3e3e3e"
-                        onValueChange={this.toggleSwitch}
-                        value={this.state.isBiometricEnabled} />
+                        onValueChange={this.toggleFaceSwitch}
+                        value={this.state.isFaceEnabled} />
 
                 </View>
 
-                <View style={settingsOptions.mainContainer}>
+                {/* <View style={settingsOptions.mainContainer}>
 
                     <View style={settingsOptions.mainSubContainer}>
                         <View style={settingsOptions.item_square}/>
@@ -147,12 +173,12 @@ export default class SettingsScreen extends React.Component {
                     <Switch
                         style={settingsOptions.switchStyle}
                         trackColor={{ false: "#E6EBF3", true: "#EEFCF8" }}
-                        thumbColor={this.state.isPasswordEnabled ? "#109D77" : "#f4f3f4"}
+                        thumbColor={this.state.isFingerPrintEnabled ? "#109D77" : "#f4f3f4"}
                         ios_backgroundColor="#3e3e3e"
-                        onValueChange={this.togglePasswordSwitch}
-                        value={this.state.isPasswordEnabled} />
+                        onValueChange={this.toggleFingerPrintSwitch}
+                        value={this.state.isFingerPrintEnabled} />
 
-                </View>
+                </View> */}
 
 
                 </View>

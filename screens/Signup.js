@@ -257,7 +257,6 @@ export default class Signup extends React.Component {
                             <TouchableOpacity style={signup.bBoxButton} activeOpacity={0.8} onPress={()=>{
                                 Clipboard.setString(this.state.mnemonic);
                                 notifyMessage('Text copied to clipboard\n' + this.state.mnemonic)
-
                             }
                                
                                 

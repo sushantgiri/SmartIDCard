@@ -4,6 +4,8 @@ import {View, StyleSheet, Text, TouchableOpacity, LogBox, Image, Dimensions} fro
 
 import QRCodeScanner from 'react-native-qrcode-scanner';
 import axios from 'axios';
+import { StackActions, NavigationActions } from 'react-navigation';
+
 
 // global variables : 웹소켓 url, 웹소켓 room number, nonce, request type, issuer 의 url
 var socketUrl = '';
@@ -53,12 +55,13 @@ export default class ScanScreen extends React.Component {
 					if(response.data.data.requestData == null) {
 						if(response.data.data.sign == null) {
 							// VP req / SVP 사용 / VC 요청(X) / Sign (X)
+							console.log('VPREQ_SVP_NULLsend');
 							this.props.navigation.navigate('VPREQ_SVP_NULLsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqType,issuerDID:issuerDID,issuerURL:issuerURL,encryptKey:encryptKey})
 						} else {
 							// VP req / SVP 사용 / VC 요청(X) / Sign (O)
 							signData = response.data.data.sign.data
 							signType = response.data.data.sign.type
-					
+							console.log('VPREQ_SVP_SIGN_NULLsend');
 							this.props.navigation.navigate('VPREQ_SVP_SIGN_NULLsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,signData:signData,signType:signType,encryptKey:encryptKey})
 						}
 					} else {
@@ -67,8 +70,16 @@ export default class ScanScreen extends React.Component {
 							reqType = response.data.data.requestData[0].type;
 							issuerDID = response.data.data.requestData[0].issuer[0].did;
 							issuerURL = response.data.data.requestData[0].issuer[0].url;
+							console.log('VPREQ_SVP_VCsend');
 
-							this.props.navigation.push('VPREQ_SVP_VCsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqType,issuerDID:issuerDID,issuerURL:issuerURL,encryptKey:encryptKey})
+							const resetAction = StackActions.reset({
+								index: 0,
+								actions: [NavigationActions.navigate({  routeName: 'Home' })],
+							   });
+							   
+							   this.props.navigation.dispatch(resetAction);
+
+							this.props.navigation.navigate('VPREQ_SVP_VCsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqType,issuerDID:issuerDID,issuerURL:issuerURL,encryptKey:encryptKey})
 						} else {
 							// VP req / SVP 사용 / VC 요청(O) / Sign (O)
 							reqType = response.data.data.requestData[0].type;
@@ -78,6 +89,7 @@ export default class ScanScreen extends React.Component {
 							signData = response.data.data.sign.data
 							signType = response.data.data.sign.type
 					
+							console.log('VPREQ_SVP_SIGN_VCsend');
 							this.props.navigation.navigate('VPREQ_SVP_SIGN_VCsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqType,issuerDID:issuerDID,issuerURL:issuerURL,signData:signData,signType:signType,encryptKey:encryptKey})
 						}
 					}
@@ -85,12 +97,15 @@ export default class ScanScreen extends React.Component {
 					if(response.data.data.requestData == null) {
 						if(response.data.data.sign == null) {
 							// VP req / SVP 사용(X) / VC 요청(X) / Sign (X)
+							console.log('VPREQ_NULLsend');
+
 							this.props.navigation.navigate('VPREQ_NULLsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqType,issuerDID:issuerDID,encryptKey:encryptKey})
 						} else {	
 							// VP req / SVP 사용(X) / VC 요청(X) / Sign (O)
 							signData = response.data.data.sign.data
 							signType = response.data.data.sign.type
 					
+							console.log('VPREQ_SIGN_NULLsend');
 							this.props.navigation.navigate('VPREQ_SIGN_NULLsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,signData:signData,signType:signType,encryptKey:encryptKey})
 						}
 					} else {
@@ -100,6 +115,7 @@ export default class ScanScreen extends React.Component {
 							issuerDID = response.data.data.requestData[0].issuer[0].did;
 							issuerURL = response.data.data.requestData[0].issuer[0].url;
 
+							console.log('VPREQ_VCsend');
 							this.props.navigation.push('VPREQ_VCsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqType,issuerDID:issuerDID,issuerURL:issuerURL,encryptKey:encryptKey})
 						} else {
 							// VP req / SVP 사용 / VC 요청(O) / Sign (O)
@@ -110,6 +126,7 @@ export default class ScanScreen extends React.Component {
 							signData = response.data.data.sign.data
 							signType = response.data.data.sign.type
 					
+							console.log('VPREQ_SIGN_VCsend');
 							this.props.navigation.navigate('VPREQ_SIGN_VCsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqType,issuerDID:issuerDID,issuerURL:issuerURL,signData:signData,signType:signType,encryptKey:encryptKey})
 						}
 					}
@@ -118,6 +135,7 @@ export default class ScanScreen extends React.Component {
 				if(response.data.data.useSvp == true) {
 					if(response.data.data.requestData == null){
 						// VC req / SVP 사용 / VC 요청(X)
+						console.log('VCREQ_SVP_DIDsend');
 						this.props.navigation.navigate('VCREQ_SVP_DIDsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,encryptKey:encryptKey})
 					} else {
 						// VC req / SVP 사용 / VC 요청(O)
@@ -125,18 +143,20 @@ export default class ScanScreen extends React.Component {
 						issuerDID = response.data.data.requestData[0].issuer[0].did;
 						issuerURL = response.data.data.requestData[0].issuer[0].url;
 						this.props.navigation.pop();
+						console.log('VCREQ_SVP_VCsend');
 						this.props.navigation.navigate('VCREQ_SVP_VCsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqType,issuerDID:issuerDID,issuerURL:issuerURL,encryptKey:encryptKey})
 					}
 				} else {
 					if(response.data.data.requestData == null){
 						// VC req / SVP 사용안함 / VC 요청 (X)
+						console.log('VCREQ_DIDsend');
 						this.props.navigation.push('VCREQ_DIDsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,encryptKey:encryptKey})
 					} else {
 						// VC req / SVP 사용안함 / VC 요청 (O)
 						reqType = response.data.data.requestData[0].type;
 						issuerDID = response.data.data.requestData[0].issuer[0].did;
 						issuerURL = response.data.data.requestData[0].issuer[0].url;
-
+						console.log('VCREQ_VCsend');
 						this.props.navigation.navigate('VCREQ_VCsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqType,issuerDID:issuerDID,issuerURL:issuerURL,encryptKey:encryptKey})
 					}
 				}

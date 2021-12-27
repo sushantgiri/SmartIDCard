@@ -1,19 +1,209 @@
 import React from 'react';
 import {StyleSheet, View, Text, Image, ScrollView, TouchableOpacity} from 'react-native';
-import { VPEntries } from './static/vpEntries';
+import SecureStorage from 'react-native-secure-storage'
+import CryptoJS from 'react-native-crypto-js'
+
 
 
 export default class VPInfo extends React.Component {
 
+    state = {
+		password: '',
+		dataKey: '',
+		address: '',
+		privateKey:'',
+		mnemonic:'',
+		VCarray:[],
+		VCjwtArray:[],
+        timeArray: [],
+        detailViewArray: [],
+        showDetailData: false,
+        SVCTimeArray: [],
+	}
+
+    setStateData = async() => {
+
+        // Get password
+		await SecureStorage.getItem('svca').then((svca) => {
+            console.log('svca',JSON.parse(svca));
+			this.setState({SVCTimeArray: JSON.parse(svca)}); // Set password
+		})
+
+
+        // Get password
+		await SecureStorage.getItem('userToken').then((pw) => {
+            console.log('Password',pw);
+			this.setState({password: pw}); // Set password
+		})
+
+		// Get dataKey
+		let pw = this.state.password;
+		await SecureStorage.getItem(pw).then((dk) => {
+			this.setState({dataKey: dk}); // Set dataKey
+		})
+		
+		// Get userData
+		let dk = this.state.dataKey;
+		await SecureStorage.getItem(dk).then((ud) => {
+			if(ud != null) {
+				// Set state
+				let bytes = CryptoJS.AES.decrypt(ud, dk);
+				let originalText = bytes.toString(CryptoJS.enc.Utf8);
+				this.setState(JSON.parse(originalText))
+                this.renderTimeStampFormatData()
+			}
+		})
+    }
+
+    renderTimeStampFormatData = () => {
+
+
+        this.state.VCarray.map((vc, index)=>{
+            var issuanceDate = vc.vc.issuanceDate
+            var issuanceUpdatedDate = issuanceDate.split('T')[0].trim()
+
+            var isPresent = false;
+
+            this.state.timeArray.map((timeStamp, index) =>{
+                if(timeStamp[issuanceUpdatedDate] != null && timeStamp[issuanceUpdatedDate] != 'undefined'){
+                    isPresent = true;
+                    var data = timeStamp[issuanceUpdatedDate];
+                    var newData = data.concat(vc.vc.credentialSubject);
+
+                    var object = {};
+                    object[issuanceUpdatedDate] = newData;
+                   
+                    this.state.timeArray[index] = object;
+
+                    this.setState({});
+
+                    console.log('Time Array', this.state.timeArray);
+                    console.log('Data', newData);
+                 
+                }
+            })
+
+            if(!isPresent){
+                var object = {};
+                object[issuanceUpdatedDate] = [vc.vc.credentialSubject];
+                this.setState(
+                    {
+                        timeArray: this.state.timeArray.concat(object),
+                    },
+                )
+            }
+        
+           
+        })
+        
+        this.setState({timeArray: this.state.timeArray.reverse(),
+            showDetailData: true});
+
+
+        console.log('FinalTimeArray', this.state.timeArray);
+
+    
+    }
+
+
+
+    componentDidMount(){
+        this.setStateData();
+    }
+
+
+  
+
+    processItem = () => {
+        console.log('Time ARray',this.state.timeArray);
+
+        for(var i = 0; i < this.state.timeArray.length; i++) {
+            var obj = this.state.timeArray[i];
+            for(var j in obj){
+                return(
+                    <View>
+                     <Text style={itemStyle.title}>{j}</Text>
+
+                    {obj[j].map((entry, index)=>{
+                        
+							return(
+								this.processSubItem(entry)
+							)
+					})}
+
+
+
+                    </View>
+
+                )
+                    
+              }
+        
+        }
+    }
+
+    processSubItem = (vc) => {
+        console.log('VC', vc);
+        return(
+            <View style={itemStyle.dataContainer}>
+
+
+                    <View style={itemStyle.rowContainer}>
+
+                        <Text style={itemStyle.listLabelStyle}>이름 :</Text>
+                        <Text style={itemStyle.listDataItemStyle}>{vc.name}</Text>
+
+                    </View>
+
+                    <View style={itemStyle.rowContainer}>
+
+                        <Text style={itemStyle.listLabelStyle}>생년월일 :</Text>
+                        <Text style={itemStyle.listDataItemStyle}>{vc.birthday}</Text>
+
+                    </View>
+                    <View style={itemStyle.rowContainer}>
+
+                    <Text style={itemStyle.listLabelStyle}>성별 :</Text>
+                    <Text style={itemStyle.listDataItemStyle}>{vc.gender}</Text>
+
+                    </View>
+
+                    <View style={itemStyle.rowContainer}>
+
+                        <Text style={itemStyle.listLabelStyle}>휴대폰번호 :</Text>
+                        <Text style={itemStyle.listDataItemStyle}>{vc.phone}</Text>
+
+                    </View>
+
+                    <View style={itemStyle.rowContainer}>
+
+                        <Text style={itemStyle.listLabelStyle}>이메일주소 :</Text>
+                        <Text style={itemStyle.listDataItemStyle}>{vc.email}</Text>
+
+                    </View>
+
+                    <View style={itemStyle.rowContainer}>
+
+                        <Text style={itemStyle.listLabelStyle}>주소 :</Text>
+                        <Text style={itemStyle.listDataItemStyle}>{vc.address}</Text>
+
+                    </View>
+
+            </View>
+        )
+    }
+
+
 
     renderItemDetail = (entry) => {
+        console.log('Entry',  entry);
         return(
             <View>
-                    <Text style={itemStyle.title}>{entry.date}</Text>
+                    <Text style={itemStyle.title}>2021-02-02</Text>
 
                     <View style={itemStyle.dataContainer}>
 
-                        <Text style={itemStyle.containerLabel}>{entry.details.title}</Text>
+                        <Text style={itemStyle.containerLabel}>This is the test.</Text>
 
                         <View style={itemStyle.rowContainer}>
 
@@ -31,11 +221,50 @@ export default class VPInfo extends React.Component {
 
                     </View>
             </View>
+
+
+/* <View style={styles.contentsContentContainer}>
+
+                <View style={styles.contentsChildSection}>
+                    <Text style={styles.contentsLabel}>이름 :</Text>
+                    <Text style={styles.contentsValue}>{vc.vc.credentialSubject.name}</Text>
+                </View>
+
+                <View style={styles.contentsChildSection}>
+                    <Text style={styles.contentsLabel}>생년월일 :</Text>
+                    <Text style={styles.contentsValue}>{vc.vc.credentialSubject.birthday}</Text>
+                </View>
+
+                <View style={styles.contentsChildSection}>
+                    <Text style={styles.contentsLabel}>성별 :</Text>
+                    <Text style={styles.contentsValue}>{vc.vc.credentialSubject.gender}</Text>
+                </View>
+
+
+                <View style={styles.contentsChildSection}>
+                    <Text style={styles.contentsLabel}>휴대폰번호 :</Text>
+                    <Text style={styles.contentsValue}>{vc.vc.credentialSubject.phone}</Text>
+                </View>
+
+                <View style={styles.contentsChildSection}>
+                    <Text style={styles.contentsLabel}>이메일주소 :</Text>
+                    <Text style={styles.contentsValue}>{vc.vc.credentialSubject.email}</Text>
+                </View>
+
+                <View style={styles.contentsChildSection}>
+                    <Text style={styles.contentsLabel}>주소 :</Text>
+                    <Text style={styles.contentsValue}>{vc.vc.credentialSubject.address}</Text>
+                </View>
+
+
+</View> */
         )
     }
 
 
     render(){
+
+
         return(
                 <View style={vpStyle.container}>
                     <TouchableOpacity onPress={() => this.props.navigation.pop()}>
@@ -66,11 +295,138 @@ export default class VPInfo extends React.Component {
 
                     <View style={vpStyle.line} />
                     <ScrollView style={itemStyle.scrollStyle} >
-                    {VPEntries.map((entry, index)=>{
-							return(
-								this.renderItemDetail(entry)
-							)
-					})}
+
+                        {this.state.showDetailData && this.state.SVCTimeArray.map((item) => {
+                                                     var key = Object.keys(item)[0];
+
+
+                                                     return(
+                                                        <View>
+                                                         <Text style={itemStyle.title}>{key}</Text> 
+                                                         {
+                                                             item[key].map((vc) => {
+                                                                console.log('Value===>', vc);
+                                                                
+                            
+                                                                return(
+                                                                    <View style={itemStyle.dataContainer}>
+                            
+                            
+                                                                    <View style={itemStyle.rowContainer}>
+                                                
+                                                                        <Text style={itemStyle.listLabelStyle}>도메인명 :</Text>
+                                                                        <Text style={itemStyle.listDataItemStyle}>{vc.domain}</Text>
+                                                
+                                                                    </View>
+                                                
+                                                                    <View style={itemStyle.rowContainer}>
+                                                
+                                                                        <Text style={itemStyle.listLabelStyle}>사업자명 :</Text>
+                                                                        <Text style={itemStyle.listDataItemStyle}>{vc.company}</Text>
+                                                
+                                                                    </View>
+                                                                    <View style={itemStyle.rowContainer}>
+                                                
+                                                                    <Text style={itemStyle.listLabelStyle}>대표자명 :</Text>
+                                                                    <Text style={itemStyle.listDataItemStyle}>{vc.ceo}</Text>
+                                                
+                                                                    </View>
+                                                
+                                                                    <View style={itemStyle.rowContainer}>
+                                                
+                                                                        <Text style={itemStyle.listLabelStyle}>사업자주소 :</Text>
+                                                                        <Text style={itemStyle.listDataItemStyle}>{vc.address}</Text>
+                                                
+                                                                    </View>
+                                                
+                                                                    <View style={itemStyle.rowContainer}>
+                                                
+                                                                        <Text style={itemStyle.listLabelStyle}>사업자전화번호 :</Text>
+                                                                        <Text style={itemStyle.listDataItemStyle}>{vc.phone}</Text>
+                                                
+                                                                    </View>
+                                                
+                                                
+                                                            </View>
+                                                                )
+                            
+                                                             })
+                                                         }
+                                                        </View>
+                                                     )
+
+                                                     
+
+                        })}
+                     
+                     {/* {this.state.showDetailData && this.state.timeArray.map((item) => {
+                         var key = Object.keys(item)[0];
+                         console.log('Item===>', key);
+                         
+                         return(
+                            <View>
+                             <Text style={itemStyle.title}>{key}</Text> 
+                             {
+                                 item[key].map((vc) => {
+                                    console.log('Value===>', vc);
+                                    
+
+                                    return(
+                                        <View style={itemStyle.dataContainer}>
+
+
+                                        <View style={itemStyle.rowContainer}>
+                    
+                                            <Text style={itemStyle.listLabelStyle}>이름 :</Text>
+                                            <Text style={itemStyle.listDataItemStyle}>{vc.name}</Text>
+                    
+                                        </View>
+                    
+                                        <View style={itemStyle.rowContainer}>
+                    
+                                            <Text style={itemStyle.listLabelStyle}>생년월일 :</Text>
+                                            <Text style={itemStyle.listDataItemStyle}>{vc.birthday}</Text>
+                    
+                                        </View>
+                                        <View style={itemStyle.rowContainer}>
+                    
+                                        <Text style={itemStyle.listLabelStyle}>성별 :</Text>
+                                        <Text style={itemStyle.listDataItemStyle}>{vc.gender}</Text>
+                    
+                                        </View>
+                    
+                                        <View style={itemStyle.rowContainer}>
+                    
+                                            <Text style={itemStyle.listLabelStyle}>휴대폰번호 :</Text>
+                                            <Text style={itemStyle.listDataItemStyle}>{vc.phone}</Text>
+                    
+                                        </View>
+                    
+                                        <View style={itemStyle.rowContainer}>
+                    
+                                            <Text style={itemStyle.listLabelStyle}>이메일주소 :</Text>
+                                            <Text style={itemStyle.listDataItemStyle}>{vc.email}</Text>
+                    
+                                        </View>
+                    
+                                        <View style={itemStyle.rowContainer}>
+                    
+                                            <Text style={itemStyle.listLabelStyle}>주소 :</Text>
+                                            <Text style={itemStyle.listDataItemStyle}>{vc.address}</Text>
+                    
+                                        </View>
+                    
+                                </View>
+                                    )
+
+                                 })
+                             }
+                            </View>
+                         )
+
+                     })} */}
+
+                    {/* {this.processItem()} */}
 
                     </ScrollView>
 
@@ -79,6 +435,34 @@ export default class VPInfo extends React.Component {
         )
     }
 }
+
+const styles = StyleSheet.create({
+    contentsContentContainer: {
+        borderRadius:8,
+        backgroundColor:'#F6F8FA',
+        marginTop: 12,
+        marginStart: 24,
+        marginEnd: 24,
+        paddingBottom: 16,
+    },
+
+    contentsChildSection: {
+        flexDirection: 'row',
+        justifyContent:'space-between',
+        marginStart: 20,
+        marginEnd: 20,
+        marginTop: 16,
+    },
+
+    contentsLabel: {
+       fontSize: 14,
+       color: '#44424A', 
+    },
+
+    contentsValue: {
+        fontWeight: '500',
+    },
+})
 
 const itemStyle = StyleSheet.create({
 
@@ -115,7 +499,7 @@ const itemStyle = StyleSheet.create({
     },
 
     listLabelStyle: {
-        paddingEnd: 24,
+        paddingEnd: 8,
         color: 'rgba(18, 18, 29, 0.6)',
         fontSize: 14,
 

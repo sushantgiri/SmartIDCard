@@ -36,6 +36,7 @@ var myCertificateSelectedIcon = require('../screens/assets/images/png/clip_selec
 var settingsUnselectedIcon = require('../screens/assets/images/png/profile_unselected.png')
 var settingsSelectedIcon = require('../screens/assets/images/png/profile_selected.png')
 var scanIcon = require('../screens/assets/images/png/scanner.png')
+var scanningIcon = require('../screens/assets/images/png/scanning_image.png')
 
 
 const { width: viewportWidth } = Dimensions.get('window');
@@ -95,11 +96,11 @@ export default class Home extends React.Component {
 				.then((resultObject) => {
 					const { available, biometryType } = resultObject
 					if (available && biometryType === ReactNativeBiometrics.TouchID) {
-						this.createSimplePrompt()
+						console.log('TouchID');
 					} else if (available && biometryType === ReactNativeBiometrics.FaceID) {
-						this.createSimplePrompt()
+						console.log('FaceID');
 					} else if (available && biometryType === ReactNativeBiometrics.Biometrics) {
-						this.createSimplePrompt()
+						console.log('Biometrics');
 					} else {
 					console.log('Biometrics not supported')
 					}
@@ -336,11 +337,11 @@ export default class Home extends React.Component {
 			return (	
 				<View style={cards.cardContainer}>
 
-							{/* <View style={cards.indicatorWrapper}>
+							<View style={cards.indicatorWrapper}>
 								<Image style={cards.addNewStyle} source={require('../screens/assets/images/png/add_new.png')} />
 								<Text style={cards.lineStyle}> | </Text>
-								<Text style={cards.totalCountStyle}>{this.state.VCarray.length}</Text>
-							</View> */}
+								<Text style={cards.totalCountStyle}>{this.state.VCarray.length - 1}</Text>
+							</View>
 
 
 					<View style={common.contents}>
@@ -369,7 +370,7 @@ export default class Home extends React.Component {
 							<View style={cards.indicatorWrapper}>
 								<Text style={cards.currentIndexStyle}>{index}</Text>
 								<Text style={cards.lineStyle}> | </Text>
-								<Text style={cards.totalCountStyle}>{this.state.VCarray.length -1 }</Text>
+								<Text style={cards.totalCountStyle}>{this.state.VCarray.length - 1}</Text>
 							</View>
 
 
@@ -491,9 +492,9 @@ export default class Home extends React.Component {
 	}
 	// Card Function
 
-	setSettingsShow = () => {
+	setSettingsShow = (isSettingsSelected) => {
 		this.setState({
-			isSettingsSelected:  !this.state.isSettingsSelected
+			isSettingsSelected:  isSettingsSelected
 		})
 	}
 	// Modal Function
@@ -505,6 +506,7 @@ export default class Home extends React.Component {
 	goScan = () => {
 		this.setState({ModalShow:false}) // Modal Hide
 		this.props.navigation.push('SelectOptions')
+		// this.props.navigation.push('CardScanningTest')
 		// this.props.navigation.push('AnimatedLoading')
 		// this.props.navigation.push('CertificateSelectAndSubmit')
 		// this.props.navigation.push('CardScanning')
@@ -603,7 +605,7 @@ export default class Home extends React.Component {
 					<View style={home.container}>
 					<TouchableOpacity
 					style={home.certificateContainer}
-						onPress={() => this.setSettingsShow()}>	
+						onPress={() => this.setSettingsShow(false)}>	
 							<View style={home.certificateContainer}>
 								<Image source={this.state.isSettingsSelected ?myCertificateUnselectedIcon : myCertificateSelectedIcon}></Image>
 								<Text>{this.state.isSettingsSelected ? "나의 인증서" : "나의 인증서"}</Text>
@@ -612,17 +614,17 @@ export default class Home extends React.Component {
 
 					<TouchableOpacity onPress={this.goScan} style={home.touchableContainer}>
 							<View style={home.scannerContainer}>
-							<Image source={scanIcon}></Image>
+							<Image source={!this.state.isSettingsSelected ? scanningIcon: scanningIcon}></Image>
 							</View>
 
 					</TouchableOpacity>
 					   
 				<TouchableOpacity
 				style={home.profileContainer}
-						onPress={() => this.setSettingsShow()}>	
+						onPress={() => this.setSettingsShow(true)}>	
 						<View style={home.profileContainer}>
 							<Image source={this.state.isSettingsSelected ? settingsSelectedIcon : settingsUnselectedIcon}></Image>
-							<Text>{this.state.isSettingsSelected ? "설정" : "설정" }</Text>
+							<Text>{!this.state.isSettingsSelected ? "설정" : "설정" }</Text>
 			   		</View>
 				</TouchableOpacity>
 
@@ -777,7 +779,7 @@ export default class Home extends React.Component {
 				<View style={home.container}>
 				<TouchableOpacity
 					style={home.certificateContainer}
-						onPress={() => this.setSettingsShow()}>	
+						onPress={() => this.setSettingsShow(false)}>	
 							<View style={home.certificateContainer}>
 								<Image source={this.state.isSettingsSelected ?  myCertificateUnselectedIcon : myCertificateSelectedIcon}></Image>
 								<Text>{this.state.isSettingsSelected ? "나의 인증서" : "나의 인증서"}</Text>
@@ -786,14 +788,14 @@ export default class Home extends React.Component {
 
 					<TouchableOpacity onPress={this.goScan} style={home.touchableContainer}>
 							<View style={home.scannerContainer}>
-							<Image source={scanIcon}></Image>
+							<Image source={!this.state.isSettingsSelected ? scanningIcon: scanningIcon}></Image>
 							</View>
 
 					</TouchableOpacity>
 					   
 				<TouchableOpacity
 				style={home.profileContainer}
-						onPress={() => this.setSettingsShow()}>	
+						onPress={() => this.setSettingsShow(true)}>	
 						<View style={home.profileContainer}>
 							<Image source={this.state.isSettingsSelected ? settingsSelectedIcon : settingsUnselectedIcon}></Image>
 							<Text>{this.state.isSettingsSelected ? "설정" : "설정" }</Text>
@@ -846,7 +848,8 @@ export default class Home extends React.Component {
  	componentDidMount(){
 		this.linktest();
 		this.setStateData();
-		// this.biometricAuthentication()
+		// this.props.navigation.push('CardScanning')
+		this.biometricAuthentication()
   	}
 }
 
