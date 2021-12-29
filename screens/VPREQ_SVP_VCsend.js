@@ -328,7 +328,7 @@ export default class VPREQ_VCsend extends React.Component {
 		const success = result.success;
 		const isTrusted = result.isTrusted;
 
-		console.log('')
+		console.log('Data', data.payload);
 		
 
 		if(code == "000.0" && success) {
