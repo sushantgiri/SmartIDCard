@@ -304,9 +304,7 @@ export default class VPREQ_VCsend extends React.Component {
 	}
 
 	successVPsubmit = () => {
-		ws.send('{"type":"exit"}');
-		ws.close();
-		
+		ws.close();		
 		this.props.navigation.push('VCselect',{password:this.state.password});
 	}
 	// Modal Function  	

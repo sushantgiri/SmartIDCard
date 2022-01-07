@@ -198,8 +198,19 @@ export default class VPREQ_VCsend extends React.Component {
 
 	// Cancel
 	cancel = () => { 
-		ws.current.send('{"type":"exit"}');
-		ws.current.close();
+		// WebSocket Exit
+		ws.send('{"type":"exit"}');
+		ws.onmessage = (e) => {};
+		ws.onerror = (e) => {};
+		ws.onclose = (e) => {};
+		// WebSocket Exit
+
+		// WebSocket Close
+		ws.close();
+		ws.onmessage = (e) => {};
+		ws.onerror = (e) => {};
+		ws.onclose = (e) => {};
+		// WebSocket Close
 		
     	this.props.navigation.navigate('VCselect',{password:this.state.password});
   	}
@@ -274,32 +285,24 @@ export default class VPREQ_VCsend extends React.Component {
 		).start()
 		
 		// WebSocket Connection
-		const ws = useRef(null);
-		useEffect(() => {
-			ws.current = new WebSocket(socketURL);
-			ws.current.onopen = () => { console.log("ws open"); ws.current.send('{"type":"authm", "no":"'+socketRoom+'"}');	};
-			ws.current.onmessage = (e) => { console.log(e.data); this.sendChallenger(); };		
-			ws.current.onerror = (e) => { console.log(e.message); this.setState({ViewMode: 3}); };
-			ws.current.onclose = (e) => { console.log(e.code, e.reason); this.setState({ViewMode: 3}); };
-			return () => { ws.current.close(); };
-		}, []);
-		/*
 		ws = new WebSocket(socketURL);
-		console.log('Socket Room', socketRoom);
 		ws.onopen = () => { ws.send('{"type":"authm", "no":"'+socketRoom+'"}'); }
 		ws.onmessage = (e) => { this.sendChallenger(); }
-		ws.onerror = (e) => { console.log(e.code, e.reason); this.setState({ViewMode: 3}); };
-		ws.onclose = (e) => { console.log(e.code, e.reason); this.setState({ViewMode: 3}); };
-		*/
+		ws.onerror = (e) => { this.setState({ViewMode: 3}); };
+		ws.onclose = (e) => { this.setState({ViewMode: 3}); };
+		// WebSocket Connection
   	}
 
 	// SVP Function
 	sendChallenger = async () => {
-      	ws.current.send('{"type":"challenger","data":"'+challenger+'"}');
-      	ws.current.onmessage = (e) => {
-          	const json = JSON.parse(e.data);
+      	ws.send('{"type":"challenger","data":"'+challenger+'"}');
+      	ws.onmessage = (e) => {
+			const json = JSON.parse(e.data);
 			if(json.type == "vp") this.verifyVP(json.data);
+			if(json.type == "exit") this.setState({ViewMode: 3});
      	}
+		ws.onerror = (e) => { this.setState({ViewMode: 3}); };
+		ws.onclose = (e) => { this.setState({ViewMode: 3}); };
   	}
 
 	verifyVP = async (vp) => {
@@ -463,18 +466,24 @@ export default class VPREQ_VCsend extends React.Component {
 		const vp = await dualDid.createVP(vcjwtArray,nonce)
 		var key = CryptoJS.enc.Hex.parse(encryptionKeyOnUse)
 		var cipherText = CryptoJS.AES.encrypt(vp,key,{iv:key}).toString();
-	
-		ws.current.send('{"type":"vp", "data":"'+cipherText+'"}')
-		ws.current.onmessage = (e) => { console.log(e) }
+
+		ws.send('{"type":"vp", "data":"'+cipherText+'"}');
+		ws.onmessage = (e) => {};
+		ws.onerror = (e) => {};
+		ws.onclose = (e) => {};
 		
 		this.successVPsubmit();
 	}
 
 	successVPsubmit = () => {
 		this.saveSVCLocally();
-
-		ws.current.send('{"type":"exit"}');
-		ws.current.close();
+		
+		// WebSocket Close
+		ws.close();
+		ws.onmessage = (e) => {}
+		ws.onerror = (e) => {};
+		ws.onclose = (e) => {};
+		// WebSocket Close
 
 		this.props.navigation.push('CardScanningTest',{name: this.state.name, type: this.state.type});
 		// this.props.navigation.push('VCselect',{password:this.state.password});
