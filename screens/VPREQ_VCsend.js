@@ -121,8 +121,10 @@ export default class VPREQ_VCsend extends React.Component {
 	}
 
 	// Cancel
-	cancel = () => { 
-    	ws.send('{"type":"exit"}')
+	cancel = () => {
+		if(ws != null){
+			ws.close();
+		} 
     	this.props.navigation.navigate('VCselect',{password:this.state.password});
   	}
 
@@ -302,7 +304,9 @@ export default class VPREQ_VCsend extends React.Component {
 	}
 
 	successVPsubmit = () => {
-		ws.send('{"type":"exit"}')
+		if(ws != null){
+			ws.close();
+		}
 		this.props.navigation.push('VCselect',{password:this.state.password});
 	}
 	// Modal Function  	

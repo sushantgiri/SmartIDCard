@@ -296,7 +296,7 @@ export default class VPInfo extends React.Component {
                     <View style={vpStyle.line} />
                     <ScrollView style={itemStyle.scrollStyle} >
 
-                        {this.state.showDetailData && this.state.SVCTimeArray.map((item) => {
+                        {this.state.showDetailData && this.state.SVCTimeArray != null && this.state.SVCTimeArray.length > 0 && this.state.SVCTimeArray.map((item) => {
                                                      var key = Object.keys(item)[0];
 
 

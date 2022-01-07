@@ -157,7 +157,7 @@ class BarcodeMask extends React.Component {
         this._animateLoop();
         clearInterval(intervalId);
       }
-    }, 200);
+    }, 500);
     this.setState({
       intervalId,
     });
@@ -168,6 +168,7 @@ class BarcodeMask extends React.Component {
       animatedLineOrientation,
       lineAnimationDuration,
       useNativeDriver
+
     } = this.props;
     const { lineTravelWindowDistance } = this.state;
     const isHorizontal = animatedLineOrientation !== 'vertical';
@@ -289,7 +290,9 @@ class BarcodeMask extends React.Component {
       animatedLineWidth,
       animatedLineHeight,
       animatedLineOrientation,
-      edgeBorderWidth
+      edgeBorderWidth,
+      name,
+      type,
     } = this.props;
     const animatedLineStyle = {
       backgroundColor: animatedLineColor,
@@ -338,14 +341,14 @@ style={this.state.isFirstAnimationFinished ?
 <View style={styles.cardHeaderSection}>
 
 <Image source={require('../../screens/assets/images/png/first_icon.png')} style={styles.cardImageStyle}/>
-<Text style={styles.cardTitle}>Name Section</Text>
+<Text style={styles.cardTitle}>{type}</Text>
 
 </View>
 
 
         <View style={styles.dummyView} />
 
-          <Text style={styles.cardBottomTitle}>Name Section</Text>
+          <Text style={styles.cardBottomTitle}>{name}</Text>
 
 
         {/* </View> */}
@@ -394,6 +397,8 @@ const propTypes = {
   showAnimatedLine: PropTypes.bool,
   animatedLineColor: PropTypes.string,
   animatedLineHeight: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  name: PropTypes.string,
+  type: PropTypes.string,
   animatedLineWidth: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   lineAnimationDuration: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   animatedLineOrientation: PropTypes.string,

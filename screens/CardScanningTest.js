@@ -52,6 +52,11 @@ export default class CardScanningTest extends React.Component {
 
     render(){
         let {slideAnimation} = this.state;
+        const {navigation} = this.props
+
+        const name = navigation.getParam('name', '우종현')
+        const type = navigation.getParam('type', '서비스 인증서')
+
         return (
             <View style={cardScanningStyles.rootContainer}>
              <BarcodeMask height={Dimensions.get('window').height/2}
@@ -60,6 +65,8 @@ export default class CardScanningTest extends React.Component {
                 animatedLineWidth={Dimensions.get('window').width}
                 animatedLineHeight={4}
                 animatedLineColor={'#30E5BD'}
+                name={name}
+                type={type}
                 />
 
 

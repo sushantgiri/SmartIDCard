@@ -98,6 +98,8 @@ export default class VPREQ_VCsend extends React.Component {
 		ViewMode: 0,
 
 		SVCArray:[],
+		type: '',
+		name:'',
 		SVCTimeArray:[],
 		spinValue : new Animated.Value(0),
 		showPasswordModal: false,
@@ -197,7 +199,7 @@ export default class VPREQ_VCsend extends React.Component {
 	// Cancel
 	cancel = () => { 
 		if(ws != null){
-			ws.send('{"type":"exit"}')
+			ws.close()
 		}
     	this.props.navigation.navigate('VCselect',{password:this.state.password});
   	}
@@ -277,13 +279,7 @@ export default class VPREQ_VCsend extends React.Component {
 		ws.onopen = () => { ws.send('{"type":"authm", "no":"'+socketRoom+'"}'); }
 		ws.onmessage = (e) => {
 			 console.log('Testing....' ,e); 
-			//  if(e.isTrusted){
-			// 	this.sendChallenger(); 
-			//  }else{
-			// 	this.setState({ViewMode: 3})
-			//  }
-
-			this.sendChallenger(); 
+			 this.sendChallenger(); 
 			 }
 		ws.onerror = (e) => {
 			// an error occurred
@@ -293,6 +289,7 @@ export default class VPREQ_VCsend extends React.Component {
 
 		ws.onclose = (e) => {
 			// connection closed
+			console.log('Connection Closed');
 			console.log(e.code, e.reason);
 		  };
   	}
@@ -305,6 +302,11 @@ export default class VPREQ_VCsend extends React.Component {
 			 console.log('JSON',json) 
           	if(json.type == "vp") {
 				  this.verifyVP(json.data);
+			}else if(json.type == "exit"){
+				console.log('Exit');
+
+			}else{
+				this.setState({ViewMode: 3})
 			}
      	}
   	}
@@ -328,12 +330,14 @@ export default class VPREQ_VCsend extends React.Component {
 		const success = result.success;
 		const isTrusted = result.isTrusted;
 
-		console.log('Data', data.payload);
 		
 
 		if(code == "000.0" && success) {
+			console.log('Type---->', result.data.verifiablePresentation)
 			const svcs = result.data.verifiablePresentation.verifiableCredential;
-			
+			console.log('CEO---->', svcs[0].credentialSubject.ceo)
+			// this.setState({name:  svcs[0].credentialSubject.ceo})
+			// this.setState({type: '서비스 인증서'})
 			let svca = [];
 			let svc = null;
 
@@ -342,9 +346,10 @@ export default class VPREQ_VCsend extends React.Component {
 				svca.push(svc);
 			}
 			
-			console.log('SVCAArray', svca);
-			this.setState({ ViewMode:1, SVCArray:svca });
+			console.log('SVCAArray----->', svca);
+			this.setState({ ViewMode:1, SVCArray:svca});
 		}else{
+			console.log('Error Here');
 			this.setState({ViewMode: 3})
 		}
     }
@@ -443,6 +448,12 @@ export default class VPREQ_VCsend extends React.Component {
 		var vcSubmitArr = [];
 		for(var i = 0; i<this.state.VCjwtArray.length;i++){
 			if(this.state.checkedArray[i].checked == true){
+				console.log('Name ====>', this.state.VCarray[i].vc.credentialSubject.name);
+				console.log('Name ====>', this.state.VCarray[i].vc.type[1]);
+
+			this.setState({name:  this.state.VCarray[i].vc.credentialSubject.name})
+			this.setState({type: this.state.VCarray[i].vc.type[1]})
+
 				var jwtString = this.state.VCjwtArray[i].split(',')[1].split(':')[1]
 				vcSubmitArr = vcSubmitArr.concat([jwtString.substring(1,jwtString.length-2)])
 			}
@@ -471,13 +482,16 @@ export default class VPREQ_VCsend extends React.Component {
 	}
 
 	successVPsubmit = () => {
+		console.log('Success VP Submit')
+		
 		this.saveSVCLocally()
 		// ws.send('{"type":"exit"}')
-		ws.close()
+		this.props.navigation.push('CardScanningTest',{name: this.state.name, type: this.state.type});
 
-		console.log('SVCA-Array', this.state.SVCArray);
+		// if(ws != null){
+		// 	ws.close()
+		// }
 
-		this.props.navigation.push('CardScanningTest');
 		// this.props.navigation.push('VCselect',{password:this.state.password});
 	}
 
