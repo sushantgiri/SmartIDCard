@@ -2,9 +2,11 @@ import React from 'react'
 import { 
 	StyleSheet, View, Text, Image, TextInput, ScrollView,
 	TouchableOpacity, TouchableHighlight, LogBox, Animated, Easing,
-	ToastAndroid, Platform, AlertIOS, Dimensions
+	ToastAndroid, Platform, Dimensions, Alert
 } from 'react-native'
+
 import ReactNativeBiometrics from 'react-native-biometrics'
+import TouchID from 'react-native-touch-id'
 
 import CryptoJS from 'react-native-crypto-js';
 import SecureStorage from 'react-native-secure-storage'
@@ -113,32 +115,71 @@ export default class VPREQ_VCsend extends React.Component {
 		this.setState({ confirmCheckPassword })
 	}
 
-	biometricAuthentication = () =>{
-		ReactNativeBiometrics.isSensorAvailable()
+	 biometricAuthentication = () =>{
+
+		if(Platform.OS === 'ios'){
+			// var TouchID = require('react-native-touch-id');
+			const optionalConfigObject = {
+				passcodeFallback: false,
+			  }
+			TouchID.authenticate('Authenticate your Smart ID Card', optionalConfigObject)
+			.then(success => {
+				console.log('success', success);
+				this.showMessage("Authentication Successful")
+				this.pickVCinArray()
+			})
+			.catch(error => {
+			  // Failure code
+			  console.log('error', error);
+			  this.showMessage(error.message)
+			//   this.setModalShow();
+			});
+			return;
+		}
+
+
+			ReactNativeBiometrics.isSensorAvailable()
 				.then((resultObject) => {
-					const { available, biometryType } = resultObject
+					const { available, biometryType,error } = resultObject;
+					console.log('Available', available);
+					console.log('BiometricType', biometryType);
+					console.log('Biometric Error', error);
 					if (available && biometryType === ReactNativeBiometrics.TouchID) {
 						console.log('TouchID');
-						this.createSimplePrompt()
+						this.createSimplePrompt();
 					} else if (available && biometryType === ReactNativeBiometrics.FaceID) {
-						this.createSimplePrompt()
+						this.createSimplePrompt();
 						console.log('FaceID');
 					} else if (available && biometryType === ReactNativeBiometrics.Biometrics) {
-						this.createSimplePrompt()
+						this.createSimplePrompt();
 						console.log('Biometrics');
 					} else {
-						this.setModalShow()
-					console.log('Biometrics not supported')
+						this.setModalShow();
+						console.log('Biometrics not supported');
 					}
 				})
+		
+		
 	}
 
 	showMessage = (message) => {
 		if (Platform.OS === 'android') {
-			ToastAndroid.show(message, ToastAndroid.SHORT)
+			ToastAndroid.show(message, ToastAndroid.SHORT);
 		  } else {
-			AlertIOS.alert(message);
+			Alert.alert('Alert', message);
+			// AlertIOS.alert(message);
 		  }
+	}
+
+	createSimplePrompt1 = () => {
+		ReactNativeBiometrics.simplePrompt({promptMessage: 'Authenticate your Smart ID Card'})
+				.then((resultObject) => {
+					console.log('ResultObject', resultObject)
+					this.showMessage("Authentication Successful")
+					this.pickVCinArray()
+				}).catch(()=>{
+					this.setModalShow();
+				})
 	}
 
 	createSimplePrompt = () => {
@@ -146,18 +187,19 @@ export default class VPREQ_VCsend extends React.Component {
 				.then((resultObject) => {
 					const { success } = resultObject
 
-					if (success) {
-						this.showMessage("Authentication Successful")
+						if (success) {
+							this.showMessage("Authentication Successful")
+							this.pickVCinArray()
+						} else {
+							this.showMessage("User cancelled")
+						}
+					
+					// console.log()
 
-						this.pickVCinArray()
-
-					} else {
-						this.showMessage("User cancelled")
-
-					}
+					
 				})
 				.catch(() => {
-					this.showMessage("Biometrics failed")
+					console.log('Biometrics Failed')
 					this.setModalShow()
 				})
 	}
@@ -477,10 +519,9 @@ export default class VPREQ_VCsend extends React.Component {
 
 	successVPsubmit = () => {
 		this.saveSVCLocally();
-		
 		// WebSocket Close
 		ws.close();
-		ws.onmessage = (e) => {}
+		ws.onmessage = (e) => {};
 		ws.onerror = (e) => {};
 		ws.onclose = (e) => {};
 		// WebSocket Close
@@ -489,13 +530,81 @@ export default class VPREQ_VCsend extends React.Component {
 		// this.props.navigation.push('VCselect',{password:this.state.password});
 	}
 
+	mockLocal = async() => {
+		let today = '1/27/2022';
+		console.log('Today', today);
+
+
+		var SVCTimeArrayLocal = await SecureStorage.getItem('svca');
+		if(SVCTimeArrayLocal){
+			console.log('First Local...',SVCTimeArrayLocal);
+			var isPresent = false;
+			JSON.parse(SVCTimeArrayLocal).map((timeStamp,index) => {
+				if(timeStamp[today] != null && timeStamp[today] != 'undefined'){
+					isPresent = true;
+				}
+			});
+
+			if(!isPresent){
+				var object = {};
+                object[today] = this.state.SVCArray;
+				this.setState(
+                    {
+                        SVCTimeArray: SVCTimeArrayLocal.concat(object),
+                    },
+                )				
+				console.log('First Date Time....', this.state.SVCTimeArray);
+
+
+			}
+		}
+
+	}
+
 	saveSVCLocally = async() => {
-			let today = new Date().toLocaleDateString()
+
+			var today = new Date().toLocaleDateString()
+		     today = '1/25/2022';
+			console.log('Today===>',today);
 	
 			var SVCTimeArrayLocal = await SecureStorage.getItem('svca');
 			if(SVCTimeArrayLocal){
+				var isPresent = false;
+				JSON.parse(SVCTimeArrayLocal).map((timeStamp,index) => {
+					if(timeStamp[today] != null && timeStamp[today] != 'undefined'){
+						isPresent = true;
+					}
+				});
+				if(!isPresent){
+					var object = {};
+					object[today] = this.state.SVCArray;
+					console.log('Object--->',object);
+			
+					this.setState({
+						SVCTimeArray: SVCTimeArrayLocal
+					})
+					console.log('Before State', this.state.SVCTimeArray);
 
+					// JSON.parse(SVCTimeArrayLocal).push(object);
+
+					this.setState({
+						SVCTimeArray: JSON.stringify(this.state.SVCTimeArray).slice(0,-2)+
+						","+{
+							today : this.state.SVCArray
+						}
+						+"]"
+					})
+					console.log('After State', this.state.SVCTimeArray);
+
+		
+					console.log('First Time in SVC Array....', this.state.SVCTimeArray);
+	
+					// SecureStorage.setItem('svca', JSON.stringify(this.state.SVCTimeArray));
+
+					return;
+				}
 				JSON.parse(SVCTimeArrayLocal).map((timeStamp, index) =>{
+					console.log('TimeStamp', timeStamp);
 					if(timeStamp[today] != null && timeStamp[today] != 'undefined'){
 						var data = timeStamp[today];
 						var newData = data.concat(this.state.SVCArray[0]);
@@ -504,6 +613,8 @@ export default class VPREQ_VCsend extends React.Component {
 						object[today] = newData;
 					   
 						this.state.SVCTimeArray[index] = object;
+
+						console.log('TimeStampArray', this.state.SVCTimeArray);
 	
 						this.setState({});
 	
@@ -679,6 +790,7 @@ export default class VPREQ_VCsend extends React.Component {
 				</View>
 
 			<TouchableOpacity onPress={() => {
+				console.log('FaceEnabled', this.state.isFaceEnabled)
 				{this.state.isFaceEnabled ? this.biometricAuthentication(): this.setModalShow()}
 				}}>
 

@@ -56,7 +56,8 @@ export default class VPInfo extends React.Component {
     }
 
     renderTimeStampFormatData = () => {
-
+        console.log('VCArray==', this.state.VCarray)
+        console.log('TimeArray==', this.state.timeArray)
 
         this.state.VCarray.map((vc, index)=>{
             var issuanceDate = vc.vc.issuanceDate
@@ -65,6 +66,9 @@ export default class VPInfo extends React.Component {
             var isPresent = false;
 
             this.state.timeArray.map((timeStamp, index) =>{
+                console.log('TimeStamp==', timeStamp)
+                console.log('issuanceUpdatedDate==', issuanceUpdatedDate)
+
                 if(timeStamp[issuanceUpdatedDate] != null && timeStamp[issuanceUpdatedDate] != 'undefined'){
                     isPresent = true;
                     var data = timeStamp[issuanceUpdatedDate];
@@ -115,7 +119,7 @@ export default class VPInfo extends React.Component {
   
 
     processItem = () => {
-        console.log('Time ARray',this.state.timeArray);
+        console.log('Time ARray--->',this.state.timeArray);
 
         for(var i = 0; i < this.state.timeArray.length; i++) {
             var obj = this.state.timeArray[i];
@@ -143,7 +147,7 @@ export default class VPInfo extends React.Component {
     }
 
     processSubItem = (vc) => {
-        console.log('VC', vc);
+        console.log('VC----->', vc);
         return(
             <View style={itemStyle.dataContainer}>
 
@@ -299,6 +303,8 @@ export default class VPInfo extends React.Component {
                         {this.state.showDetailData && this.state.SVCTimeArray != null && this.state.SVCTimeArray.length > 0 && this.state.SVCTimeArray.map((item) => {
                                                      var key = Object.keys(item)[0];
 
+                                                     var keys = Object.keys(item);
+                                                    console.log('Keys', keys);    
 
                                                      return(
                                                         <View>

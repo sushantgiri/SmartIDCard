@@ -5,7 +5,7 @@ import Carousel from 'react-native-snap-carousel';
 import {
 	LogBox, ScrollView, StyleSheet, Text, View, 
 	Image, TouchableOpacity, TextInput, StatusBar,Dimensions,
-	ToastAndroid, Platform, AlertIOS
+	ToastAndroid, Platform,Alert
 } from 'react-native'
 import Swiper from 'react-native-swiper'
 import jwt_decode from "jwt-decode"
@@ -20,6 +20,7 @@ import {Linking} from 'react-native'
 import { COUPON_ENTRIES } from './static/couponEntries';
 import SettingsScreen from './SettingsScreen';
 import ReactNativeBiometrics from 'react-native-biometrics'
+import TouchID from 'react-native-touch-id'
 
 
 var AES = require("react-native-crypto-js").AES;
@@ -92,15 +93,39 @@ export default class Home extends React.Component {
 	}
 
 	biometricAuthentication = () =>{
+		if(Platform.OS === 'ios'){
+			// var TouchID = require('react-native-touch-id');
+			const optionalConfigObject = {
+				unifiedErrors: false,
+				passcodeFallback: true,
+			  }
+			TouchID.authenticate('Authenticate using Smart ID Card', optionalConfigObject)
+			.then(success => {
+				console.log('success', success);
+			  // Success code
+			})
+			.catch(error => {
+			  // Failure code
+			  console.log('failure', error);
+			});
+			return;
+		}
 		ReactNativeBiometrics.isSensorAvailable()
 				.then((resultObject) => {
-					const { available, biometryType } = resultObject
+					const { available, biometryType,error } = resultObject;
+					console.log('Available', available);
+					console.log('BiometricType', biometryType);
+					console.log('Biometric Error', error);
 					if (available && biometryType === ReactNativeBiometrics.TouchID) {
 						console.log('TouchID');
+						this.createSimplePrompt()
 					} else if (available && biometryType === ReactNativeBiometrics.FaceID) {
 						console.log('FaceID');
+						this.createSimplePrompt()
 					} else if (available && biometryType === ReactNativeBiometrics.Biometrics) {
 						console.log('Biometrics');
+						this.createSimplePrompt()
+
 					} else {
 					console.log('Biometrics not supported')
 					}
@@ -111,13 +136,17 @@ export default class Home extends React.Component {
 		if (Platform.OS === 'android') {
 			ToastAndroid.show(message, ToastAndroid.SHORT)
 		  } else {
-			AlertIOS.alert(message);
+
+			Alert.alert('Alert', message);
+
+			// AlertIOS.alert(message);
 		  }
 	}
 
 	createSimplePrompt = () => {
 		ReactNativeBiometrics.simplePrompt({promptMessage: 'Authenticate your Smart ID Card'})
 				.then((resultObject) => {
+
 					const { success } = resultObject
 
 					if (success) {
@@ -848,8 +877,9 @@ export default class Home extends React.Component {
  	componentDidMount(){
 		this.linktest();
 		this.setStateData();
+		// SecureStorage.removeItem('svca');
 		// this.props.navigation.push('CardScanning')
-		this.biometricAuthentication()
+		// this.biometricAuthentication()
   	}
 }
 

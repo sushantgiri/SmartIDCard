@@ -8,7 +8,6 @@ target 'backup' do
 
   use_react_native!(:path => config["reactNativePath"])
 
-  pod 'TcpSockets', :path => '../node_modules/react-native-tcp'
   permission_path = '../node_modules/react-native-permission/ios'
   pod 'Permission-AppTrackingTransparency', :path => "../node_modules/react-native-permissions/ios/AppTrackingTransparency/Permission-AppTrackingTransparency.podspec"
   pod 'Permission-BluetoothPeripheral', :path => "../node_modules/react-native-permissions/ios/BluetoothPeripheral/Permission-BluetoothPeripheral.podspec"
@@ -30,6 +29,8 @@ target 'backup' do
   pod 'Permission-SpeechRecognition', :path => "../node_modules/react-native-permissions/ios/SpeechRecognition/Permission-SpeechRecognition.podspec"
   pod 'Permission-StoreKit', :path => "../node_modules/react-native-permissions/ios/StoreKit/Permission-StoreKit.podspec"
 
+
+
   target 'backupTests' do
     inherit! :complete
     # Pods for testing
@@ -39,10 +40,10 @@ target 'backup' do
   #
   # Note that if you have use_frameworks! enabled, Flipper will not work and
   # you should disable these next few lines.
-  use_flipper!
-  post_install do |installer|
-    flipper_post_install(installer)
-  end
+  # use_flipper!({ 'Flipper-Folly' => '2.5.3', 'Flipper' => '0.87.0', 'Flipper-RSocket' => '1.3.1' })
+  # post_install do |installer|
+  #  flipper_post_install(installer)
+  # end
 end
 
 target 'backup-tvOS' do
