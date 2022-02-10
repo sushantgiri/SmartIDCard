@@ -1,13 +1,33 @@
 import React from 'react'
-import {StyleSheet, View, Text, Image, Dimensions, Modal, TouchableOpacity} from 'react-native'
+import {StyleSheet, View, Text, Image, Dimensions, Modal, TouchableOpacity, ScrollView, ToastAndroid,
+    Platform,
+    AlertIOS} from 'react-native'
 import {format} from "date-fns" // Date Format
+import CryptoJS from 'react-native-crypto-js';
+// Clipboard 모듈 
+import Clipboard from '@react-native-community/clipboard'
+import SecureStorage from 'react-native-secure-storage'
 
 var closeIcon = require('../screens/assets/images/png/close_scanner.png')
+
+const { randomBytes } = require("crypto");
+
+function notifyMessage(msg) {
+    if (Platform.OS === 'android') {
+      ToastAndroid.show(msg, ToastAndroid.SHORT)
+    } else {
+      AlertIOS.alert(msg);
+    }
+  }
+
 
 export default class HappyCitizenship extends React.Component {
 
     state =  {
         isQrScanning: false,
+        password: '',
+		dataKey: '',
+        cipherData: '',
     }
 
     constructor(props){
@@ -60,11 +80,49 @@ export default class HappyCitizenship extends React.Component {
                 </Modal>
         )
     }
+
+    componentDidMount(){
+        this.setStateData();
+    }
+
+
+    setStateData = async() => {
+            // Get password
+            await SecureStorage.getItem('userToken').then((pw) => {
+                this.setState({password: pw}); // Set password
+            })
+
+            // Get dataKey
+            let pw = this.state.password;
+            await SecureStorage.getItem(pw).then((dk) => {
+                this.setState({dataKey: dk}); // Set dataKey
+            })
+
+            	
+		// Get userData
+		let dk = this.state.dataKey;
+		await SecureStorage.getItem(dk).then((ud) => {
+			if(ud != null) {
+                this.setState({cipherData: ud});
+
+			}
+		})
+
+
+    }
+
+   
    
 
     render() {
 
         const vc = this.props.navigation.getParam('vc');
+        // let cipherData = CryptoJS.AES.encrypt(JSON.stringify(vc), this.state.dataKey).toString();
+        
+
+        console.log('Cipher Data', this.state.cipherData);
+        console.log('Data Key', this.state.dataKey);
+
 
         // var toDate = vc.exp * 1000
 		// var expDate = format(new Date(toDate), "yyyy-MM-dd")
@@ -72,7 +130,8 @@ export default class HappyCitizenship extends React.Component {
         return(
             <View style={styles.container}>
                 <View style={styles.header_background}>
-
+                    
+                
                 <TouchableOpacity  
                 onPress={() => {
                      this.props.navigation.pop();
@@ -91,6 +150,7 @@ export default class HappyCitizenship extends React.Component {
 
                 </View>
 
+                <ScrollView>
                 <View style={styles.contentsContainer}>
                     <View style={styles.contentsHeaderSection}>
                         <Text style={styles.contentsHeaderTitleStyle}>정보 제공 설정</Text>
@@ -142,6 +202,23 @@ export default class HappyCitizenship extends React.Component {
                     <Image source={require('../screens/assets/images/png/happy_citizen_search.png')} />
                     <Text style={styles.searchTextStyle}>정보 제공 내역</Text>
                 </TouchableOpacity>
+
+
+                <View style={styles.bBox}>
+                            <Text >{'VC: ' + this.state.cipherData}</Text>
+                            <Text >{'Data Key: ' + this.state.dataKey}</Text>
+
+                            <TouchableOpacity style={styles.bBoxButton} activeOpacity={0.8} onPress={()=>{
+                                Clipboard.setString('VC: ' + this.state.cipherData + '\n' + 'Data Key: ' + this.state.dataKey);
+                                notifyMessage('Text copied to clipboard\n' + 'VC: ' + this.state.cipherData + '\n' + 'Data Key: ' + this.state.dataKey)
+                            }
+                               
+                                
+                                }>
+                                <Text selectable={true} style={styles.bBoxButtonText}>복구코드 복사하기</Text>
+                            </TouchableOpacity>
+                 </View>
+                 </ScrollView>
 
                 {this.renderQRScanView()}
             </View>
@@ -202,6 +279,21 @@ const qrTimer = StyleSheet.create({
 
 const styles = StyleSheet.create({
 
+
+    bBox : { padding: 20,
+        marginTop: 18,
+        marginStart: 21,
+        marginEnd: 21,
+        borderRadius:8,         backgroundColor:'#F6F8FA',
+        marginBottom:30, },
+    bBoxText : { fontSize:18, color:'#FFFFFF', marginStart: 30, marginEnd: 30, textAlign: 'center' },
+    bBoxButton : { 
+        width: '50%', marginTop:20, padding:10, alignItems:'center',
+        borderWidth:1, borderColor:'#1ECB9C', borderRadius:8, 
+        alignSelf: 'center',
+    },
+    bBoxButtonText : { color:'#1ECB9C', fontWeight:'bold', },
+
     container: {
         flex: 1,
         backgroundColor: '#fff',
@@ -210,6 +302,7 @@ const styles = StyleSheet.create({
      header_background: {
         backgroundColor: '#0083FF',
         height: 226,
+        marginBottom: 28,
      },
     backButtonStyle: {
         marginStart: 24,
