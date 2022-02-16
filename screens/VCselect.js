@@ -125,9 +125,10 @@ export default class VCselect extends React.Component {
    * 
    */
   newVCcheck = async () => {
+    console.log('New VC');
     const {navigation} = this.props
     const receivedVC = navigation.getParam('VCdata',"VCvalue")
-    LogBox.ignoreAllLogs(true)
+    // LogBox.ignoreAllLogs(true)
     if(receivedVC != "VCvalue"){
       const decodedVC = JSON.stringify(receivedVC).substring(28,JSON.stringify(receivedVC).length-2)
       const VCform = jwt_decode(decodedVC)

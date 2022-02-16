@@ -49,6 +49,8 @@ var imgClose = require('../screens/assets/images/png/arrow_left.png')
 
 function address() {
 	const { randomBytes } = require("crypto");
+    const crypto = require('crypto');
+
 	const { Mnemonic, HDKey, EthereumAddress } = require("wallet.ts");
 
 	// 랜덤한 32바이트에서 Mnemonic을 생성하여, Global variable : userMnemonic 에 저장
@@ -67,9 +69,15 @@ function address() {
 	//generate key for use in mobile device data exchange
 	//with 16 random bytes ( 128 bit long ) to store data in secure elements
 
-	const mobileBytes = randomBytes(16);
+	const mobileBytes = randomBytes(32);
+    crypto.randomBytes(32, (err, buf) => {
+        if (err) throw err;
+        console.log(`${buf.length} bytes of random data: ${buf.toString('hex')}`);
+     });
+    console.log('Bytes', mobileBytes);
 	dataKey = Web3Utils.bytesToHex(mobileBytes);
-	
+    console.log('Data Key', dataKey);
+
 	// Build mobile key end
 
 	// public key를 이용해 did address 를 생성하여, global variable : userAddress 에 저장
@@ -161,7 +169,14 @@ export default class Signup extends React.Component {
             did(); // did 생성
 
             this.setState({ address: userAddress, privateKey: userPK, mnemonic: userMnemonic, dataKey: dataKey}, () => {
+                var encrypted = CryptoJS.AES.encrypt(JSON.stringify(this.state), dataKey);
+                console.log('encrypted.key---->', encrypted.key.toString());
+                console.log('encrypted.iv---->', encrypted.iv.toString());
+                console.log('encrypted.ciphertext---->', encrypted.ciphertext.toString());
+
                 let cipherData = CryptoJS.AES.encrypt(JSON.stringify(this.state), dataKey).toString();
+                console.log('Data Key--->', dataKey);
+                console.log('CipherData---->', cipherData);
             
                 /** State data 를 Secure Storage에 저장
                  * 

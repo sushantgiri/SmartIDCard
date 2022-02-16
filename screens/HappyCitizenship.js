@@ -1,5 +1,6 @@
 import React from 'react'
 import {StyleSheet, View, Text, Image, Dimensions, Modal, TouchableOpacity, ScrollView, ToastAndroid,
+    NativeModules,
     Platform,
     AlertIOS} from 'react-native'
 import {format} from "date-fns" // Date Format
@@ -7,6 +8,9 @@ import CryptoJS from 'react-native-crypto-js';
 // Clipboard 모듈 
 import Clipboard from '@react-native-community/clipboard'
 import SecureStorage from 'react-native-secure-storage'
+const Web3Utils = require('web3-utils');
+
+// var Aes = NativeModules.Aes
 
 var closeIcon = require('../screens/assets/images/png/close_scanner.png')
 
@@ -19,6 +23,56 @@ function notifyMessage(msg) {
       AlertIOS.alert(msg);
     }
   }
+
+//   const generateKey = (password, salt, cost, length) => Aes.pbkdf2(password, salt, cost, length)
+
+
+//   const encryptData = (text, key) => {
+//     return Aes.randomKey(16).then((iv) => {
+//         return Aes.encrypt(text, key, iv).then((cipher) => ({
+//             cipher,
+//             iv,
+//         }))
+//     })
+// }
+
+// const encryptDataIV = (text, key, iv) => {
+//   return Aes.encrypt(text, key, iv).then((cipher) => ({
+//     cipher,
+//     iv,
+//   }))      
+// }
+
+// const decryptData = (encryptedData: { cipher, iv }, key) => Aes.decrypt(encryptedData.cipher, key, encryptedData.iv)
+// const iv_string = '0123456789abcdef0123456789abcdef';
+
+// let encrypt_key = "";
+// let encrypt_string = "";
+// let plain_string = "1234567890";
+// let encrypt_iv = "";
+
+//  AESKey = () => {
+//     try {
+//       generateKey('nixstory@gmail.com', 'SALT', 1000, 256).then((key: any) => {
+//         encrypt_key = key;
+//       })
+//     } catch (e) {
+//         console.error(e)
+//     }    
+//   }
+
+//   AESEncrypt =  () => {
+//     const key = encrypt_key;
+
+//     try {
+//       encryptDataIV(plain_string, key, iv_string).then(({ cipher, iv }) => {
+//         encrypt_iv = iv;
+//         encrypt_string = cipher;
+//       }).catch((error: any) => {})
+//     } catch (e) {
+//         console.error(e)
+//     }
+//   }
 
 
 export default class HappyCitizenship extends React.Component {
@@ -95,7 +149,8 @@ export default class HappyCitizenship extends React.Component {
             // Get dataKey
             let pw = this.state.password;
             await SecureStorage.getItem(pw).then((dk) => {
-                this.setState({dataKey: dk}); // Set dataKey
+                this.setState({dataKey: dk});
+                console.log('Bytes-->', Web3Utils.hexToNumberString(dk)) // Set dataKey
             })
 
             	
@@ -117,6 +172,7 @@ export default class HappyCitizenship extends React.Component {
     render() {
 
         const vc = this.props.navigation.getParam('vc');
+
         // let cipherData = CryptoJS.AES.encrypt(JSON.stringify(vc), this.state.dataKey).toString();
         
 

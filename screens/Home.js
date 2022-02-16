@@ -196,6 +196,17 @@ export default class Home extends React.Component {
 				})
 	}
 
+	 Generate_key = () => {
+		var key = "";
+		var hex = "0123456789abcdef";
+	
+		for (var i = 0; i < 64; i++) {
+			key += hex.charAt(Math.floor(Math.random() * 16));
+			//Initially this was charAt(chance.integer({min: 0, max: 15}));
+		}
+		return key;
+	}
+
 	
 	setStateData = async() => {
 		// Get password
@@ -221,6 +232,8 @@ export default class Home extends React.Component {
 			}
 		})
 
+		
+
 
 
 
@@ -231,8 +244,25 @@ export default class Home extends React.Component {
 		LogBox.ignoreAllLogs(true)
 
 		if(receivedVC != "VCvalue"){
+			console.log('Test Pass')
 			const decodedVC = JSON.stringify(receivedVC).substring(28,JSON.stringify(receivedVC).length-2)
 			const VCform = jwt_decode(decodedVC)
+
+			var key = "6Le0DgMTAAAAANokdEEial"; //length=22
+			var iv  = "mHGFxENnZLbienLyANoi.e";	
+
+			// var key = CryptoJS.enc.Hex.parse("000102030405060708090a0b0c0d0e0f");
+			// var iv = CryptoJS.enc.Hex.parse("101112131415161718191a1b1c1d1e1f");
+			// var encrypted = CryptoJS.AES.encrypt("Message", key, { iv: iv });
+
+			key = CryptoJS.enc.Base64.parse(key); // length=16 bytes
+			iv = CryptoJS.enc.Base64.parse(iv); // length=16 bytes
+
+			var encrypted = CryptoJS.AES.encrypt(JSON.stringify(VCform), key, { iv: iv });
+
+			console.log('Key--------->!', key.toString());
+			console.log('IV--------->!', iv.toString());
+			console.log('Encrypted Value', encrypted.toString());
 
 			this.setState(
 				{
@@ -244,6 +274,13 @@ export default class Home extends React.Component {
 					await SecureStorage.setItem(this.state.dataKey, cipherData);  
 				}
 			)
+
+			console.log('Test Pass')
+			console.log('VCForm', VCform);
+
+			console.log('VCarray', this.state.VCarray);
+			console.log('VCjwtArray', this.state.VCjwtArray);
+
 		}
 
 		if(this.state.VCarray.length > 0){

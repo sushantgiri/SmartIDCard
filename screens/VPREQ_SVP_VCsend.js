@@ -509,6 +509,10 @@ export default class VPREQ_VCsend extends React.Component {
 		var key = CryptoJS.enc.Hex.parse(encryptionKeyOnUse)
 		var cipherText = CryptoJS.AES.encrypt(vp,key,{iv:key}).toString();
 
+		console.log('CipherText', cipherText);
+		console.log('Key', key);
+		console.log('IV', key);
+
 		ws.send('{"type":"vp", "data":"'+cipherText+'"}');
 		ws.onmessage = (e) => {};
 		ws.onerror = (e) => {};
