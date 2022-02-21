@@ -349,9 +349,9 @@ export default class VPREQ_VCsend extends React.Component {
   	}
 
 	verifyVP = async (vp) => {
-		// TTA TEMP
+		// TTA TEMP : T2 - Submitted time
 		const sDatetime = format(new Date(), "yyyy-MM-dd HH:mm:ss.sss");
-		// TTA TEMP
+		// TTA TEMP : T2 - Submitted time
 
 		const key = CryptoJS.enc.Hex.parse(encryptionKeyOnUse);
 		const dec = CryptoJS.AES.decrypt(vp,key,{iv:key}).toString(CryptoJS.enc.Utf8);
@@ -375,8 +375,6 @@ export default class VPREQ_VCsend extends React.Component {
 			console.log('Type---->', result.data.verifiablePresentation)
 			const svcs = result.data.verifiablePresentation.verifiableCredential;
 			console.log('CEO---->', svcs[0].credentialSubject.ceo)
-			// this.setState({name:  svcs[0].credentialSubject.ceo})
-			// this.setState({type: '서비스 인증서'})
 			let svca = [];
 			let svc = null;
 
@@ -388,18 +386,18 @@ export default class VPREQ_VCsend extends React.Component {
 			console.log('SVCAArray----->', svca);
 			this.setState({ ViewMode:1, SVCArray:svca});
 
-			// TTA TEMP
+			// TTA TEMP : T2 - Verified time
 			const vDatetime = format(new Date(), "yyyy-MM-dd HH:mm:ss.sss");
 			alert("Submitted time : " + sDatetime + "\nVerified time : " + vDatetime);
-			// TTA TEMP
+			// TTA TEMP : T2 - Verified time
 		}else{
 			console.log('Error Here');
 			this.setState({ViewMode: 3})
 
-			// TTA TEMP
+			// TTA TEMP : T2 - Verified time
 			const vDatetime = format(new Date(), "yyyy-MM-dd HH:mm:ss.sss");
 			alert("Submitted time : " + sDatetime + "\nVerified time : " + vDatetime);
-			// TTA TEMP
+			// TTA TEMP : T2 - Verified time
 		}
     }
 
