@@ -44,7 +44,7 @@ public class BNSModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void getTerminals(){
-        mOWProxy.getTerminals("oterminal-1", 4, (result) -> {
+        mOWProxy.getTerminals("oterminal-1", 2, (result) -> {
             System.out.println("Result.getResult(): " + result.getResult());
 
             if(result.getResult()){
