@@ -1,12 +1,86 @@
 import React from 'react';
-import {StyleSheet, Text, View, Image, TouchableOpacity} from 'react-native';
+import {StyleSheet, Text, View, Image, TouchableOpacity, 
+        PermissionsAndroid, NativeModules, Platform} from 'react-native';
+import axios from 'axios';
+
+const { BNSModule } = NativeModules;
 
 export default class SelectOptions extends React.Component {
-
-
     state = {
-        dummyView: false
+        dummyView: false,
+        terminals : []
     }
+
+    setTerminals = (terminals) => {
+        return(
+            <TouchableOpacity style={optionsStyle.optionsContainer} onPress={() => { alert("준비중입니다."); }}>
+                <Image source={require('../screens/assets/images/png/secondary.png')} />
+                <Text style={optionsStyle.optionLabelStyle}>
+                    {terminals.showData.shopName}{"\n"}{terminals.showData.terminal_desc}
+                </Text>
+            </TouchableOpacity>
+        )
+    };
+
+    bnsCall = async () => {
+        try { 
+            let check = true;
+
+            // 권한 확인
+            if (Platform.OS === "android") {
+                const granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION);
+                if (granted !== PermissionsAndroid.RESULTS.GRANTED) check = false;
+                /*
+                await PermissionsAndroid.requestMultiple([
+                    PermissionsAndroid.PERMISSIONS.BLUETOOTH,
+                    PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+                    PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+                ]).then((result)=>{
+                    if (!result['android.permission.BLUETOOTH'] === "granted") check = false;
+                    if (!result['android.permission.BLUETOOTH_SCAN'] === "granted") check = false;
+                    if (!result['android.permission.ACCESS_FINE_LOCATION'] === "granted") check = false;                
+                });
+                */
+            }else{
+                
+            } 
+            // 권한 확인
+
+            // BNS SDK 연동
+            if(check){
+                BNSModule.initialize();
+                BNSModule.getTerminals((data) => {
+                    var params = '{"list":[';
+                    for(var i = 0; i < data.length; i++){
+                        params += '{"serviceName":"oterminal-1","id":"' + data[i].OtpId + '"}';
+                        if(i < data.length - 1) params += ",";
+                    }
+                    params += ']}';
+                    params = encodeURIComponent(params);
+
+                    axios
+                    .get('http://dev.tis.openterminal.com:3100/tis/api/rest/client/terminal/terminals/' + params)
+                    .then((response) => {
+                        console.log(response.data);
+                        console.log(response.data.list);
+                        
+                        this.setState({ terminals: response.data.list });
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+
+                }, (error) => {
+                    console.log(error);
+                });
+            }else{
+                alert("권한이 허용되지 않으면 BLE 수신이 불가능합니다.");
+            }
+            // BNS SDK 연동
+        } catch (err) {
+            console.warn(err);
+        }
+    };
 
     render(){
         return(
@@ -26,18 +100,20 @@ export default class SelectOptions extends React.Component {
                     <Text style={optionsStyle.barLabel}>사용처를 선택해주세요 ✨</Text>
                 </View>
 
-                <TouchableOpacity  onPress={() => {
-                     this.props.navigation.pop();
-                    this.props.navigation.push('ScanScreen');
- 
-                    }}>
-                <View style={optionsStyle.optionsContainer}>
-                    <Image source={require('../screens/assets/images/png/primary.png')} />
-                    <Text style={optionsStyle.optionLabelStyle}>주변에 비콘이 없을 땐{"\n"}QR로 스캔하세요</Text>
-                </View>
+                <TouchableOpacity onPress={() => { this.props.navigation.pop(); this.props.navigation.push('ScanScreen'); }}>
+                    <View style={optionsStyle.optionsContainer}>
+                        <Image source={require('../screens/assets/images/png/primary.png')} />
+                        <Text xt style={optionsStyle.optionLabelStyle}>주변에 비콘이 없을 땐{"\n"}QR로 스캔하세요</Text>
+                    </View>
                 </TouchableOpacity>
+                
+                { this.state.terminals.map((terminals, index) => this.setTerminals(terminals, index)) }
             </View>    
         )
+    }
+
+    componentDidMount(){
+        this.bnsCall(); // BNS SDK 연동
     }
 }
 

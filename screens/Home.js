@@ -40,11 +40,7 @@ var settingsSelectedIcon = require('../screens/assets/images/png/profile_selecte
 var scanIcon = require('../screens/assets/images/png/scanner.png')
 var scanningIcon = require('../screens/assets/images/png/scanning_image.png')
 
-
 const { width: viewportWidth } = Dimensions.get('window');
-
-const { BNSModule } = NativeModules;
-
 
 var target = []; //삭제 선택된 VC
 
@@ -910,8 +906,6 @@ export default class Home extends React.Component {
  	componentDidMount(){
 		this.linktest();
 		this.setStateData();
-		BNSModule.initialize();
-		BNSModule.getTerminals();
 
 		// SecureStorage.removeItem('svca');
 		// this.props.navigation.push('CardScanning')
