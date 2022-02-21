@@ -5,6 +5,7 @@ import Carousel from 'react-native-snap-carousel';
 import {
 	LogBox, ScrollView, StyleSheet, Text, View, 
 	Image, TouchableOpacity, TextInput, StatusBar,Dimensions,
+	NativeModules,
 	ToastAndroid, Platform,Alert
 } from 'react-native'
 import Swiper from 'react-native-swiper'
@@ -41,6 +42,8 @@ var scanningIcon = require('../screens/assets/images/png/scanning_image.png')
 
 
 const { width: viewportWidth } = Dimensions.get('window');
+
+const { BNSModule } = NativeModules;
 
 
 var target = []; //삭제 선택된 VC
@@ -907,6 +910,9 @@ export default class Home extends React.Component {
  	componentDidMount(){
 		this.linktest();
 		this.setStateData();
+		BNSModule.initialize();
+		BNSModule.getTerminals();
+
 		// SecureStorage.removeItem('svca');
 		// this.props.navigation.push('CardScanning')
 		// this.biometricAuthentication()
