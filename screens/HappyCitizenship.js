@@ -1,16 +1,21 @@
 import React from 'react'
-import {StyleSheet, View, Text, Image, Dimensions, Modal, TouchableOpacity, ScrollView, ToastAndroid,
-    NativeModules,
-    Platform,
-    AlertIOS} from 'react-native'
+
+import {StyleSheet, View, Text, Image, Dimensions, Modal, 
+        TouchableOpacity, ScrollView, ToastAndroid, Platform, AlertIOS} from 'react-native'
 import {format} from "date-fns" // Date Format
 import CryptoJS from 'react-native-crypto-js';
 // Clipboard 모듈 
-import Clipboard from '@react-native-community/clipboard'
+// import Clipboard from '@react-native-community/clipboard'
 import SecureStorage from 'react-native-secure-storage'
-const Web3Utils = require('web3-utils');
+// const Web3Utils = require('web3-utils');
 
 // var Aes = NativeModules.Aes
+
+// TTA TEMP
+// var CryptoJS = require("crypto-js");
+const Web3Utils = require('web3-utils');
+import Clipboard from '@react-native-community/clipboard'
+// TTA TEMP
 
 var closeIcon = require('../screens/assets/images/png/close_scanner.png')
 
@@ -134,51 +139,44 @@ export default class HappyCitizenship extends React.Component {
                 </Modal>
         )
     }
-
-    componentDidMount(){
-        this.setStateData();
+    
+    // TTA TEMP
+    randomString = (length) => {
+        var randomChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        var result = '';
+        for ( var i = 0; i < length; i++ ) {
+            result += randomChars.charAt(Math.floor(Math.random() * randomChars.length));
+        }
+        console.log(result);
+        return result;
     }
 
-
-    setStateData = async() => {
-            // Get password
-            await SecureStorage.getItem('userToken').then((pw) => {
-                this.setState({password: pw}); // Set password
-            })
-
-            // Get dataKey
-            let pw = this.state.password;
-            await SecureStorage.getItem(pw).then((dk) => {
-                this.setState({dataKey: dk});
-                console.log('Bytes-->', Web3Utils.hexToNumberString(dk)) // Set dataKey
-            })
-
-            	
-		// Get userData
-		let dk = this.state.dataKey;
-		await SecureStorage.getItem(dk).then((ud) => {
-			if(ud != null) {
-                this.setState({cipherData: ud});
-
-			}
-		})
-
-
+    notifyMessage = (msg) => {
+        if (Platform.OS === 'android') {
+            ToastAndroid.show(msg, ToastAndroid.SHORT)
+        } else {
+            AlertIOS.alert(msg);
+        }
     }
-
-   
-   
+    // TTA TEMP
 
     render() {
 
         const vc = this.props.navigation.getParam('vc');
 
-        // let cipherData = CryptoJS.AES.encrypt(JSON.stringify(vc), this.state.dataKey).toString();
-        
+        // TTA TEMP
+        const { randomBytes } = require("crypto");
 
-        console.log('Cipher Data', this.state.cipherData);
-        console.log('Data Key', this.state.dataKey);
+        const inData = JSON.stringify(vc);
+        const inKey = CryptoJS.enc.Utf8.parse(this.randomString(32));
+        const inIv = CryptoJS.enc.Utf8.parse(this.randomString(16));
+        const outData = CryptoJS.AES.encrypt(inData, inKey, {iv:inIv}).toString();
 
+        console.log("inData : " + inData);
+        console.log("inKey : " + inKey);
+        console.log("inIv : " + inIv);
+        console.log("outData : " + outData);
+        // TTA TEMP
 
         // var toDate = vc.exp * 1000
 		// var expDate = format(new Date(toDate), "yyyy-MM-dd")
@@ -195,7 +193,7 @@ export default class HappyCitizenship extends React.Component {
                     <Image style={styles.backButtonStyle} source={require('../screens/assets/images/png/back_icon.png')} />
 
                 </TouchableOpacity>
-                    <Text style={styles.headerTitleStyle}>행복 시민증</Text>
+                    <Text style={styles.headerTitleStyle}>인증서</Text>
 
                 <TouchableOpacity
                     onPress= {() => {
@@ -231,7 +229,6 @@ export default class HappyCitizenship extends React.Component {
                             <Text style={styles.contentsValue}>{vc.credentialSubject.gender}</Text>
                         </View>
 
-
                         <View style={styles.contentsChildSection}>
                             <Text style={styles.contentsLabel}>휴대폰번호 :</Text>
                             <Text style={styles.contentsValue}>{vc.credentialSubject.phone}</Text>
@@ -241,12 +238,6 @@ export default class HappyCitizenship extends React.Component {
                             <Text style={styles.contentsLabel}>이메일주소 :</Text>
                             <Text style={styles.contentsValue}>{vc.credentialSubject.email}</Text>
                         </View>
-
-                        <View style={styles.contentsChildSection}>
-                            <Text style={styles.contentsLabel}>주소 :</Text>
-                            <Text style={styles.contentsValue}>{vc.credentialSubject.address}</Text>
-                        </View>
-
 
                     </View>
                 </View>
@@ -258,6 +249,33 @@ export default class HappyCitizenship extends React.Component {
                     <Image source={require('../screens/assets/images/png/happy_citizen_search.png')} />
                     <Text style={styles.searchTextStyle}>정보 제공 내역</Text>
                 </TouchableOpacity>
+                
+                <ScrollView>
+                    <TouchableOpacity style={styles.searchContainer} activeOpacity={0.8} 
+                                      onPress={()=>{
+                                        Clipboard.setString(inKey.toString());
+                                        this.notifyMessage('KEY copied to clipboard');
+                                      }
+                    }>
+                        <Text selectable={true}>KEY : {inKey.toString()}</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.searchContainer} activeOpacity={0.8} 
+                                      onPress={()=>{
+                                        Clipboard.setString(inIv.toString());
+                                        this.notifyMessage('IV copied to clipboard');
+                                      }
+                    }>
+                        <Text>IV : {inIv.toString()}</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.searchContainer} activeOpacity={0.8} 
+                                      onPress={()=>{
+                                        Clipboard.setString(outData);
+                                        this.notifyMessage('outData copied to clipboard');
+                                      }
+                    }>
+                        <Text>DATA : {outData}</Text>
+                    </TouchableOpacity>
+                </ScrollView>
 
 
                 <View style={styles.bBox}>

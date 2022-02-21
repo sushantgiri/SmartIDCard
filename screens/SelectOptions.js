@@ -24,7 +24,6 @@ export default class SelectOptions extends React.Component {
 
                 <View style={optionsStyle.barContainer}>
                     <Text style={optionsStyle.barLabel}>사용처를 선택해주세요 ✨</Text>
-                    <Image source={require('../screens/assets/images/png/ic_close.png')} />
                 </View>
 
                 <TouchableOpacity  onPress={() => {
@@ -37,18 +36,6 @@ export default class SelectOptions extends React.Component {
                     <Text style={optionsStyle.optionLabelStyle}>주변에 비콘이 없을 땐{"\n"}QR로 스캔하세요</Text>
                 </View>
                 </TouchableOpacity>
-
-
-                <View style={optionsStyle.optionsContainer}>
-                    <Image source={require('../screens/assets/images/png/secondary.png')} />
-                    <Text style={optionsStyle.optionLabelStyle}>제주대학교 인문대학 1층{"\n"}출입문</Text>
-                </View>
-
-
-                <View style={optionsStyle.optionsContainer}>
-                    <Image source={require('../screens/assets/images/png/secondary.png')} />
-                    <Text style={optionsStyle.optionLabelStyle}>제주대학교 인문대학 1층{"\n"}출입문</Text>
-                </View>
             </View>    
         )
     }

@@ -10,6 +10,7 @@ import TouchID from 'react-native-touch-id'
 
 import CryptoJS from 'react-native-crypto-js';
 import SecureStorage from 'react-native-secure-storage'
+import {format} from "date-fns" // Date Format
 
 import Modal from 'react-native-modal' // Modal
 import CLoader from './common/Loader'; // Loader
@@ -348,6 +349,10 @@ export default class VPREQ_VCsend extends React.Component {
   	}
 
 	verifyVP = async (vp) => {
+		// TTA TEMP
+		const sDatetime = format(new Date(), "yyyy-MM-dd HH:mm:ss.sss");
+		// TTA TEMP
+
 		const key = CryptoJS.enc.Hex.parse(encryptionKeyOnUse);
 		const dec = CryptoJS.AES.decrypt(vp,key,{iv:key}).toString(CryptoJS.enc.Utf8);
 		const json = JSON.parse(dec);
@@ -382,9 +387,19 @@ export default class VPREQ_VCsend extends React.Component {
 			
 			console.log('SVCAArray----->', svca);
 			this.setState({ ViewMode:1, SVCArray:svca});
+
+			// TTA TEMP
+			const vDatetime = format(new Date(), "yyyy-MM-dd HH:mm:ss.sss");
+			alert("Submitted time : " + sDatetime + "\nVerified time : " + vDatetime);
+			// TTA TEMP
 		}else{
 			console.log('Error Here');
 			this.setState({ViewMode: 3})
+
+			// TTA TEMP
+			const vDatetime = format(new Date(), "yyyy-MM-dd HH:mm:ss.sss");
+			alert("Submitted time : " + sDatetime + "\nVerified time : " + vDatetime);
+			// TTA TEMP
 		}
     }
 

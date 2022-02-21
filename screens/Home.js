@@ -413,10 +413,10 @@ export default class Home extends React.Component {
 					<View style={common.contents}>
 
 						
-						<View style={cards.noIDContainer}>
+						<TouchableOpacity style={cards.noIDContainer} onPress={this.goScan}>
 								<Image source={require('../screens/assets/images/png/no_card_contact.png')}></Image>
 								<Text style={cards.noIDTextPrimary}>발급받기</Text>
-						</View>
+						</TouchableOpacity>
 
 						
 						{/* <Text style={cards.noIDTextSecondary}>아직 발급받은 ID가 없습니다. {"\n"}ID를 발급받아 주세요.</Text> */}
@@ -630,19 +630,12 @@ export default class Home extends React.Component {
 
 
 				{!isSettingsSelected && idSelection && (
-					<View style={common.contents}>
-
-						
-					<View style={cards.noIDContainer}>
-						<Image source={require('../screens/assets/images/png/no_card_contact.png')}></Image>
-						<Text style={cards.noIDTextPrimary}>발급받기</Text>
-
-					</View>
-
-
-					<Text style={cards.noIDTextSecondary}>아직 발급받은 ID가 없습니다. {"\n"}ID를 발급받아 주세요.</Text>
-					
-						
+					<View style={common.contents}>						
+						<TouchableOpacity style={cards.noIDContainer} onPress={this.goScan}>
+							<Image source={require('../screens/assets/images/png/no_card_contact.png')}></Image>
+							<Text style={cards.noIDTextPrimary}>발급받기</Text>
+						</TouchableOpacity>
+						<Text style={cards.noIDTextSecondary}>아직 발급받은 ID가 없습니다. {"\n"}ID를 발급받아 주세요.</Text>
 					</View>
 				)}
 				
