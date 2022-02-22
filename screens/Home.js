@@ -44,6 +44,7 @@ var scanningIcon = require('../screens/assets/images/png/scanning_image.png')
 const { width: viewportWidth } = Dimensions.get('window');
 
 const { BNSModule } = NativeModules;
+import {request, PERMISSIONS} from 'react-native-permissions';
 
 
 var target = []; //삭제 선택된 VC
@@ -910,6 +911,10 @@ export default class Home extends React.Component {
  	componentDidMount(){
 		this.linktest();
 		this.setStateData();
+		request(Platform.OS === 'ios' ? PERMISSIONS.IOS.CAMERA : PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION).then((result) => {
+			setPermissionResult(result)
+			console.log(result)
+		  });
 		BNSModule.initialize();
 		BNSModule.getTerminals();
 
