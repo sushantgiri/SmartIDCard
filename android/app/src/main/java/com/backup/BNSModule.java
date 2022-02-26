@@ -8,6 +8,11 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.bridge.Callback;
+import com.facebook.react.bridge.WritableArray;
+import com.facebook.react.bridge.WritableNativeArray;
+import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.bridge.WritableNativeMap;
 
 import java.util.List;
 
@@ -43,22 +48,28 @@ public class BNSModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void getTerminals(){
+    public void getTerminals(Callback successCallback, Callback errorCallback){
         mOWProxy.getTerminals("oterminal-1", 2, (result) -> {
-            System.out.println("Result.getResult(): " + result.getResult());
+            // WritableNativeArray, WritableNativeMap을 이용하면 객체로 전달 가능
+            WritableArray terminals = new WritableNativeArray();
 
             if(result.getResult()){
                 List<OWResultTerminalsData> terminalsDataList = result.getList();
-                System.out.println("terminalsDataList.size() " + terminalsDataList.size());
-
-                for ( int i=0 ; i<terminalsDataList.size() ; i++ ) {
+                for (int i = 0; i < terminalsDataList.size(); i++) {
                     String otpId = terminalsDataList.get(i).getOtpId();
                     String otp = terminalsDataList.get(i).getOtp();
-                    System.out.println("OtpId: " + otpId + ".    Otp: " + otp);
-//                            TerminalInfo info = new TerminalInfo(Common.BLE_SCAN_SERVICENAME, otpId, otp);
-//                            mReqTerminalList.add(info);
+
+                    //System.out.println("OtpId: " + otpId + ", Otp: " + otp);
+
+                    WritableMap terminal = new WritableNativeMap();
+                    terminal.putString("OtpId", otpId);
+                    terminal.putString("Otp", otp);
+                    terminals.pushMap(terminal);
                 }
             }
+
+            successCallback.invoke(terminals);
+
             return Unit.INSTANCE;
         });
     }

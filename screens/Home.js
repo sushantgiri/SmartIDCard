@@ -40,13 +40,15 @@ var settingsSelectedIcon = require('../screens/assets/images/png/profile_selecte
 var scanIcon = require('../screens/assets/images/png/scanner.png')
 var scanningIcon = require('../screens/assets/images/png/scanning_image.png')
 
-
 const { width: viewportWidth } = Dimensions.get('window');
 
+<<<<<<< HEAD
 const { BNSModule } = NativeModules;
 import {request, PERMISSIONS} from 'react-native-permissions';
 
 
+=======
+>>>>>>> 188774dbdbc3e750bf87c9e796393e5760914928
 var target = []; //삭제 선택된 VC
 
 function wp (percentage) {
@@ -911,12 +913,6 @@ export default class Home extends React.Component {
  	componentDidMount(){
 		this.linktest();
 		this.setStateData();
-		request(Platform.OS === 'ios' ? PERMISSIONS.IOS.CAMERA : PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION).then((result) => {
-			setPermissionResult(result)
-			console.log(result)
-		  });
-		BNSModule.initialize();
-		BNSModule.getTerminals();
 
 		// SecureStorage.removeItem('svca');
 		// this.props.navigation.push('CardScanning')
