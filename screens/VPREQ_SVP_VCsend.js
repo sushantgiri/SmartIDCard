@@ -109,6 +109,7 @@ export default class VPREQ_VCsend extends React.Component {
 		isBiometricEnabled: false,
 		isFaceEnabled: false,
         isFingerPrintEnabled: false,
+		selectedCard: [],
 	}
   
   	//비밀번호 확인 input control
@@ -313,6 +314,8 @@ export default class VPREQ_VCsend extends React.Component {
 
 		// Reset confirmCheckPassword
 		this.setState({confirmCheckPassword:''})
+		this.setState({selectedCard:[]})
+
 
 		// 애니메이션 설정
 		Animated.loop(
@@ -464,9 +467,17 @@ export default class VPREQ_VCsend extends React.Component {
 
 	cardSend = () => {
 		var cardSelected = false;
+		var checkedCard = [];
 		for(var i = 0; i< this.state.checkedArray.length; i++){
-			if(this.state.checkedArray[i].checked == true){ cardSelected = true; break; }
+			if(this.state.checkedArray[i].checked == true){
+				 cardSelected = true; 
+				 this.state.selectedCard = this.state.VCarray[i];
+				 checkedCard = this.state.VCarray[i];
+				 break; 
+			}
 		}
+
+		console.log('Checked card', this.state.selectedCard);
 
 		if(!cardSelected) {	alert("VC를 선택해 주세요") } 
 		else { this.setModalShow() }
@@ -535,7 +546,9 @@ export default class VPREQ_VCsend extends React.Component {
 	}
 
 	successVPsubmit = () => {
-		this.saveSVCLocally();
+		console.log('SVC Array', this.state.SVCArray);
+		// this.saveSVCLocally();
+		this.saveVerifiedData();
 		// WebSocket Close
 		ws.close();
 		ws.onmessage = (e) => {};
@@ -543,8 +556,23 @@ export default class VPREQ_VCsend extends React.Component {
 		ws.onclose = (e) => {};
 		// WebSocket Close
 
-		this.props.navigation.push('CardScanningTest',{name: this.state.name, type: this.state.type});
+		// this.props.navigation.push('CardScanningTest',{name: this.state.name, type: this.state.type});
 		// this.props.navigation.push('VCselect',{password:this.state.password});
+	}
+
+
+	 saveVerifiedData = async() =>{
+
+		var today = new Date().toLocaleDateString()
+		var keyJSON = JSON.stringify(this.state.selectedCard);
+		var verifiedJSON = JSON.stringify(this.state.SVCArray);
+
+		//Data Array
+		var data = today + "SmartIDCard" + verifiedJSON;
+		console.log('Data', data);
+		console.log('Key', keyJSON);
+		SecureStorage.setItem(keyJSON, data);
+		
 	}
 
 	mockLocal = async() => {
@@ -808,7 +836,7 @@ export default class VPREQ_VCsend extends React.Component {
 
 			<TouchableOpacity onPress={() => {
 				console.log('FaceEnabled', this.state.isFaceEnabled)
-				{this.state.isFaceEnabled ? this.biometricAuthentication(): this.setModalShow()}
+				{this.state.isFaceEnabled ? this.biometricAuthentication(): this.cardSend()}
 				}}>
 
 

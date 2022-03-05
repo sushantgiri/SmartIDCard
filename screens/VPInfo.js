@@ -19,6 +19,8 @@ export default class VPInfo extends React.Component {
         detailViewArray: [],
         showDetailData: false,
         SVCTimeArray: [],
+        cardKey: [],
+        dataAvailable: false,
 	}
 
     setStateData = async() => {
@@ -53,6 +55,8 @@ export default class VPInfo extends React.Component {
                 this.renderTimeStampFormatData()
 			}
 		})
+
+        this.renderDetails()
     }
 
     renderTimeStampFormatData = () => {
@@ -113,10 +117,34 @@ export default class VPInfo extends React.Component {
 
     componentDidMount(){
         this.setStateData();
+        const cardKey = this.props.navigation.getParam('cardKey');
+        this.setState({cardKey: cardKey}); // Set password
+
+
     }
 
 
-  
+    renderDetails = async() => {
+        console.log('Details', this.state.VCarray);
+        await SecureStorage.getAllKeys()
+                    .then((keys) => {
+                        if(keys != null){
+                            console.log('Keys', keys);
+                        }else{
+                            console.log('No Keys Available');
+                        }
+                    })
+        await SecureStorage.getItem(JSON.stringify(this.state.cardKey))
+        .then((response) => {
+            if(response != null){
+                console.log('Response', response);
+                this.setState({dataAvailable: true})
+            }else{
+                this.setState({dataAvailable: false})
+                console.log('No Response');
+            }
+        })
+    }
 
     processItem = () => {
         console.log('Time ARray--->',this.state.timeArray);
@@ -267,7 +295,8 @@ export default class VPInfo extends React.Component {
 
 
     render(){
-
+        // const cardKey = this.props.navigation.getParam('cardKey');
+        // console.log('CardKey', cardKey);
 
         return(
                 <View style={vpStyle.container}>
@@ -298,9 +327,18 @@ export default class VPInfo extends React.Component {
 
 
                     <View style={vpStyle.line} />
-                    <ScrollView style={itemStyle.scrollStyle} >
+                    <ScrollView 
+                    contentContainerStyle={itemStyle.scrollContainer}
+                    style={itemStyle.scrollStyle} >
 
-                        {this.state.showDetailData && this.state.SVCTimeArray != null && this.state.SVCTimeArray.length > 0 && this.state.SVCTimeArray.map((item) => {
+                        {!this.state.dataAvailable && (
+                            <View style={itemStyle.noDataContainer}>
+                                <Image style={itemStyle.noData} source={require('../screens/assets/images/png/no_data.png')} />
+                                <Text style={itemStyle.noDataText}>정보 제공내역이 없습니다.</Text>
+                            </View>
+                        )}
+
+                        {/* {this.state.showDetailData && this.state.SVCTimeArray != null && this.state.SVCTimeArray.length > 0 && this.state.SVCTimeArray.map((item) => {
                                                      var key = Object.keys(item)[0];
 
                                                      var keys = Object.keys(item);
@@ -363,76 +401,9 @@ export default class VPInfo extends React.Component {
 
                                                      
 
-                        })}
+                        })} */}
                      
-                     {/* {this.state.showDetailData && this.state.timeArray.map((item) => {
-                         var key = Object.keys(item)[0];
-                         console.log('Item===>', key);
-                         
-                         return(
-                            <View>
-                             <Text style={itemStyle.title}>{key}</Text> 
-                             {
-                                 item[key].map((vc) => {
-                                    console.log('Value===>', vc);
-                                    
-
-                                    return(
-                                        <View style={itemStyle.dataContainer}>
-
-
-                                        <View style={itemStyle.rowContainer}>
                     
-                                            <Text style={itemStyle.listLabelStyle}>이름 :</Text>
-                                            <Text style={itemStyle.listDataItemStyle}>{vc.name}</Text>
-                    
-                                        </View>
-                    
-                                        <View style={itemStyle.rowContainer}>
-                    
-                                            <Text style={itemStyle.listLabelStyle}>생년월일 :</Text>
-                                            <Text style={itemStyle.listDataItemStyle}>{vc.birthday}</Text>
-                    
-                                        </View>
-                                        <View style={itemStyle.rowContainer}>
-                    
-                                        <Text style={itemStyle.listLabelStyle}>성별 :</Text>
-                                        <Text style={itemStyle.listDataItemStyle}>{vc.gender}</Text>
-                    
-                                        </View>
-                    
-                                        <View style={itemStyle.rowContainer}>
-                    
-                                            <Text style={itemStyle.listLabelStyle}>휴대폰번호 :</Text>
-                                            <Text style={itemStyle.listDataItemStyle}>{vc.phone}</Text>
-                    
-                                        </View>
-                    
-                                        <View style={itemStyle.rowContainer}>
-                    
-                                            <Text style={itemStyle.listLabelStyle}>이메일주소 :</Text>
-                                            <Text style={itemStyle.listDataItemStyle}>{vc.email}</Text>
-                    
-                                        </View>
-                    
-                                        <View style={itemStyle.rowContainer}>
-                    
-                                            <Text style={itemStyle.listLabelStyle}>주소 :</Text>
-                                            <Text style={itemStyle.listDataItemStyle}>{vc.address}</Text>
-                    
-                                        </View>
-                    
-                                </View>
-                                    )
-
-                                 })
-                             }
-                            </View>
-                         )
-
-                     })} */}
-
-                    {/* {this.processItem()} */}
 
                     </ScrollView>
 
@@ -518,6 +489,27 @@ const itemStyle = StyleSheet.create({
 
     scrollStyle: {
         marginBottom: 12,
+    },
+
+    noDataContainer: {
+        flexDirection: 'column',
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+
+    scrollContainer: {
+        flex: 1
+    },
+
+    noData: {
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+
+    noDataText:{
+        color: '#7D848F',
+        marginTop: 20
     }
 })
 

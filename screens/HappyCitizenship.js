@@ -111,6 +111,9 @@ export default class HappyCitizenship extends React.Component {
     render() {
 
         const vc = this.props.navigation.getParam('vc');
+        const itemVCArray= this.props.navigation.getParam('item');
+
+        console.log('Item---->', itemVCArray);
 
         // TTA TEMP
         const { randomBytes } = require("crypto");
@@ -190,7 +193,7 @@ export default class HappyCitizenship extends React.Component {
                     </View>
                 </View>
 
-                <TouchableOpacity style={styles.searchContainer} onPress={() => {this.props.navigation.navigate('VPInfo')}}>
+                <TouchableOpacity style={styles.searchContainer} onPress={() => {this.props.navigation.navigate('VPInfo',  {cardKey: itemVCArray})}}>
                     <Image source={require('../screens/assets/images/png/happy_citizen_search.png')} />
                     <Text style={styles.searchTextStyle}>정보 제공 내역</Text>
                 </TouchableOpacity>

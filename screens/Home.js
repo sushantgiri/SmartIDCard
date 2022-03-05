@@ -42,13 +42,6 @@ var scanningIcon = require('../screens/assets/images/png/scanning_image.png')
 
 const { width: viewportWidth } = Dimensions.get('window');
 
-<<<<<<< HEAD
-const { BNSModule } = NativeModules;
-import {request, PERMISSIONS} from 'react-native-permissions';
-
-
-=======
->>>>>>> 188774dbdbc3e750bf87c9e796393e5760914928
 var target = []; //삭제 선택된 VC
 
 function wp (percentage) {
@@ -435,7 +428,7 @@ export default class Home extends React.Component {
 		return (
 			<TouchableOpacity onPress={() => {
 				console.log
-				this.props.navigation.push('HappyCitizenship', {vc: item.vc});
+				this.props.navigation.push('HappyCitizenship', {vc: item.vc, item: item});
 				}} style={cards.cardContainer}>
 					<View style={cards.cardContainer}>
 
