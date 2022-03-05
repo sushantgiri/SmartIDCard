@@ -139,6 +139,10 @@ export default class VPInfo extends React.Component {
             if(response != null){
                 console.log('Response', response);
                 this.setState({dataAvailable: true})
+                var localDataArray = JSON.parse(response);
+                console.log('LocalDataArray', localDataArray);
+                
+
             }else{
                 this.setState({dataAvailable: false})
                 console.log('No Response');
@@ -335,6 +339,12 @@ export default class VPInfo extends React.Component {
                             <View style={itemStyle.noDataContainer}>
                                 <Image style={itemStyle.noData} source={require('../screens/assets/images/png/no_data.png')} />
                                 <Text style={itemStyle.noDataText}>정보 제공내역이 없습니다.</Text>
+                            </View>
+                        )}
+
+                        {this.state.dataAvailable && (
+                            <View>
+                                <Text>Data available.</Text>
                             </View>
                         )}
 

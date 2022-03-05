@@ -562,16 +562,33 @@ export default class VPREQ_VCsend extends React.Component {
 
 
 	 saveVerifiedData = async() =>{
-
+		var dataArray = [];
 		var today = new Date().toLocaleDateString()
 		var keyJSON = JSON.stringify(this.state.selectedCard);
 		var verifiedJSON = JSON.stringify(this.state.SVCArray);
 
 		//Data Array
 		var data = today + "SmartIDCard" + verifiedJSON;
+		dataArray.push({[new Date().toLocaleDateString()] : verifiedJSON});
+		 
 		console.log('Data', data);
 		console.log('Key', keyJSON);
-		SecureStorage.setItem(keyJSON, data);
+		console.log('DataArray', dataArray);
+
+		await SecureStorage.getItem(keyJSON)
+		.then((response) => {
+			if(response != null){
+				var localDataArray = JSON.parse(response);
+				var newData= {[new Date().toLocaleDateString()] : verifiedJSON};
+				var updatedDataArray  = localDataArray.concat(newData);
+				console.log('NewDataArray', JSON.stringify(updatedDataArray));
+				SecureStorage.setItem(keyJSON, JSON.stringify(updatedDataArray));
+			}else{
+				SecureStorage.setItem(keyJSON, JSON.stringify(dataArray));
+
+			}
+
+		})
 		
 	}
 
