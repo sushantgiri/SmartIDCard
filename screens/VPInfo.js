@@ -21,6 +21,7 @@ export default class VPInfo extends React.Component {
         SVCTimeArray: [],
         cardKey: [],
         dataAvailable: false,
+        localDataArray: []
 	}
 
     setStateData = async() => {
@@ -141,6 +142,7 @@ export default class VPInfo extends React.Component {
                 this.setState({dataAvailable: true})
                 var localDataArray = JSON.parse(response);
                 console.log('LocalDataArray', localDataArray);
+                this.setState({localDataArray: localDataArray})
                 
 
             }else{
@@ -342,11 +344,64 @@ export default class VPInfo extends React.Component {
                             </View>
                         )}
 
-                        {this.state.dataAvailable && (
-                            <View>
-                                <Text>Data available.</Text>
-                            </View>
-                        )}
+                        {this.state.dataAvailable && this.state.localDataArray.length > 0 && this.state.localDataArray.map((item, index) => {
+                           var keys = Object.keys(item);
+                           var value = JSON.parse(Object.values(item));
+                          
+                            return(
+                                <View>
+                                    <Text style={itemStyle.title}>{keys}</Text>
+
+                                    <View style={itemStyle.dataContainer}>
+
+                
+
+                                        <View style={itemStyle.rowContainer}>
+
+                                        <Text style={itemStyle.listLabelStyle}>사업자명 :</Text>
+                                        <Text style={itemStyle.listDataItemStyle}>{value[0].company}</Text>
+
+                                        </View>  
+
+                                        <View style={itemStyle.rowContainer}>
+
+                                        <Text style={itemStyle.listLabelStyle}>대표자명 :</Text>
+                                        <Text style={itemStyle.listDataItemStyle}>{value[0].ceo}</Text>
+
+                                        </View>   
+
+                                        <View style={itemStyle.rowContainer}>
+
+                                            <Text style={itemStyle.listLabelStyle}>사업자주소 :</Text>
+                                            <Text style={itemStyle.listDataItemStyle}>{value[0].address}</Text>
+
+                                        </View>   
+
+                                        <View style={itemStyle.rowContainer}>
+
+                                            <Text style={itemStyle.listLabelStyle}>사업자전화번호 :</Text>
+                                            <Text style={itemStyle.listDataItemStyle}>{value[0].phone}</Text>
+
+                                        </View> 
+
+
+                                        <View style={itemStyle.rowContainer}>
+
+                                            <Text style={itemStyle.listLabelStyle}>도메인명 :</Text>
+                                            <Text style={itemStyle.listDataItemStyle}>{value[0].domain}</Text>
+
+                                        </View> 
+
+                                    </View>    
+
+
+                                </View>
+                            )                          
+                        })}
+
+
+
+                         
 
                         {/* {this.state.showDetailData && this.state.SVCTimeArray != null && this.state.SVCTimeArray.length > 0 && this.state.SVCTimeArray.map((item) => {
                                                      var key = Object.keys(item)[0];
