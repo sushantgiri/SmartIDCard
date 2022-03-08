@@ -399,77 +399,6 @@ export default class VPInfo extends React.Component {
                             )                          
                         })}
 
-
-
-                         
-
-                        {/* {this.state.showDetailData && this.state.SVCTimeArray != null && this.state.SVCTimeArray.length > 0 && this.state.SVCTimeArray.map((item) => {
-                                                     var key = Object.keys(item)[0];
-
-                                                     var keys = Object.keys(item);
-                                                    console.log('Keys', keys);    
-
-                                                     return(
-                                                        <View>
-                                                         <Text style={itemStyle.title}>{key}</Text> 
-                                                         {
-                                                             item[key].map((vc) => {
-                                                                console.log('Value===>', vc);
-                                                                
-                            
-                                                                return(
-                                                                    <View style={itemStyle.dataContainer}>
-                            
-                            
-                                                                    <View style={itemStyle.rowContainer}>
-                                                
-                                                                        <Text style={itemStyle.listLabelStyle}>도메인명 :</Text>
-                                                                        <Text style={itemStyle.listDataItemStyle}>{vc.domain}</Text>
-                                                
-                                                                    </View>
-                                                
-                                                                    <View style={itemStyle.rowContainer}>
-                                                
-                                                                        <Text style={itemStyle.listLabelStyle}>사업자명 :</Text>
-                                                                        <Text style={itemStyle.listDataItemStyle}>{vc.company}</Text>
-                                                
-                                                                    </View>
-                                                                    <View style={itemStyle.rowContainer}>
-                                                
-                                                                    <Text style={itemStyle.listLabelStyle}>대표자명 :</Text>
-                                                                    <Text style={itemStyle.listDataItemStyle}>{vc.ceo}</Text>
-                                                
-                                                                    </View>
-                                                
-                                                                    <View style={itemStyle.rowContainer}>
-                                                
-                                                                        <Text style={itemStyle.listLabelStyle}>사업자주소 :</Text>
-                                                                        <Text style={itemStyle.listDataItemStyle}>{vc.address}</Text>
-                                                
-                                                                    </View>
-                                                
-                                                                    <View style={itemStyle.rowContainer}>
-                                                
-                                                                        <Text style={itemStyle.listLabelStyle}>사업자전화번호 :</Text>
-                                                                        <Text style={itemStyle.listDataItemStyle}>{vc.phone}</Text>
-                                                
-                                                                    </View>
-                                                
-                                                
-                                                            </View>
-                                                                )
-                            
-                                                             })
-                                                         }
-                                                        </View>
-                                                     )
-
-                                                     
-
-                        })} */}
-                     
-                    
-
                     </ScrollView>
 
 
@@ -478,33 +407,6 @@ export default class VPInfo extends React.Component {
     }
 }
 
-const styles = StyleSheet.create({
-    contentsContentContainer: {
-        borderRadius:8,
-        backgroundColor:'#F6F8FA',
-        marginTop: 12,
-        marginStart: 24,
-        marginEnd: 24,
-        paddingBottom: 16,
-    },
-
-    contentsChildSection: {
-        flexDirection: 'row',
-        justifyContent:'space-between',
-        marginStart: 20,
-        marginEnd: 20,
-        marginTop: 16,
-    },
-
-    contentsLabel: {
-       fontSize: 14,
-       color: '#44424A', 
-    },
-
-    contentsValue: {
-        fontWeight: '500',
-    },
-})
 
 const itemStyle = StyleSheet.create({
 

@@ -556,7 +556,7 @@ export default class VPREQ_VCsend extends React.Component {
 		ws.onclose = (e) => {};
 		// WebSocket Close
 
-		// this.props.navigation.push('CardScanningTest',{name: this.state.name, type: this.state.type});
+		this.props.navigation.push('CardScanningTest',{name: this.state.name, type: this.state.type});
 		// this.props.navigation.push('VCselect',{password:this.state.password});
 	}
 
