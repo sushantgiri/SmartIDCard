@@ -119,46 +119,54 @@ export default class VPREQ_VCsend extends React.Component {
 
 	 biometricAuthentication = () =>{
 
-		if(Platform.OS === 'ios'){
-			// var TouchID = require('react-native-touch-id');
-			const optionalConfigObject = {
-				passcodeFallback: false,
-			  }
-			TouchID.authenticate('Authenticate your Smart ID Card', optionalConfigObject)
-			.then(success => {
-				console.log('success', success);
-				this.showMessage("Authentication Successful")
-				this.pickVCinArray()
-			})
-			.catch(error => {
-			  // Failure code
-			  console.log('error', error);
-			  this.showMessage(error.message)
-			//   this.setModalShow();
-			});
-			return;
-		}
+		// if(Platform.OS === 'ios'){
+		// 	const optionalConfigObject = {
+		// 		passcodeFallback: false,
+		// 	  }
+		// 	TouchID.authenticate('Authenticate your Smart ID Card', optionalConfigObject)
+		// 	.then(success => {
+		// 		console.log('success', success);
+		// 		this.showMessage("Authentication Successful")
+		// 		this.pickVCinArray()
+		// 	})
+		// 	.catch(error => {
+		// 	  // Failure code
+		// 	  console.log('error', error);
+		// 	  this.showMessage(error.message)
+		// 	  this.setModalShow();
+		// 	});
+		// 	return;
+		// }
 
 
 			ReactNativeBiometrics.isSensorAvailable()
 				.then((resultObject) => {
 					const { available, biometryType,error } = resultObject;
+
 					console.log('Available', available);
 					console.log('BiometricType', biometryType);
 					console.log('Biometric Error', error);
+
+					if(error){
+						this.setModalShow();
+						console.log('Biometric authentication failed to due to ', error);
+						return;
+					}
+
 					if (available && biometryType === ReactNativeBiometrics.TouchID) {
 						console.log('TouchID');
 						this.createSimplePrompt();
 					} else if (available && biometryType === ReactNativeBiometrics.FaceID) {
-						this.createSimplePrompt();
 						console.log('FaceID');
+						this.createSimplePrompt();
 					} else if (available && biometryType === ReactNativeBiometrics.Biometrics) {
 						this.createSimplePrompt();
 						console.log('Biometrics');
 					} else {
 						this.setModalShow();
-						console.log('Biometrics not supported');
 					}
+
+					
 				})
 		
 		
@@ -187,16 +195,17 @@ export default class VPREQ_VCsend extends React.Component {
 	createSimplePrompt = () => {
 		ReactNativeBiometrics.simplePrompt({promptMessage: 'Authenticate your Smart ID Card'})
 				.then((resultObject) => {
-					const { success } = resultObject
+					const { success, error } = resultObject
 
 						if (success) {
 							this.showMessage("Authentication Successful")
 							this.pickVCinArray()
-						} else {
-							this.showMessage("User cancelled")
+						} 
+
+						if(error){
+							this.setModalShow();
 						}
 					
-					// console.log()
 
 					
 				})
@@ -853,7 +862,7 @@ export default class VPREQ_VCsend extends React.Component {
 
 			<TouchableOpacity onPress={() => {
 				console.log('FaceEnabled', this.state.isFaceEnabled)
-				{this.state.isFaceEnabled ? this.biometricAuthentication(): this.cardSend()}
+				{this.state.isFaceEnabled ? this.biometricAuthentication(): this.setModalShow()}
 				}}>
 
 

@@ -162,23 +162,6 @@ export default class SettingsScreen extends React.Component {
 
                 </View>
 
-                {/* <View style={settingsOptions.mainContainer}>
-
-                    <View style={settingsOptions.mainSubContainer}>
-                        <View style={settingsOptions.item_square}/>
-                        <Text style={settingsOptions.item_title}>지문</Text>
-                    </View>
-
-                
-                    <Switch
-                        style={settingsOptions.switchStyle}
-                        trackColor={{ false: "#E6EBF3", true: "#EEFCF8" }}
-                        thumbColor={this.state.isFingerPrintEnabled ? "#109D77" : "#f4f3f4"}
-                        ios_backgroundColor="#3e3e3e"
-                        onValueChange={this.toggleFingerPrintSwitch}
-                        value={this.state.isFingerPrintEnabled} />
-
-                </View> */}
 
 
                 </View>
