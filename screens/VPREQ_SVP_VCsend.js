@@ -590,9 +590,10 @@ export default class VPREQ_VCsend extends React.Component {
 				var localDataArray = JSON.parse(response);
 				var newData= {[new Date().toLocaleDateString()] : verifiedJSON};
 				var updatedDataArray  = localDataArray.concat(newData);
-				console.log('NewDataArray', JSON.stringify(updatedDataArray));
+				console.log('UpdatedDataArray-->', JSON.stringify(updatedDataArray));
 				SecureStorage.setItem(keyJSON, JSON.stringify(updatedDataArray));
 			}else{
+				console.log('NewDataArray-->', JSON.stringify(updatedDataArray));
 				SecureStorage.setItem(keyJSON, JSON.stringify(dataArray));
 
 			}
