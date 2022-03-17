@@ -119,24 +119,6 @@ export default class VPREQ_VCsend extends React.Component {
 
 	 biometricAuthentication = () =>{
 
-		// if(Platform.OS === 'ios'){
-		// 	const optionalConfigObject = {
-		// 		passcodeFallback: false,
-		// 	  }
-		// 	TouchID.authenticate('Authenticate your Smart ID Card', optionalConfigObject)
-		// 	.then(success => {
-		// 		console.log('success', success);
-		// 		this.showMessage("Authentication Successful")
-		// 		this.pickVCinArray()
-		// 	})
-		// 	.catch(error => {
-		// 	  // Failure code
-		// 	  console.log('error', error);
-		// 	  this.showMessage(error.message)
-		// 	  this.setModalShow();
-		// 	});
-		// 	return;
-		// }
 
 
 			ReactNativeBiometrics.isSensorAvailable()
@@ -488,8 +470,12 @@ export default class VPREQ_VCsend extends React.Component {
 
 		console.log('Checked card', this.state.selectedCard);
 
-		if(!cardSelected) {	alert("VC를 선택해 주세요") } 
-		else { this.setModalShow() }
+		if(!cardSelected) {
+				alert("VC를 선택해 주세요") 
+			} 
+		else {
+			this.state.isFaceEnabled ? this.biometricAuthentication(): this.setModalShow()
+	 }
 	}
 	// Card Function
 
@@ -569,6 +555,25 @@ export default class VPREQ_VCsend extends React.Component {
 		// this.props.navigation.push('VCselect',{password:this.state.password});
 	}
 
+	updateItemInStorage = async(response, verifiedJSON, keyJSON) => {
+
+		var localDataArray = JSON.parse(response);
+		var newData= {[new Date().toLocaleDateString()] : verifiedJSON};
+		var updatedDataArray  = localDataArray.concat(newData);
+		console.log('UpdatedDataArray-->', JSON.stringify(updatedDataArray));
+		
+		await SecureStorage.setItem(keyJSON, JSON.stringify(updatedDataArray));
+		const got = await SecureStorage.getItem(keyJSON)
+		console.log('Old --->',got)
+	}
+
+	addNewItemInStorage = async(dataArray, keyJSON) => {
+
+		SecureStorage.setItem(keyJSON, JSON.stringify(dataArray));
+		const got = await SecureStorage.getItem(keyJSON)
+		console.log('New --->', got)
+	}
+
 
 	 saveVerifiedData = async() =>{
 		var dataArray = [];
@@ -581,21 +586,16 @@ export default class VPREQ_VCsend extends React.Component {
 		dataArray.push({[new Date().toLocaleDateString()] : verifiedJSON});
 		 
 		console.log('Data', data);
-		console.log('Key', keyJSON);
+		console.log('KeyJSON', keyJSON);
 		console.log('DataArray', dataArray);
 
 		await SecureStorage.getItem(keyJSON)
 		.then((response) => {
 			if(response != null){
-				var localDataArray = JSON.parse(response);
-				var newData= {[new Date().toLocaleDateString()] : verifiedJSON};
-				var updatedDataArray  = localDataArray.concat(newData);
-				console.log('UpdatedDataArray-->', JSON.stringify(updatedDataArray));
-				SecureStorage.setItem(keyJSON, JSON.stringify(updatedDataArray));
+				
+				this.updateItemInStorage(response, verifiedJSON, keyJSON);
 			}else{
-				console.log('NewDataArray-->', JSON.stringify(updatedDataArray));
-				SecureStorage.setItem(keyJSON, JSON.stringify(dataArray));
-
+				this.addNewItemInStorage(dataArray, keyJSON);
 			}
 
 		})
@@ -863,7 +863,7 @@ export default class VPREQ_VCsend extends React.Component {
 
 			<TouchableOpacity onPress={() => {
 				console.log('FaceEnabled', this.state.isFaceEnabled)
-				{this.state.isFaceEnabled ? this.biometricAuthentication(): this.setModalShow()}
+				this.cardSend()
 				}}>
 
 

@@ -119,6 +119,7 @@ export default class VPInfo extends React.Component {
     componentDidMount(){
         this.setStateData();
         const cardKey = this.props.navigation.getParam('cardKey');
+        console.log('CardKey--->', cardKey);
         this.setState({cardKey: cardKey}); // Set password
 
 
@@ -135,6 +136,8 @@ export default class VPInfo extends React.Component {
                             console.log('No Keys Available');
                         }
                     })
+        console.log('Card key before storage', JSON.stringify(this.state.cardKey));
+            
         await SecureStorage.getItem(JSON.stringify(this.state.cardKey))
         .then((response) => {
             if(response != null){
@@ -143,8 +146,6 @@ export default class VPInfo extends React.Component {
                 var localDataArray = JSON.parse(response);
                 console.log('LocalDataArray', localDataArray);
                 this.setState({localDataArray: localDataArray})
-                
-
             }else{
                 this.setState({dataAvailable: false})
                 console.log('No Response');
