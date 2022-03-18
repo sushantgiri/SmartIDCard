@@ -17,8 +17,18 @@ import CryptoJS from 'react-native-crypto-js';
 const Web3Utils = require('web3-utils');
 import Clipboard from '@react-native-community/clipboard'
 // TTA TEMP
+import QRCode from 'react-native-qrcode-svg';
+
+import {DualDID} from '@estorm/dual-did';
+const didJWT = require('did-jwt')
+const Web3 = require('web3')
+const web3 = new Web3('http://182.162.89.51:4313')
 
 var closeIcon = require('../screens/assets/images/png/close_scanner.png')
+
+function createDualSigner (jwtSigner, ethAccount) {
+    return { jwtSigner, ethAccount }
+}
 
 function notifyMessage(msg) {
     if (Platform.OS === 'android') {
@@ -33,8 +43,35 @@ export default class HappyCitizenship extends React.Component {
     state =  {
         isQrScanning: false,
         password: '',
+        dataKey: '',
 		dataKey: '',
         cipherData: '',
+        qrValue:'',
+        privateKey:'',
+        itemVCArray: [],
+
+    }
+
+    getUserInfoFromToken = async () => {
+        await SecureStorage.getItem('userToken').then((res) => {
+          this.setState({password: res}, async function() {
+            this.getDidData();
+          })
+        })
+      }
+
+    getDidData = async () => {
+        await SecureStorage.getItem(this.state.password).then((docKey) => {
+          this.setState({dataKey: docKey}, async function() {
+              await SecureStorage.getItem(this.state.dataKey).then((userData) => {
+              if( userData != null){
+                let bytes  = CryptoJS.AES.decrypt(userData, this.state.dataKey);
+                let originalText = bytes.toString(CryptoJS.enc.Utf8);
+                this.setState(JSON.parse(originalText))
+              }
+              })
+          })
+        })
     }
 
     constructor(props){
@@ -65,7 +102,13 @@ export default class HappyCitizenship extends React.Component {
                         <View style={qrTimer.qrChildContainer}>
                                 <Text style={qrTimer.headerTitle}>QR코드</Text>
                                 <Text style={qrTimer.timer}>15</Text>
-                                <Image source={require('../screens/assets/images/png/qr_timer.png')} />
+
+                                <QRCode
+                                    value={'SmartIDCard'+this.state.qrValue}
+                                    size={200}
+                                />
+
+                                {/* <Image source={require('../screens/assets/images/png/qr_timer.png')} /> */}
 
                                 <View style={qrTimer.bottomSection}>
 
@@ -107,6 +150,82 @@ export default class HappyCitizenship extends React.Component {
         }
     }
     // TTA TEMP
+
+    componentDidMount(){
+
+        const vc = this.props.navigation.getParam('vc');
+        console.log('ItemVCArray-->!', vc);
+
+        this.setState({ itemVCArray:vc }); // Set password
+        this.setStateData();
+
+    }
+
+
+    setStateData = async() => {
+
+	  	// Get password
+		await SecureStorage.getItem('userToken').then((pw) => {
+			this.setState({ password:pw }); // Set password
+		})
+
+		// Get dataKey
+		let pw = this.state.password;
+		await SecureStorage.getItem(pw).then((dk) => {
+			this.setState({ dataKey:dk }); // Set dataKey
+		})
+		
+		// Get userData
+		let dk = this.state.dataKey;
+		await SecureStorage.getItem(dk).then((ud) => {
+			if(ud != null) {
+				// Set state
+				let bytes = CryptoJS.AES.decrypt(ud, dk);
+				let originalText = bytes.toString(CryptoJS.enc.Utf8);
+				console.log(originalText);
+				this.setState(JSON.parse(originalText))
+
+                this.createVP(this.state.itemVCArray);
+			}
+		})
+
+
+
+	
+  	}
+
+    createVP = async(vc) => {
+
+        console.log('VC Value',vc);
+
+        var date = new Date();
+        console.log('Date', formattedDate);
+
+        var formattedDate = format(date, "yyyyMMddHHmmssSSS");
+        console.log('FormattedDate', formattedDate);
+
+        var seq = (Math.floor(Math.random() * 10000) + 10000).toString().substring(1);
+        console.log(seq);
+
+        var nonce = formattedDate + seq
+        console.log('Nonce', nonce);
+
+
+        // const nonce = time + commonUtil.setKeyRand("", 1, 4, false);
+        const privateKey = this.state.privateKey;
+		const ethAccount = web3.eth.accounts.privateKeyToAccount(privateKey)
+		const dualSigner = createDualSigner(didJWT.SimpleSigner(privateKey.replace('0x','')), ethAccount)
+		const dualDid = new DualDID(dualSigner, 'Issuer(change later)', 'Dualauth.com(change later)',web3,'0x76A2dd4228ed65129C4455769a0f09eA8E4EA9Ae')
+		
+		const vp = await dualDid.createVP(vc,nonce)
+
+        var data= {nonce: nonce, vp: vp};
+        this.setState({ qrValue:data });
+        console.log('QR value',this.state.qrValue) // Set QR
+
+        console.log('Data to make QR', data);
+
+    }
 
     render() {
 

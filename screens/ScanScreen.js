@@ -33,6 +33,14 @@ export default class ScanScreen extends React.Component {
 	onSuccess = e => {
 		//e.data를 url로 이용
 		LogBox.ignoreAllLogs(true)
+		console.log('E.data', e.data);
+
+		if(e.data.startsWith('SmartIDCard')){
+			console.log('QR Reading success', JSON.stringify(e.data));
+			var vc = e.data.slice(11);
+			console.log('QR Reading success', JSON.stringify(vc));
+			return;
+		}
 
 		var connectorUrl = '';
 		const {navigation} = this.props

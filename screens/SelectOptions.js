@@ -2,6 +2,8 @@ import React from 'react';
 import {StyleSheet, Text, View, Image, TouchableOpacity, 
         PermissionsAndroid, NativeModules, Platform} from 'react-native';
 import axios from 'axios';
+import jwt_decode from "jwt-decode"
+
 
 const { BNSModule } = NativeModules;
 
@@ -11,9 +13,40 @@ export default class SelectOptions extends React.Component {
         terminals : []
     }
 
+    verifyTVP = (terminals) => {
+        const tvp = terminals.showData.tvp
+        console.log('-->', tvp);
+
+        const VCform = jwt_decode(tvp);
+        console.log('VCForm-->', VCform);
+        console.log('VCCredentials--->', VCform.vp.verifiableCredential[0]);
+
+        const decryptedData = jwt_decode(VCform.vp.verifiableCredential[0])
+        console.log('DecryptedData', decryptedData);
+        this.props.navigation.push('VPREQ_VCsend',{BLE: 'BLE'})
+
+
+        
+
+        
+
+        // const decodedVC = JSON.stringify(tvp).substring(28,JSON.stringify(tvp).length-2)
+        // console.log('DecodedVC', decodedVC);
+
+
+		// const VCform = jwt_decode(decodedVC);
+        // const decodedVCForm = jwt_decode(VCform);
+
+
+        // console.log('TVP', tvp);
+        // console.log('DecodedVC', decodedVC);
+        // console.log('VCForm', VCform);
+        // console.log('DecodedVCForm', decodedVCForm);
+    }
+
     setTerminals = (terminals) => {
         return(
-            <TouchableOpacity style={optionsStyle.optionsContainer} onPress={() => { alert("준비중입니다."); }}>
+            <TouchableOpacity style={optionsStyle.optionsContainer} onPress={() => { this.verifyTVP(terminals) }}>
                 <Image source={require('../screens/assets/images/png/secondary.png')} />
                 <Text style={optionsStyle.optionLabelStyle}>
                     {terminals.showData.shopName}{"\n"}{terminals.showData.terminal_desc}

@@ -322,6 +322,7 @@ export default class VPREQ_VCsend extends React.Component {
 		).start()
 		
 		// WebSocket Connection
+		//TODO ://
 		ws = new WebSocket(socketURL);
 		ws.onopen = () => { ws.send('{"type":"authm", "no":"'+socketRoom+'"}'); }
 		ws.onmessage = (e) => { this.sendChallenger(); }
@@ -743,6 +744,11 @@ export default class VPREQ_VCsend extends React.Component {
 		// 애니메이션 수행
 
 		const {navigation} = this.props
+		const BLE = navigation.getParam('BLE', 'null')
+		if(BLE !== 'null' && BLE === 'BLE'){
+			console.log('BLE Entered');	
+			// return;
+		}
 		const userRoom = navigation.getParam('roomNo',"value")
 		const userSocket = navigation.getParam('socketUrl',"Url")
 		const userPW = navigation.getParam('userPW',"passwordValue")
