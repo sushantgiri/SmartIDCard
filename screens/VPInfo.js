@@ -306,6 +306,9 @@ export default class VPInfo extends React.Component {
         // console.log('CardKey', cardKey);
 
         return(
+            <ScrollView 
+                    contentContainerStyle={itemStyle.scrollContainer}
+                    style={itemStyle.scrollStyle} >
                 <View style={vpStyle.container}>
                     <TouchableOpacity onPress={() => this.props.navigation.pop()}>
                         <Image style={vpStyle.backButton} source={require('../screens/assets/images/png/back_icon.png')} />
@@ -334,9 +337,7 @@ export default class VPInfo extends React.Component {
 
 
                     <View style={vpStyle.line} />
-                    <ScrollView 
-                    contentContainerStyle={itemStyle.scrollContainer}
-                    style={itemStyle.scrollStyle} >
+                    
 
                         {!this.state.dataAvailable && (
                             <View style={itemStyle.noDataContainer}>
@@ -348,7 +349,10 @@ export default class VPInfo extends React.Component {
                         {this.state.dataAvailable && this.state.localDataArray.length > 0 && this.state.localDataArray.map((item, index) => {
                            var keys = Object.keys(item);
                            var value = JSON.parse(Object.values(item));
-                          
+                           console.log('Keys', keys);
+                           console.log('Company', value[0].company);
+                           console.log('Birthday', value[0].company);
+
                             return(
                                 <View>
                                     <Text style={itemStyle.title}>{keys}</Text>
@@ -359,8 +363,13 @@ export default class VPInfo extends React.Component {
 
                                         <View style={itemStyle.rowContainer}>
 
+                                        
+
                                         <Text style={itemStyle.listLabelStyle}>사업자명 :</Text>
-                                        <Text style={itemStyle.listDataItemStyle}>{value[0].company}</Text>
+                                            <Text style={itemStyle.listDataItemStyle}>{value[0].company === 'undefined' ? value[0].birthday: value[0].company }</Text>
+                                            {/* <Text style={itemStyle.listDataItemStyle}>{value[0].birthday}</Text> */}
+
+                                        
 
                                         </View>  
 
@@ -400,10 +409,11 @@ export default class VPInfo extends React.Component {
                             )                          
                         })}
 
-                    </ScrollView>
 
 
                 </View>
+                </ScrollView>
+
         )
     }
 }
@@ -456,7 +466,7 @@ const itemStyle = StyleSheet.create({
     },
 
     scrollStyle: {
-        marginBottom: 12,
+        marginBottom: 2,
     },
 
     noDataContainer: {
@@ -467,7 +477,8 @@ const itemStyle = StyleSheet.create({
     },
 
     scrollContainer: {
-        flex: 1
+        flex: 1,
+        flexDirection: 'column'
     },
 
     noData: {

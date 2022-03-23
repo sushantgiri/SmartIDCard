@@ -15,6 +15,7 @@ import VCREQ_VCsend from '../screens/VCREQ_VCsend'
 import VPREQ_SIGN_NULLsend from '../screens/VPREQ_SIGN_NULLsend'
 import VPREQ_SIGN_VCsend from '../screens/VPREQ_SIGN_VCsend'
 import VPREQ_VCsend from '../screens/VPREQ_VCsend'
+import VerificationScreen from '../screens/VerificationScreen'
 import VPREQ_NULLsend from '../screens/VPREQ_NULLsend'
 
 import VPREQ_SVP_SIGN_NULLsend from '../screens/VPREQ_SVP_SIGN_NULLsend'
@@ -54,6 +55,7 @@ const AppNavigation = createStackNavigator(
 		VPREQ_SIGN_VCsend: {screen: VPREQ_SIGN_VCsend},
 		VPREQ_NULLsend: {screen: VPREQ_NULLsend},
 		VPREQ_VCsend: {screen: VPREQ_VCsend},
+		VerificationScreen: {screen: VerificationScreen},
 
 		VPREQ_SVP_SIGN_NULLsend: { screen: VPREQ_SVP_SIGN_NULLsend},
 		VPREQ_SVP_SIGN_VCsend: { screen: VPREQ_SVP_SIGN_VCsend},

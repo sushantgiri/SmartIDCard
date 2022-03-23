@@ -5,6 +5,10 @@ import {View, StyleSheet, Text, TouchableOpacity, LogBox, Image, Dimensions} fro
 import QRCodeScanner from 'react-native-qrcode-scanner';
 import axios from 'axios';
 import { StackActions, NavigationActions } from 'react-navigation';
+import jwt_decode from "jwt-decode"
+import {DualDID} from '@estorm/dual-did';
+import SecureStorage from 'react-native-secure-storage'
+import CryptoJS from 'react-native-crypto-js';
 
 
 // global variables : 웹소켓 url, 웹소켓 room number, nonce, request type, issuer 의 url
@@ -17,6 +21,14 @@ var issuerURL = '';
 var signType = '';
 var signData = '';
 var encryptKey = '';
+const didJWT = require('did-jwt')
+const Web3 = require('web3')
+const web3 = new Web3('http://182.162.89.51:4313')
+
+function createDualSigner (jwtSigner, ethAccount) {
+    return { jwtSigner, ethAccount }
+}
+
 
 export default class ScanScreen extends React.Component {
 	// cancel
@@ -24,6 +36,38 @@ export default class ScanScreen extends React.Component {
 		this.props.navigation.pop();
     	this.props.navigation.navigate('VCselect');
   	}
+
+	state = {
+		isQrScanning: false,
+        password: '',
+        dataKey: '',
+		dataKey: '',
+        cipherData: '',
+        qrValue:'',
+        privateKey:'',
+        itemVCArray: [],
+	  }
+
+	  
+
+
+	verifyVP = async(vp, nonce) => {
+		const privateKey = this.state.privateKey;
+		const ethAccount = web3.eth.accounts.privateKeyToAccount(privateKey)
+		const dualSigner = createDualSigner(didJWT.SimpleSigner(privateKey.replace('0x','')), ethAccount)
+		const dualDid = new DualDID(dualSigner, 'Issuer(change later)', 'Dualauth.com(change later)',web3,'0x76A2dd4228ed65129C4455769a0f09eA8E4EA9Ae')
+
+		const result = await dualDid.verifyVP(vp, nonce);
+		console.log('Result---->', result)
+
+		const code = result.code;
+		const success = result.success;
+		if(code == "000.0" && success) {
+			console.log('Data---->', result.data)
+			this.props.navigation.push('VerificationScreen',{resultData:result.data})
+			return;
+		}
+	}
 
 	/**
 	 *  onSuccess :
@@ -33,12 +77,17 @@ export default class ScanScreen extends React.Component {
 	onSuccess = e => {
 		//e.data를 url로 이용
 		LogBox.ignoreAllLogs(true)
-		console.log('E.data', e.data);
+		console.log('E.data', e);
 
 		if(e.data.startsWith('SmartIDCard')){
 			console.log('QR Reading success', JSON.stringify(e.data));
 			var vc = e.data.slice(11);
-			console.log('QR Reading success', JSON.stringify(vc));
+			const vp = JSON.parse(vc).vp;
+			const nonce = JSON.parse(vc).nonce;
+			console.log('Got VP', vp);
+			console.log('Nonce', nonce);
+			try{ this.verifyVP(vp, nonce);} catch(e) { console.error(e); }
+			
 			return;
 		}
 
@@ -218,7 +267,39 @@ export default class ScanScreen extends React.Component {
     	)
   	}
 
+	  setStateData = async() => {
+
+					// Get password
+				await SecureStorage.getItem('userToken').then((pw) => {
+					this.setState({ password:pw }); // Set password
+				})
+
+			// Get dataKey
+			let pw = this.state.password;
+			await SecureStorage.getItem(pw).then((dk) => {
+				this.setState({ dataKey:dk }); // Set dataKey
+			})
+	  
+	  // Get userData
+	  let dk = this.state.dataKey;
+	  await SecureStorage.getItem(dk).then((ud) => {
+		  if(ud != null) {
+			  // Set state
+			  let bytes = CryptoJS.AES.decrypt(ud, dk);
+			  let originalText = bytes.toString(CryptoJS.enc.Utf8);
+			  console.log(originalText);
+			  this.setState(JSON.parse(originalText))
+
+		  }
+	  })
+
+
+
+  
+	}
+
 	componentDidMount(){
+		this.setStateData();
 		this.scanner.enable()
 		this.scanner.reactivate()
   	}

@@ -20,6 +20,7 @@ import Clipboard from '@react-native-community/clipboard'
 import QRCode from 'react-native-qrcode-svg';
 
 import {DualDID} from '@estorm/dual-did';
+import TimerCountdown from './TimerCountdown';
 const didJWT = require('did-jwt')
 const Web3 = require('web3')
 const web3 = new Web3('http://182.162.89.51:4313')
@@ -49,6 +50,8 @@ export default class HappyCitizenship extends React.Component {
         qrValue:'',
         privateKey:'',
         itemVCArray: [],
+        nonce: '',
+        vp:''
 
     }
 
@@ -101,18 +104,29 @@ export default class HappyCitizenship extends React.Component {
                     <View style={qrTimer.qrContainer}>
                         <View style={qrTimer.qrChildContainer}>
                                 <Text style={qrTimer.headerTitle}>QR코드</Text>
-                                <Text style={qrTimer.timer}>15</Text>
-
-                                <QRCode
-                                    value={'SmartIDCard'+this.state.qrValue}
+                                <TimerCountdown 
+                                onCountDownFinished={() => {
+                                    console.log('Count Down Finished');
+                                    this.createNonce()
+                                    var data= {nonce: this.state.nonce, vp: this.state.vp};
+                                    this.setState({ qrValue:data });
+                                }}
+                                    />
+                               
+                                {this.state.qrValue && (
+                                    <QRCode
+                                    value={'SmartIDCard'+JSON.stringify(this.state.qrValue)}
                                     size={200}
-                                />
+                                    />
+                                )}
+
+                                
 
                                 {/* <Image source={require('../screens/assets/images/png/qr_timer.png')} /> */}
 
                                 <View style={qrTimer.bottomSection}>
 
-                                    <Text>행복 시민증</Text>
+                                    <Text>인증서</Text>
 
                                 </View>
 
@@ -194,10 +208,7 @@ export default class HappyCitizenship extends React.Component {
 	
   	}
 
-    createVP = async(vc) => {
-
-        console.log('VC Value',vc);
-
+    createNonce() {
         var date = new Date();
         console.log('Date', formattedDate);
 
@@ -209,6 +220,12 @@ export default class HappyCitizenship extends React.Component {
 
         var nonce = formattedDate + seq
         console.log('Nonce', nonce);
+        this.setState({nonce: nonce})
+    }  
+
+    createVP = async(vc) => {
+
+       this.createNonce()
 
 
         // const nonce = time + commonUtil.setKeyRand("", 1, 4, false);
@@ -217,9 +234,9 @@ export default class HappyCitizenship extends React.Component {
 		const dualSigner = createDualSigner(didJWT.SimpleSigner(privateKey.replace('0x','')), ethAccount)
 		const dualDid = new DualDID(dualSigner, 'Issuer(change later)', 'Dualauth.com(change later)',web3,'0x76A2dd4228ed65129C4455769a0f09eA8E4EA9Ae')
 		
-		const vp = await dualDid.createVP(vc,nonce)
-
-        var data= {nonce: nonce, vp: vp};
+		const vp = await dualDid.createVP(vc,this.state.nonce)
+        this.setState({vp: vp})
+        var data= {nonce: this.state.nonce, vp: this.state.vp};
         this.setState({ qrValue:data });
         console.log('QR value',this.state.qrValue) // Set QR
 
@@ -267,7 +284,8 @@ export default class HappyCitizenship extends React.Component {
 
                 <TouchableOpacity
                     onPress= {() => {
-                            this.showQRScan()
+                        this.createVP(this.state.itemVCArray);
+                        this.showQRScan()
                     }}>   
                     <Image source={require('../screens/assets/images/png/qr_scan_icon.png')} />
                 </TouchableOpacity>

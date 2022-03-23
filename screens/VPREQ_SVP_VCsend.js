@@ -59,8 +59,6 @@ function Card({vc}){
 	)
 }
 
-
-
 function Info({svc}){
 	return (
 		<ScrollView>
