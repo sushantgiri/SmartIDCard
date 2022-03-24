@@ -107,9 +107,10 @@ export default class HappyCitizenship extends React.Component {
                                 <TimerCountdown 
                                 onCountDownFinished={() => {
                                     console.log('Count Down Finished');
-                                    this.createNonce()
-                                    var data= {nonce: this.state.nonce, vp: this.state.vp};
-                                    this.setState({ qrValue:data });
+                                    this.createVP(this.state.itemVCArray).then(data =>{
+                                        console.log('Data', data);
+                                        this.setState({qrValue: data})
+                                    });
                                 }}
                                     />
                                
@@ -199,7 +200,6 @@ export default class HappyCitizenship extends React.Component {
 				console.log(originalText);
 				this.setState(JSON.parse(originalText))
 
-                this.createVP(this.state.itemVCArray);
 			}
 		})
 
@@ -225,8 +225,17 @@ export default class HappyCitizenship extends React.Component {
 
     createVP = async(vc) => {
 
-       this.createNonce()
+        var date = new Date();
+        console.log('Date', formattedDate);
 
+        var formattedDate = format(date, "yyyyMMddHHmmssSSS");
+        console.log('FormattedDate', formattedDate);
+
+        var seq = (Math.floor(Math.random() * 10000) + 10000).toString().substring(1);
+        console.log(seq);
+
+        var nonce = formattedDate + seq
+        console.log('Nonce', nonce);
 
         // const nonce = time + commonUtil.setKeyRand("", 1, 4, false);
         const privateKey = this.state.privateKey;
@@ -234,13 +243,11 @@ export default class HappyCitizenship extends React.Component {
 		const dualSigner = createDualSigner(didJWT.SimpleSigner(privateKey.replace('0x','')), ethAccount)
 		const dualDid = new DualDID(dualSigner, 'Issuer(change later)', 'Dualauth.com(change later)',web3,'0x76A2dd4228ed65129C4455769a0f09eA8E4EA9Ae')
 		
-		const vp = await dualDid.createVP(vc,this.state.nonce)
-        this.setState({vp: vp})
-        var data= {nonce: this.state.nonce, vp: this.state.vp};
-        this.setState({ qrValue:data });
-        console.log('QR value',this.state.qrValue) // Set QR
+		const vp = await dualDid.createVP(vc,nonce)
 
-        console.log('Data to make QR', data);
+        // this.setState({vp: vp})
+        var data= {nonce: nonce, vp: vp};
+        return data;
 
     }
 
@@ -284,8 +291,11 @@ export default class HappyCitizenship extends React.Component {
 
                 <TouchableOpacity
                     onPress= {() => {
-                        this.createVP(this.state.itemVCArray);
-                        this.showQRScan()
+                        this.createVP(this.state.itemVCArray).then(data =>{
+                            console.log('Data', data);
+                            this.setState({qrValue: data})
+                            this.showQRScan()
+                        });
                     }}>   
                     <Image source={require('../screens/assets/images/png/qr_scan_icon.png')} />
                 </TouchableOpacity>

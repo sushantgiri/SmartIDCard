@@ -66,19 +66,19 @@ function Info({svc}){
 		<ScrollView>
 			<View style={providersStyle.detailContainer}>
 
-							<Text style={providersStyle.labelStyle}>도메인명</Text>
+							<Text style={providersStyle.labelStyle}>생년월일</Text>
 							<Text style={providersStyle.valueStyle} >{svc.birthday}</Text>
 	
-							<Text style={providersStyle.labelStyle}>사업자명</Text>
+							<Text style={providersStyle.labelStyle}>이메일주소</Text>
 							<Text style={providersStyle.valueStyle}>{svc.email}</Text>
 	
-							<Text style={providersStyle.labelStyle}>대표자명</Text>
+							<Text style={providersStyle.labelStyle}>성별</Text>
 							<Text style={providersStyle.valueStyle}>{svc.gender}</Text>
 	
-							<Text style={providersStyle.labelStyle}>사업자주소</Text>
+							<Text style={providersStyle.labelStyle}>이름</Text>
 							<Text style={providersStyle.valueStyle}>{svc.name}</Text>
 	
-							<Text style={providersStyle.labelStyle}>사업자전화번호</Text>
+							<Text style={providersStyle.labelStyle}>휴대폰번호</Text>
 							<Text style={providersStyle.valueStyle}>{svc.phone}</Text>
 			</View>
 		</ScrollView>
@@ -901,7 +901,7 @@ export default class VerificationScreen extends React.Component {
 						})}
 							<TouchableOpacity onPress={this.nextPage}>
 								<View style={providersStyle.buttonContainer}>
-									<Text style={providersStyle.buttonLabelStyle}>다음</Text>
+									<Text style={providersStyle.buttonLabelStyle}>확인</Text>
 								</View>
 		
 							</TouchableOpacity>
