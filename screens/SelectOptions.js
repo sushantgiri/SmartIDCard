@@ -15,15 +15,24 @@ export default class SelectOptions extends React.Component {
 
     verifyTVP = (terminals) => {
         const tvp = terminals.showData.tvp
+        const shopName = terminals.showData.shopName
+        const terminalDesc = terminals.showData.terminal_desc
         console.log('-->', tvp);
+        console.log('Shop Name--->', shopName)
+        console.log('Terminal Description--->', terminalDesc);
 
         const VCform = jwt_decode(tvp);
-        console.log('VCForm-->', VCform);
+        console.log('VCForm-->!', VCform);
         console.log('VCCredentials--->', VCform.vp.verifiableCredential[0]);
 
         const decryptedData = jwt_decode(VCform.vp.verifiableCredential[0])
-        console.log('DecryptedData', decryptedData);
-        this.props.navigation.push('VPREQ_VCsend',{BLE: 'BLE'})
+        console.log('DecryptedData!', decryptedData);
+        // this.props.navigation.push('VPREQ_VCsend',{BLE: 'BLE'})
+        this.props.navigation.push('VerificationScreen', 
+        {decryptedData: decryptedData, 
+            vcform: VCform, 
+            shopName: shopName,
+            terminalDescription: terminalDesc })
 
 
         

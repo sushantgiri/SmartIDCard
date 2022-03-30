@@ -11,6 +11,8 @@ import TouchID from 'react-native-touch-id'
 import CryptoJS from 'react-native-crypto-js';
 import SecureStorage from 'react-native-secure-storage'
 import {format} from "date-fns" // Date Format
+import axios from 'axios';
+
 
 import Modal from 'react-native-modal' // Modal
 import CLoader from './common/Loader'; // Loader
@@ -110,6 +112,13 @@ export default class VerificationScreen extends React.Component {
 		isFaceEnabled: false,
         isFingerPrintEnabled: false,
 		selectedCard: [],
+		bnsReceived: false,
+		terminalDescription: '',
+		shopName: '',
+		callbackURL: '',
+		terminalID: '',
+		
+
 	}
   
   	//비밀번호 확인 input control
@@ -443,6 +452,36 @@ export default class VerificationScreen extends React.Component {
 		}
 	}
 
+	createVP = async(vc) => {
+		console.log('VCCCCC', vc);
+
+        var date = new Date();
+        console.log('Date', formattedDate);
+
+        var formattedDate = format(date, "yyyyMMddHHmmssSSS");
+        console.log('FormattedDate', formattedDate);
+
+        var seq = (Math.floor(Math.random() * 10000) + 10000).toString().substring(1);
+        console.log(seq);
+
+        var nonce = formattedDate + seq
+        console.log('Nonce', nonce);
+
+        // const nonce = time + commonUtil.setKeyRand("", 1, 4, false);
+        const privateKey = this.state.privateKey;
+		const ethAccount = web3.eth.accounts.privateKeyToAccount(privateKey)
+		const dualSigner = createDualSigner(didJWT.SimpleSigner(privateKey.replace('0x','')), ethAccount)
+		const dualDid = new DualDID(dualSigner, 'Issuer(change later)', 'Dualauth.com(change later)',web3,'0x76A2dd4228ed65129C4455769a0f09eA8E4EA9Ae')
+		
+		const vp = await dualDid.createVP(vc,nonce)
+		console.log('VP----->',vp);
+
+		this.sendDataToCallbackURL(vp);
+
+
+    }
+
+
 	cardSend = () => {
 		var cardSelected = false;
 		var checkedCard = [];
@@ -461,7 +500,12 @@ export default class VerificationScreen extends React.Component {
 				alert("VC를 선택해 주세요") 
 			} 
 		else {
-			this.state.isFaceEnabled ? this.biometricAuthentication(): this.setModalShow()
+			if(this.state.bnsReceived){
+				const vc= JSON.parse(JSON.stringify(this.state.selectedCard)).vc
+				this.createVP(vc);
+			}else{
+				this.state.isFaceEnabled ? this.biometricAuthentication(): this.setModalShow()
+			}
 	 }
 	}
 	// Card Function
@@ -703,6 +747,39 @@ export default class VerificationScreen extends React.Component {
 			}
 	}
 
+	sendDataToCallbackURL = async(VP) => {
+
+		console.log('TerminalID', this.state.terminalID);
+		console.log('VP', VP);
+		console.log('Terminal OTP', '');
+		console.log('CallbackURL', this.state.callbackURL);
+
+		const response = await axios.post(this.state.callbackURL, {
+				TerminalID: this.state.terminalID,
+				TerminalOTP: '',
+				VP: VP,
+			});
+
+		if(response.status === 200){
+			this.state.isFaceEnabled ? this.biometricAuthentication(): this.setModalShow()
+		}else{
+			alert('Error', response.status)
+		}	
+		
+
+
+
+		// if(this.state.callbackURL !== ''){
+		// const response = await axios.post(this.state.callbackURL, {
+		// 		TerminalID: this.state.terminalID,
+		// 		TerminalOTP: '',
+		// 		VP: VP,
+		// 	});
+		// console.log('Response',response.status)	
+		// }
+
+	}
+
 	hidePasswordModal = () => {
         this.setState({
             showPasswordModal: false
@@ -892,9 +969,21 @@ export default class VerificationScreen extends React.Component {
 							</View>
 						</View>
 	
-						
+						{this.state.bnsReceived && (
 
-						{this.state.SVCArray.map((svc,index) => {
+								<View style={providersStyle.detailContainer}>
+
+									<Text style={providersStyle.labelStyle}>상점명</Text>
+									<Text style={providersStyle.valueStyle} >{this.state.shopName}</Text>
+
+									<Text style={providersStyle.labelStyle}>터미널명</Text>
+									<Text style={providersStyle.valueStyle}>{this.state.terminalDescription === '' ? 'N/A': this.state.terminalDescription}</Text>
+
+								</View>
+
+						)}
+
+						{!this.state.bnsReceived && this.state.SVCArray.map((svc,index) => {
 							return (
 								<Info svc={svc} key={index}/>
 							)
@@ -917,9 +1006,30 @@ export default class VerificationScreen extends React.Component {
 	}
   
   	componentDidMount(){
-   		this.setStateData();
+   		  this.setStateData();
         
            const resultData = this.props.navigation.getParam('resultData', null);
+		   const decryptedData = this.props.navigation.getParam('decryptedData', null);
+		   const VCForm = this.props.navigation.getParam('vcform', null);
+		   const shopName= this.props.navigation.getParam('shopName', null);
+		   const terminalDescription = this.props.navigation.getParam('terminalDescription',null);
+		   if(decryptedData && VCForm){
+			console.log('DecryptedData--->', decryptedData);
+			this.setState({callbackURL: decryptedData.vc.credentialSubject.callbackUrl})
+			console.log('CallbackURL--->', decryptedData.vc.credentialSubject.callbackUrl)
+
+			this.setState({terminalID: decryptedData.vc.credentialSubject.terminalId})
+			console.log('TerminalID---->',decryptedData.vc.credentialSubject.terminalId)
+
+			
+			console.log('VCForm---->', VCForm);
+			this.setState({bnsReceived:true})
+			if(shopName !=null && terminalDescription != null){
+				this.setState({shopName: shopName, terminalDescription: terminalDescription});
+			}
+			
+			return;
+		   }
            if(resultData){
                console.log('Result Data', resultData);
                console.log('VerifiablePresentation--->', resultData.verifiablePresentation);
@@ -1075,12 +1185,15 @@ const providersStyle = StyleSheet.create({
 
 	scrollContainer: {
 		backgroundColor: '#ffffff',
-        flex: 1,
+        flexGrow: 1,
+		flexDirection: 'column'
+
 	},
 
     rootContainer: {
         backgroundColor: '#ffffff',
-        flex: 1,
+        flexGrow: 1,
+		flexDirection: 'column'
     },
 
     closeContainer: {
