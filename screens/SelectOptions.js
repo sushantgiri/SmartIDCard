@@ -10,7 +10,8 @@ const { BNSModule } = NativeModules;
 export default class SelectOptions extends React.Component {
     state = {
         dummyView: false,
-        terminals : []
+        terminals : [],
+        otps : []
     }
 
     verifyTVP = (terminals) => {
@@ -92,10 +93,12 @@ export default class SelectOptions extends React.Component {
             if(check){
                 BNSModule.initialize();
                 BNSModule.getTerminals((data) => {
+                    var otps = [];
                     var params = '{"list":[';
                     for(var i = 0; i < data.length; i++){
                         params += '{"serviceName":"oterminal-1","id":"' + data[i].OtpId + '"}';
                         if(i < data.length - 1) params += ",";
+                        otps.push(data[i].Otp);
                     }
                     params += ']}';
                     params = encodeURIComponent(params);
@@ -106,6 +109,7 @@ export default class SelectOptions extends React.Component {
                         console.log(response.data);
                         console.log(response.data.list);
                         
+                        this.setState({ otps : otps });
                         this.setState({ terminals: response.data.list });
                     })
                     .catch(function (error) {
