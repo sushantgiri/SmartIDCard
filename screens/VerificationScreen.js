@@ -479,8 +479,6 @@ export default class VerificationScreen extends React.Component {
 		console.log('VP----->',vp);
 
 		this.sendDataToCallbackURL(vp);
-
-
     }
 
 
@@ -499,16 +497,19 @@ export default class VerificationScreen extends React.Component {
 		console.log('Checked card', this.state.selectedCard);
 
 		if(!cardSelected) {
-				alert("VC를 선택해 주세요") 
-			} 
-		else {
+			alert("VC를 선택해 주세요") 
+		}else {
+			this.state.isFaceEnabled ? this.biometricAuthentication(): this.setModalShow()
+
+			/*
 			if(this.state.bnsReceived){
 				const vc= JSON.parse(JSON.stringify(this.state.selectedCard)).vc
 				this.createVP(vc);
 			}else{
 				this.state.isFaceEnabled ? this.biometricAuthentication(): this.setModalShow()
 			}
-	 }
+			*/
+	 	}
 	}
 	// Card Function
 
@@ -531,6 +532,12 @@ export default class VerificationScreen extends React.Component {
    	// vcSubmitArr[] 에 포함시킨다.
    	// 생성된 vcSubmitArr[]를 makeVCJWTandSign()로 보낸다
 	pickVCinArray = () => {
+		if(this.state.bnsReceived){
+			const vc = JSON.parse(JSON.stringify(this.state.selectedCard)).vc
+			this.createVP(vc);
+		}
+
+		/*
 		var vcSubmitArr = [];
 		for(var i = 0; i<this.state.VCjwtArray.length;i++){
 			if(this.state.checkedArray[i].checked == true){
@@ -546,6 +553,7 @@ export default class VerificationScreen extends React.Component {
 		}
 		
 		this.makeVPJWT(vcSubmitArr)
+		*/
 	}
 
 	// makeVPJWT
@@ -750,37 +758,21 @@ export default class VerificationScreen extends React.Component {
 	}
 
 	sendDataToCallbackURL = async(VP) => {
-
 		console.log('TerminalID', this.state.terminalID);
 		console.log('VP', VP);
-		console.log('Terminal OTP', this.state.otps);
+		console.log('TerminalOTP', this.state.otps);
 		console.log('CallbackURL', this.state.callbackURL);
 
-		const response = await axios.post(this.state.callbackURL, {
-				TerminalID: this.state.terminalID,
-				TerminalOTP: this.state.otps,
-				VP: VP,
-			});
-
-		if(response.status === 200){
-			console.log('Response--->', response.data);
-			this.state.isFaceEnabled ? this.biometricAuthentication(): this.setModalShow()
-		}else{
-			alert('Error', response.status)
-		}	
+		let params = "?TerminalID=" + this.state.terminalID + "&TerminalOTP=" + this.state.otps + "&VP=" + VP;
+		const headers = { 'Content-type': 'application/json; charset=UTF-8' }
+		const response = await axios.get(this.state.callbackURL + params, {headers});
+		console.log('Response--->', response.data);
 		
+		let error = false;
+		if(!response.status === 200) { error = true; alert('OT ERROR', response.status); }
+		if(!response.data.result) { error = true; alert('OT ERROR', response.msg); }
 
-
-
-		// if(this.state.callbackURL !== ''){
-		// const response = await axios.post(this.state.callbackURL, {
-		// 		TerminalID: this.state.terminalID,
-		// 		TerminalOTP: '',
-		// 		VP: VP,
-		// 	});
-		// console.log('Response',response.status)	
-		// }
-
+		if(!error) this.props.navigation.push('VCselect',{password:this.state.password});
 	}
 
 	hidePasswordModal = () => {
