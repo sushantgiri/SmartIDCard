@@ -117,6 +117,8 @@ export default class VerificationScreen extends React.Component {
 		shopName: '',
 		callbackURL: '',
 		terminalID: '',
+		terminals : {},
+        otps : '',
 		
 
 	}
@@ -453,19 +455,19 @@ export default class VerificationScreen extends React.Component {
 	}
 
 	createVP = async(vc) => {
-		console.log('VCCCCC', vc);
+		// console.log('VCCCCC', vc);
 
-        var date = new Date();
-        console.log('Date', formattedDate);
+        // var date = new Date();
+        // console.log('Date', formattedDate);
 
-        var formattedDate = format(date, "yyyyMMddHHmmssSSS");
-        console.log('FormattedDate', formattedDate);
+        // var formattedDate = format(date, "yyyyMMddHHmmssSSS");
+        // console.log('FormattedDate', formattedDate);
 
-        var seq = (Math.floor(Math.random() * 10000) + 10000).toString().substring(1);
-        console.log(seq);
+        // var seq = (Math.floor(Math.random() * 10000) + 10000).toString().substring(1);
+        // console.log(seq);
 
-        var nonce = formattedDate + seq
-        console.log('Nonce', nonce);
+        // var nonce = formattedDate + seq
+        // console.log('Nonce', nonce);
 
         // const nonce = time + commonUtil.setKeyRand("", 1, 4, false);
         const privateKey = this.state.privateKey;
@@ -473,7 +475,7 @@ export default class VerificationScreen extends React.Component {
 		const dualSigner = createDualSigner(didJWT.SimpleSigner(privateKey.replace('0x','')), ethAccount)
 		const dualDid = new DualDID(dualSigner, 'Issuer(change later)', 'Dualauth.com(change later)',web3,'0x76A2dd4228ed65129C4455769a0f09eA8E4EA9Ae')
 		
-		const vp = await dualDid.createVP(vc,nonce)
+		const vp = await dualDid.createVP(vc,this.state.otps)
 		console.log('VP----->',vp);
 
 		this.sendDataToCallbackURL(vp);
@@ -751,16 +753,17 @@ export default class VerificationScreen extends React.Component {
 
 		console.log('TerminalID', this.state.terminalID);
 		console.log('VP', VP);
-		console.log('Terminal OTP', '');
+		console.log('Terminal OTP', this.state.otps);
 		console.log('CallbackURL', this.state.callbackURL);
 
 		const response = await axios.post(this.state.callbackURL, {
 				TerminalID: this.state.terminalID,
-				TerminalOTP: '',
+				TerminalOTP: this.state.otps,
 				VP: VP,
 			});
 
 		if(response.status === 200){
+			console.log('Response--->', response.data);
 			this.state.isFaceEnabled ? this.biometricAuthentication(): this.setModalShow()
 		}else{
 			alert('Error', response.status)
@@ -973,6 +976,8 @@ export default class VerificationScreen extends React.Component {
 
 								<View style={providersStyle.detailContainer}>
 
+								
+
 									<Text style={providersStyle.labelStyle}>상점명</Text>
 									<Text style={providersStyle.valueStyle} >{this.state.shopName}</Text>
 
@@ -1013,6 +1018,10 @@ export default class VerificationScreen extends React.Component {
 		   const VCForm = this.props.navigation.getParam('vcform', null);
 		   const shopName= this.props.navigation.getParam('shopName', null);
 		   const terminalDescription = this.props.navigation.getParam('terminalDescription',null);
+
+		   const otpData= this.props.navigation.getParam('otpData', null);
+		   const terminals= this.props.navigation.getParam('terminals', null);
+
 		   if(decryptedData && VCForm){
 			console.log('DecryptedData--->', decryptedData);
 			this.setState({callbackURL: decryptedData.vc.credentialSubject.callbackUrl})
@@ -1026,6 +1035,12 @@ export default class VerificationScreen extends React.Component {
 			this.setState({bnsReceived:true})
 			if(shopName !=null && terminalDescription != null){
 				this.setState({shopName: shopName, terminalDescription: terminalDescription});
+			}
+
+			if(otpData != null && terminals != null){
+				console.log('SelectedOtp--->', otpData);
+				console.log('SelectedTerminal--->', terminals);
+				this.setState({otps: otpData, terminals: terminals})
 			}
 			
 			return;

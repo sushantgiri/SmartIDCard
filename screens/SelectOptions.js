@@ -14,7 +14,7 @@ export default class SelectOptions extends React.Component {
         otps : []
     }
 
-    verifyTVP = (terminals) => {
+    verifyTVP = (terminals, otp) => {
         const tvp = terminals.showData.tvp
         const shopName = terminals.showData.shopName
         const terminalDesc = terminals.showData.terminal_desc
@@ -33,7 +33,10 @@ export default class SelectOptions extends React.Component {
         {decryptedData: decryptedData, 
             vcform: VCform, 
             shopName: shopName,
-            terminalDescription: terminalDesc })
+            terminalDescription: terminalDesc,
+            otpData: otp,
+            terminals: this.state.terminals,
+             })
 
 
         
@@ -54,9 +57,9 @@ export default class SelectOptions extends React.Component {
         // console.log('DecodedVCForm', decodedVCForm);
     }
 
-    setTerminals = (terminals) => {
+    setTerminals = (terminals, index) => {
         return(
-            <TouchableOpacity style={optionsStyle.optionsContainer} onPress={() => { this.verifyTVP(terminals) }}>
+            <TouchableOpacity style={optionsStyle.optionsContainer} onPress={() => { this.verifyTVP(terminals, this.state.otps[index]) }}>
                 <Image source={require('../screens/assets/images/png/secondary.png')} />
                 <Text style={optionsStyle.optionLabelStyle}>
                     {terminals.showData.shopName}{"\n"}{terminals.showData.terminal_desc}
@@ -108,6 +111,9 @@ export default class SelectOptions extends React.Component {
                     .then((response) => {
                         console.log(response.data);
                         console.log(response.data.list);
+
+                        console.log('Otps Data', otps);
+                        console.log('Terminals Data',response.data.list);
                         
                         this.setState({ otps : otps });
                         this.setState({ terminals: response.data.list });
