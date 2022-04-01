@@ -394,7 +394,8 @@ export default class VerificationScreen extends React.Component {
     }
 
 	nextPage = () => {
-		this.setState({ ViewMode:2 });
+		if(this.state.bnsReceived) this.setState({ ViewMode:2 }); // BNS
+		else this.props.navigation.push('VCselect',{password:this.state.password}); // QR Reading
 	}
 	// SVP Function
 
