@@ -47,6 +47,15 @@ var cardIcon = require('../screens/assets/images/png/secondary.png');
 var verificationFailedIcon = require('../screens/assets/images/png/verification_failed.png');
 
 
+var nonce = '';
+var ws = '';
+var reqTypeOnUse = '';
+var issuerDIDOnUse = '';
+var signDataOnUse = '';
+var signTypeOnUse ='';
+
+
+
 function createDualSigner (jwtSigner, ethAccount) {
   	return { jwtSigner, ethAccount }
 }
@@ -456,7 +465,9 @@ export default class VerificationScreen extends React.Component {
 	}
 
 	createVP = async(vc) => {
-		// console.log('VCCCCC', vc);
+
+		console.log('VCCCCC', vc);
+
 
         // var date = new Date();
         // console.log('Date', formattedDate);
@@ -471,12 +482,19 @@ export default class VerificationScreen extends React.Component {
         // console.log('Nonce', nonce);
 
         // const nonce = time + commonUtil.setKeyRand("", 1, 4, false);
+
+
         const privateKey = this.state.privateKey;
 		const ethAccount = web3.eth.accounts.privateKeyToAccount(privateKey)
 		const dualSigner = createDualSigner(didJWT.SimpleSigner(privateKey.replace('0x','')), ethAccount)
 		const dualDid = new DualDID(dualSigner, 'Issuer(change later)', 'Dualauth.com(change later)',web3,'0x76A2dd4228ed65129C4455769a0f09eA8E4EA9Ae')
 		
-		const vp = await dualDid.createVP(vc,this.state.otps)
+		const signObj = {"data" : vc};
+		const signVC = await dualDid.createVC("http://www.smartidcard.com/vc/mobileSign",['VerifiableCredential', 'mobileSign'],"holderSign",signObj,{"type":"none"},parseInt(new Date().getTime()/1000) + 60 * 5,
+		new Date().toISOString());
+
+		
+		const vp = await dualDid.createVP(signVC.jwt,this.state.otps)
 		console.log('VP----->',vp);
 
 		this.sendDataToCallbackURL(vp);
@@ -792,6 +810,9 @@ export default class VerificationScreen extends React.Component {
 
   	render() {
 		LogBox.ignoreAllLogs(true)
+
+		
+		encryptionKeyOnUse = encryptionKey;
 		
 		const { confirmCheckPassword, ModalShow, ViewMode, SVPValue } = this.state
 

@@ -327,6 +327,8 @@ PODS:
     - React
   - RNSecureStorage (0.1.2):
     - React
+  - RNSVG (12.3.0):
+    - React-Core
   - RNVectorIcons (9.0.0):
     - React-Core
   - TcpSockets (4.0.0):
@@ -401,6 +403,7 @@ DEPENDENCIES:
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNSecureKeyStore (from `../node_modules/react-native-secure-key-store/ios`)
   - RNSecureStorage (from `../node_modules/react-native-secure-storage`)
+  - RNSVG (from `../node_modules/react-native-svg`)
   - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
   - TcpSockets (from `../node_modules/react-native-tcp`)
   - TouchID (from `../node_modules/react-native-touch-id`)
@@ -537,6 +540,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-secure-key-store/ios"
   RNSecureStorage:
     :path: "../node_modules/react-native-secure-storage"
+  RNSVG:
+    :path: "../node_modules/react-native-svg"
   RNVectorIcons:
     :path: "../node_modules/react-native-vector-icons"
   TcpSockets:
@@ -611,6 +616,7 @@ SPEC CHECKSUMS:
   RNScreens: 2e278a90eb15092ed261d4f2271e3fc9b60d08d4
   RNSecureKeyStore: f1ad870e53806453039f650720d2845c678d89c8
   RNSecureStorage: 24d433f7673a0daade43689de805933a70641731
+  RNSVG: 302bfc9905bd8122f08966dc2ce2d07b7b52b9f8
   RNVectorIcons: 4143ba35feebab8fdbe6bc43d1e776b393d47ac8
   TcpSockets: 4ef55305239923b343ed0a378b1fac188b1373b0
   TouchID: ba4c656d849cceabc2e4eef722dea5e55959ecf4
