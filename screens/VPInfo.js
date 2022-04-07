@@ -350,8 +350,9 @@ export default class VPInfo extends React.Component {
                            var keys = Object.keys(item);
                            var value = JSON.parse(Object.values(item));
                            console.log('Keys', keys);
-                           console.log('Value@', value.vc.credentialSubject);
-                           if(value.vc && value.vc.credentialSubject){
+                        //    console.log('Value@', value.vc.credentialSubject);
+                           console.log('Value.VC-->', value.vc);
+                           if(value.vc){
                                return(
                                    <View>
                                     <Text style={itemStyle.title}>{keys}</Text>
