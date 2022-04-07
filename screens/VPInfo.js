@@ -350,8 +350,34 @@ export default class VPInfo extends React.Component {
                            var keys = Object.keys(item);
                            var value = JSON.parse(Object.values(item));
                            console.log('Keys', keys);
-                           console.log('Company', value[0].company);
-                           console.log('Birthday', value[0].company);
+                           console.log('Value@', value.vc.credentialSubject);
+                           if(value.vc && value.vc.credentialSubject){
+                               return(
+                                   <View>
+                                    <Text style={itemStyle.title}>{keys}</Text>
+
+                                    <View style={itemStyle.dataContainer}>
+                                    
+                                    <View style={itemStyle.rowContainer}>
+
+                                        <Text style={itemStyle.listLabelStyle}>대표자명 :</Text>
+                                        <Text style={itemStyle.listDataItemStyle}>{value.vc.credentialSubject.shopName}</Text>
+
+                                    </View>
+
+                                    <View style={itemStyle.rowContainer}>
+
+                                        <Text style={itemStyle.listLabelStyle}>사업자주소 :</Text>
+                                        <Text style={itemStyle.listDataItemStyle}>{value.vc.credentialSubject.terminalOwner}</Text>
+
+                                    </View>   
+                                    </View>    
+
+                                    </View>
+                               )
+                           }
+                        //    console.log('Company', value[0].company);
+                        //    console.log('Birthday', value[0].company);
 
                             return(
                                 <View>

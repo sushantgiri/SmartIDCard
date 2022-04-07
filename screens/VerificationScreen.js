@@ -129,6 +129,7 @@ export default class VerificationScreen extends React.Component {
 		terminals : {},
         otps : '',
 		tvp: '',
+		decryptedToBeSavedData: '',
 		
 
 	}
@@ -643,7 +644,13 @@ export default class VerificationScreen extends React.Component {
 		var dataArray = [];
 		var today = new Date().toLocaleDateString()
 		var keyJSON = JSON.stringify(this.state.selectedCard);
-		var verifiedJSON = JSON.stringify(this.state.SVCArray);
+		var verifiedJSON = '';
+		if(this.state.bnsReceived){
+			verifiedJSON = JSON.stringify(this.state.decryptedToBeSavedData);
+		}else{
+			verifiedJSON = JSON.stringify(this.state.SVCArray);
+		}
+		 
 
 		//Data Array
 		var data = today + "SmartIDCard" + verifiedJSON;
@@ -794,8 +801,12 @@ export default class VerificationScreen extends React.Component {
 		let error = false;
 		if(!response.status === 200) { error = true; alert('OT ERROR', response.status); }
 		if(!response.data.result) { error = true; alert('OT ERROR', response.msg); }
+		
 
-		if(!error) this.props.navigation.push('VCselect',{password:this.state.password});
+		if(!error) {
+			this.saveVerifiedData();
+			this.props.navigation.push('VCselect',{password:this.state.password});
+		}
 	}
 
 	hidePasswordModal = () => {
@@ -1043,6 +1054,7 @@ export default class VerificationScreen extends React.Component {
 
 		   if(decryptedData && VCForm){
 			console.log('DecryptedData--->', decryptedData);
+			this.setState({decryptedToBeSavedData: decryptedData})
 			this.setState({callbackURL: decryptedData.vc.credentialSubject.callbackUrl})
 			console.log('CallbackURL--->', decryptedData.vc.credentialSubject.callbackUrl)
 
