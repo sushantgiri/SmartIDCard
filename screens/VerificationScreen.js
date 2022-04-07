@@ -478,12 +478,12 @@ export default class VerificationScreen extends React.Component {
 		const signObj = {"data" : vc};
 
 		
-		const signVC = await dualDid.createVC("http://www.smartidcard.com/vc/mobileSign",['VerifiableCredential', 'mobileSign'],"holderSign",signObj,{"type":"none"},parseInt(new Date().getTime()/1000) + 60 * 5,
-		new Date().toISOString());
+		// const signVC = await dualDid.createVC("http://www.smartidcard.com/vc/mobileSign",['VerifiableCredential', 'mobileSign'],"holderSign",signObj,{"type":"none"},parseInt(new Date().getTime()/1000) + 60 * 5,
+		// new Date().toISOString());
 
 		console.log('TVP Here', this.state.tvp)
 		console.log('Otps', this.state.otps);
-		console.log('TVP', this.state.VCjwtArray[0].data);
+		console.log('TVP', this.state.tvp);
 	
 		const vp = await dualDid.createVP(vc,this.state.otps)
 		console.log('VP----->1217',vp);
@@ -505,6 +505,7 @@ export default class VerificationScreen extends React.Component {
 		}
 
 		console.log('Checked card', this.state.selectedCard);
+
 
 		if(!cardSelected) {
 			alert("VC를 선택해 주세요") 
@@ -544,26 +545,38 @@ export default class VerificationScreen extends React.Component {
 	pickVCinArray = () => {
 		if(this.state.bnsReceived){
 			const vc = JSON.parse(JSON.stringify(this.state.selectedCard)).vc
-			this.createVP(vc);
-		}
-
-		/*
-		var vcSubmitArr = [];
-		for(var i = 0; i<this.state.VCjwtArray.length;i++){
+			console.log('Pick VC in Array-!', this.state.VCjwtArray);
+			var vcSubmitArr = [];
+			for(var i = 0; i<this.state.VCjwtArray.length;i++){
 			if(this.state.checkedArray[i].checked == true){
-				console.log('Name ====>', this.state.VCarray[i].vc.credentialSubject.name);
-				console.log('Name ====>', this.state.VCarray[i].vc.type[1]);
-
-			this.setState({name:  this.state.VCarray[i].vc.credentialSubject.name})
-			this.setState({type: this.state.VCarray[i].vc.type[1]})
-
 				var jwtString = this.state.VCjwtArray[i].split(',')[1].split(':')[1]
 				vcSubmitArr = vcSubmitArr.concat([jwtString.substring(1,jwtString.length-2)])
 			}
+	  		console.log('Picked VC---->', vcSubmitArr);
+    	}
+
+			this.createVP(vcSubmitArr);
+			console.log('VCArray',this.state.VCjwtArray);
 		}
+
 		
-		this.makeVPJWT(vcSubmitArr)
-		*/
+		
+		// var vcSubmitArr = [];
+		// for(var i = 0; i<this.state.VCjwtArray.length;i++){
+		// 	if(this.state.checkedArray[i].checked == true){
+		// 		console.log('Name ====>', this.state.VCarray[i].vc.credentialSubject.name);
+		// 		console.log('Name ====>', this.state.VCarray[i].vc.type[1]);
+
+		// 	this.setState({name:  this.state.VCarray[i].vc.credentialSubject.name})
+		// 	this.setState({type: this.state.VCarray[i].vc.type[1]})
+
+		// 		var jwtString = this.state.VCjwtArray[i].split(',')[1].split(':')[1]
+		// 		vcSubmitArr = vcSubmitArr.concat([jwtString.substring(1,jwtString.length-2)])
+		// 	}
+		// }
+		
+		// this.makeVPJWT(vcSubmitArr)
+		
 	}
 
 	// makeVPJWT

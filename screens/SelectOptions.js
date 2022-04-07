@@ -36,7 +36,7 @@ export default class SelectOptions extends React.Component {
             terminalDescription: terminalDesc,
             otpData: otp,
             terminals: this.state.terminals,
-            tvp: VCform.vp.verifiableCredential[0]
+            tvp: tvp
              })
 
 
