@@ -18,7 +18,7 @@ export default class SelectOptions extends React.Component {
         const tvp = terminals.showData.tvp
         const shopName = terminals.showData.shopName
         const terminalDesc = terminals.showData.terminal_desc
-        console.log('-->', tvp);
+        console.log('TVP-->', tvp);
         console.log('Shop Name--->', shopName)
         console.log('Terminal Description--->', terminalDesc);
 
@@ -36,6 +36,7 @@ export default class SelectOptions extends React.Component {
             terminalDescription: terminalDesc,
             otpData: otp,
             terminals: this.state.terminals,
+            tvp: VCform.vp.verifiableCredential[0]
              })
 
 

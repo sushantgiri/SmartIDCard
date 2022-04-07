@@ -128,6 +128,7 @@ export default class VerificationScreen extends React.Component {
 		terminalID: '',
 		terminals : {},
         otps : '',
+		tvp: '',
 		
 
 	}
@@ -469,33 +470,23 @@ export default class VerificationScreen extends React.Component {
 		console.log('VCCCCC', vc);
 
 
-        // var date = new Date();
-        // console.log('Date', formattedDate);
-
-        // var formattedDate = format(date, "yyyyMMddHHmmssSSS");
-        // console.log('FormattedDate', formattedDate);
-
-        // var seq = (Math.floor(Math.random() * 10000) + 10000).toString().substring(1);
-        // console.log(seq);
-
-        // var nonce = formattedDate + seq
-        // console.log('Nonce', nonce);
-
-        // const nonce = time + commonUtil.setKeyRand("", 1, 4, false);
-
-
         const privateKey = this.state.privateKey;
 		const ethAccount = web3.eth.accounts.privateKeyToAccount(privateKey)
 		const dualSigner = createDualSigner(didJWT.SimpleSigner(privateKey.replace('0x','')), ethAccount)
 		const dualDid = new DualDID(dualSigner, 'Issuer(change later)', 'Dualauth.com(change later)',web3,'0x76A2dd4228ed65129C4455769a0f09eA8E4EA9Ae')
 		
 		const signObj = {"data" : vc};
+
+		
 		const signVC = await dualDid.createVC("http://www.smartidcard.com/vc/mobileSign",['VerifiableCredential', 'mobileSign'],"holderSign",signObj,{"type":"none"},parseInt(new Date().getTime()/1000) + 60 * 5,
 		new Date().toISOString());
 
-		
-		const vp = await dualDid.createVP(signVC.jwt,this.state.otps)
-		console.log('VP----->',vp);
+		console.log('TVP Here', this.state.tvp)
+		console.log('Otps', this.state.otps);
+		console.log('TVP', this.state.VCjwtArray[0].data);
+	
+		const vp = await dualDid.createVP(vc,this.state.otps)
+		console.log('VP----->1217',vp);
 
 		this.sendDataToCallbackURL(vp);
     }
@@ -1032,6 +1023,7 @@ export default class VerificationScreen extends React.Component {
 		   const VCForm = this.props.navigation.getParam('vcform', null);
 		   const shopName= this.props.navigation.getParam('shopName', null);
 		   const terminalDescription = this.props.navigation.getParam('terminalDescription',null);
+		   const tvp = this.props.navigation.getParam('tvp', null);
 
 		   const otpData= this.props.navigation.getParam('otpData', null);
 		   const terminals= this.props.navigation.getParam('terminals', null);
@@ -1043,6 +1035,10 @@ export default class VerificationScreen extends React.Component {
 
 			this.setState({terminalID: decryptedData.vc.credentialSubject.terminalId})
 			console.log('TerminalID---->',decryptedData.vc.credentialSubject.terminalId)
+
+			console.log('TVP--->!!!!!', tvp);
+			this.setState({tvp: tvp});
+		
 
 			
 			console.log('VCForm---->', VCForm);
@@ -1056,6 +1052,8 @@ export default class VerificationScreen extends React.Component {
 				console.log('SelectedTerminal--->', terminals);
 				this.setState({otps: otpData, terminals: terminals})
 			}
+
+
 			
 			return;
 		   }
