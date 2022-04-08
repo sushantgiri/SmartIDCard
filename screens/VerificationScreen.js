@@ -650,7 +650,7 @@ export default class VerificationScreen extends React.Component {
 		}else{
 			verifiedJSON = JSON.stringify(this.state.SVCArray);
 		}
-		 
+	
 
 		//Data Array
 		var data = today + "SmartIDCard" + verifiedJSON;
@@ -663,7 +663,6 @@ export default class VerificationScreen extends React.Component {
 		await SecureStorage.getItem(keyJSON)
 		.then((response) => {
 			if(response != null){
-				
 				this.updateItemInStorage(response, verifiedJSON, keyJSON);
 			}else{
 				this.addNewItemInStorage(dataArray, keyJSON);
@@ -1040,21 +1039,23 @@ export default class VerificationScreen extends React.Component {
 	}
   
   	componentDidMount(){
-   		  this.setStateData();
+   		this.setStateData();
         
-           const resultData = this.props.navigation.getParam('resultData', null);
-		   const decryptedData = this.props.navigation.getParam('decryptedData', null);
-		   const VCForm = this.props.navigation.getParam('vcform', null);
-		   const shopName= this.props.navigation.getParam('shopName', null);
-		   const terminalDescription = this.props.navigation.getParam('terminalDescription',null);
-		   const tvp = this.props.navigation.getParam('tvp', null);
+		const resultData = this.props.navigation.getParam('resultData', null);
+		const decryptedData = this.props.navigation.getParam('decryptedData', null);
+		const VCForm = this.props.navigation.getParam('vcform', null);
+		const shopName= this.props.navigation.getParam('shopName', null);
+		const terminalDescription = this.props.navigation.getParam('terminalDescription',null);
+		const tvp = this.props.navigation.getParam('tvp', null);
 
-		   const otpData= this.props.navigation.getParam('otpData', null);
-		   const terminals= this.props.navigation.getParam('terminals', null);
+		const otpData= this.props.navigation.getParam('otpData', null);
+		const terminals= this.props.navigation.getParam('terminals', null);
 
-		   if(decryptedData && VCForm){
+		if(decryptedData && VCForm){
+			console.log('terminals--->', terminals);
+			this.setState({decryptedToBeSavedData: terminals});
+
 			console.log('DecryptedData--->', decryptedData);
-			this.setState({decryptedToBeSavedData: decryptedData})
 			this.setState({callbackURL: decryptedData.vc.credentialSubject.callbackUrl})
 			console.log('CallbackURL--->', decryptedData.vc.credentialSubject.callbackUrl)
 
@@ -1063,8 +1064,6 @@ export default class VerificationScreen extends React.Component {
 
 			console.log('TVP--->!!!!!', tvp);
 			this.setState({tvp: tvp});
-		
-
 			
 			console.log('VCForm---->', VCForm);
 			this.setState({bnsReceived:true})
@@ -1077,34 +1076,32 @@ export default class VerificationScreen extends React.Component {
 				console.log('SelectedTerminal--->', terminals);
 				this.setState({otps: otpData, terminals: terminals})
 			}
-
-
 			
 			return;
-		   }
-           if(resultData){
-               console.log('Result Data', resultData);
-               console.log('VerifiablePresentation--->', resultData.verifiablePresentation);
-               const svcs = resultData.verifiablePresentation.verifiableCredential;
-            
-               console.log('VerifiableCredential--->', svcs);
-               console.log('CredentialSubject--->', svcs[0].credentialSubject)
-               let svca = [];
-               let svc = null;
-   
-               for(let i = 0; i < svcs.length; i++){
-                   svc = svcs[i].credentialSubject;
-                   svca.push(svc);
-               }
-               
-               console.log('SVCAArray----->', svca);
-               this.setState({ ViewMode:1, SVCArray:svca});
-   
-               // TTA TEMP : T2 - Verified time
-               const vDatetime = format(new Date(), "yyyy-MM-dd HH:mm:ss.sss");
-               // alert("Submitted time : " + sDatetime + "\nVerified time : " + vDatetime);
-               // return;
-           }   
+		}
+		if(resultData){
+			console.log('Result Data', resultData);
+			console.log('VerifiablePresentation--->', resultData.verifiablePresentation);
+			const svcs = resultData.verifiablePresentation.verifiableCredential;
+		
+			console.log('VerifiableCredential--->', svcs);
+			console.log('CredentialSubject--->', svcs[0].credentialSubject)
+			let svca = [];
+			let svc = null;
+
+			for(let i = 0; i < svcs.length; i++){
+				svc = svcs[i].credentialSubject;
+				svca.push(svc);
+			}
+			
+			console.log('SVCAArray----->', svca);
+			this.setState({ ViewMode:1, SVCArray:svca});
+
+			// TTA TEMP : T2 - Verified time
+			const vDatetime = format(new Date(), "yyyy-MM-dd HH:mm:ss.sss");
+			// alert("Submitted time : " + sDatetime + "\nVerified time : " + vDatetime);
+			// return;
+		}   
 		console.log("Triggered1");
   	}
 }

@@ -18,6 +18,7 @@ export default class SelectOptions extends React.Component {
         const tvp = terminals.showData.tvp
         const shopName = terminals.showData.shopName
         const terminalDesc = terminals.showData.terminal_desc
+        console.log('showData-->', terminals.showData);
         console.log('TVP-->', tvp);
         console.log('Shop Name--->', shopName)
         console.log('Terminal Description--->', terminalDesc);
@@ -28,34 +29,17 @@ export default class SelectOptions extends React.Component {
 
         const decryptedData = jwt_decode(VCform.vp.verifiableCredential[0])
         console.log('DecryptedData!', decryptedData);
-        // this.props.navigation.push('VPREQ_VCsend',{BLE: 'BLE'})
+
         this.props.navigation.push('VerificationScreen', 
-        {decryptedData: decryptedData, 
+        {
+            decryptedData: decryptedData, 
             vcform: VCform, 
             shopName: shopName,
             terminalDescription: terminalDesc,
             otpData: otp,
-            terminals: this.state.terminals,
+            terminals: terminals,
             tvp: tvp
-             })
-
-
-        
-
-        
-
-        // const decodedVC = JSON.stringify(tvp).substring(28,JSON.stringify(tvp).length-2)
-        // console.log('DecodedVC', decodedVC);
-
-
-		// const VCform = jwt_decode(decodedVC);
-        // const decodedVCForm = jwt_decode(VCform);
-
-
-        // console.log('TVP', tvp);
-        // console.log('DecodedVC', decodedVC);
-        // console.log('VCForm', VCform);
-        // console.log('DecodedVCForm', decodedVCForm);
+        })
     }
 
     setTerminals = (terminals, index) => {

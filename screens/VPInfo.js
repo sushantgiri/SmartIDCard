@@ -2,8 +2,7 @@ import React from 'react';
 import {StyleSheet, View, Text, Image, ScrollView, TouchableOpacity} from 'react-native';
 import SecureStorage from 'react-native-secure-storage'
 import CryptoJS from 'react-native-crypto-js'
-
-
+import jwt_decode from "jwt-decode"
 
 export default class VPInfo extends React.Component {
 
@@ -300,147 +299,93 @@ export default class VPInfo extends React.Component {
         )
     }
 
-
     render(){
         // const cardKey = this.props.navigation.getParam('cardKey');
         // console.log('CardKey', cardKey);
-
         return(
             <ScrollView 
-                    contentContainerStyle={itemStyle.scrollContainer}
-                    style={itemStyle.scrollStyle} >
-                <View style={vpStyle.container}>
-                    <TouchableOpacity onPress={() => this.props.navigation.pop()}>
-                        <Image style={vpStyle.backButton} source={require('../screens/assets/images/png/back_icon.png')} />
-                    </TouchableOpacity>
-                    <Text style={vpStyle.titleLabel}>정보 제공 내역</Text>
-
-                    <View style={vpStyle.rowContainer}>
-
-
-                        <View style={vpStyle.weekStyle}>
-                            <Text style={vpStyle.weekLabel}>1주일</Text>
-                        </View>
-
-                        <View style={vpStyle.monthStyle}>
-                            <Text style={vpStyle.monthLabel}>1개월</Text>
-                        </View>
-
-                        <View style={vpStyle.infoContainer}>
-
-                            <Text style={vpStyle.infoLabel}>상세 조회</Text>
-                            <Image source={require('../screens/assets/images/png/arrow_down.png')} />
-
-                        </View>
-
+                contentContainerStyle={itemStyle.scrollContainer}
+                style={itemStyle.scrollStyle} >
+            <View style={vpStyle.container}>
+                <TouchableOpacity onPress={() => this.props.navigation.pop()}>
+                    <Image style={vpStyle.backButton} source={require('../screens/assets/images/png/back_icon.png')} />
+                </TouchableOpacity>
+                <Text style={vpStyle.titleLabel}>정보 제공 내역</Text>
+                <View style={vpStyle.rowContainer}>
+                    <View style={vpStyle.weekStyle}>
+                        <Text style={vpStyle.weekLabel}>1주일</Text>
                     </View>
-
-
-                    <View style={vpStyle.line} />
-                    
-
-                        {!this.state.dataAvailable && (
-                            <View style={itemStyle.noDataContainer}>
-                                <Image style={itemStyle.noData} source={require('../screens/assets/images/png/no_data.png')} />
-                                <Text style={itemStyle.noDataText}>정보 제공내역이 없습니다.</Text>
-                            </View>
-                        )}
-
-                        {this.state.dataAvailable && this.state.localDataArray.length > 0 && this.state.localDataArray.map((item, index) => {
-                           var keys = Object.keys(item);
-                           var value = JSON.parse(Object.values(item));
-                           console.log('Keys', keys);
-                        //    console.log('Value@', value.vc.credentialSubject);
-                           console.log('Value.VC-->', value.vc);
-                           if(value.vc){
-                               return(
-                                   <View>
-                                    <Text style={itemStyle.title}>{keys}</Text>
-
-                                    <View style={itemStyle.dataContainer}>
-                                    
-                                    <View style={itemStyle.rowContainer}>
-
-                                        <Text style={itemStyle.listLabelStyle}>대표자명 :</Text>
-                                        <Text style={itemStyle.listDataItemStyle}>{value.vc.credentialSubject.shopName}</Text>
-
-                                    </View>
-
-                                    <View style={itemStyle.rowContainer}>
-
-                                        <Text style={itemStyle.listLabelStyle}>사업자주소 :</Text>
-                                        <Text style={itemStyle.listDataItemStyle}>{value.vc.credentialSubject.terminalOwner}</Text>
-
-                                    </View>   
-                                    </View>    
-
-                                    </View>
-                               )
-                           }
-                        //    console.log('Company', value[0].company);
-                        //    console.log('Birthday', value[0].company);
-
+                    <View style={vpStyle.monthStyle}>
+                        <Text style={vpStyle.monthLabel}>1개월</Text>
+                    </View>
+                    <View style={vpStyle.infoContainer}>
+                        <Text style={vpStyle.infoLabel}>상세 조회</Text>
+                        <Image source={require('../screens/assets/images/png/arrow_down.png')} />
+                    </View>
+                </View>
+                <View style={vpStyle.line} />
+                    {!this.state.dataAvailable && (
+                        <View style={itemStyle.noDataContainer}>
+                            <Image style={itemStyle.noData} source={require('../screens/assets/images/png/no_data.png')} />
+                            <Text style={itemStyle.noDataText}>정보 제공내역이 없습니다.</Text>
+                        </View>
+                    )}
+                    {this.state.dataAvailable && this.state.localDataArray.length > 0 && this.state.localDataArray.map((item, index) => {
+                        var keys = Object.keys(item);
+                        var value = JSON.parse(Object.values(item));
+                        console.log('Keys', keys);
+                        console.log('Value.VC-->', value.showData);
+                        if(value.showData){
+                            const terminal = value.showData;
+                            const tvp = jwt_decode(terminal.tvp);
+                            const tvc = jwt_decode(tvp.vp.verifiableCredential[0]);
                             return(
                                 <View>
                                     <Text style={itemStyle.title}>{keys}</Text>
-
                                     <View style={itemStyle.dataContainer}>
-
-                
-
                                         <View style={itemStyle.rowContainer}>
-
-                                        
-
-                                        <Text style={itemStyle.listLabelStyle}>사업자명 :</Text>
-                                            <Text style={itemStyle.listDataItemStyle}>{value[0].company === 'undefined' ? value[0].birthday: value[0].company }</Text>
-                                            {/* <Text style={itemStyle.listDataItemStyle}>{value[0].birthday}</Text> */}
-
-                                        
-
-                                        </View>  
-
+                                            <Text style={itemStyle.listLabelStyle}>상점명 :</Text>
+                                            <Text style={itemStyle.listDataItemStyle}>{terminal.shopName}</Text>
+                                        </View>
                                         <View style={itemStyle.rowContainer}>
-
+                                            <Text style={itemStyle.listLabelStyle}>터미널명 :</Text>
+                                            <Text style={itemStyle.listDataItemStyle}>{terminal.terminal_desc}</Text>
+                                        </View>   
+                                    </View>    
+                                </View>
+                            )
+                        }
+                        return(
+                            <View>
+                                <Text style={itemStyle.title}>{keys}</Text>
+                                <View style={itemStyle.dataContainer}>
+                                    <View style={itemStyle.rowContainer}>
+                                    <Text style={itemStyle.listLabelStyle}>사업자명 :</Text>
+                                        <Text style={itemStyle.listDataItemStyle}>{value[0].company === 'undefined' ? value[0].birthday: value[0].company }</Text>
+                                        {/* <Text style={itemStyle.listDataItemStyle}>{value[0].birthday}</Text> */}
+                                    </View>  
+                                    <View style={itemStyle.rowContainer}>
                                         <Text style={itemStyle.listLabelStyle}>대표자명 :</Text>
                                         <Text style={itemStyle.listDataItemStyle}>{value[0].ceo}</Text>
-
-                                        </View>   
-
-                                        <View style={itemStyle.rowContainer}>
-
-                                            <Text style={itemStyle.listLabelStyle}>사업자주소 :</Text>
-                                            <Text style={itemStyle.listDataItemStyle}>{value[0].address}</Text>
-
-                                        </View>   
-
-                                        <View style={itemStyle.rowContainer}>
-
-                                            <Text style={itemStyle.listLabelStyle}>사업자전화번호 :</Text>
-                                            <Text style={itemStyle.listDataItemStyle}>{value[0].phone}</Text>
-
-                                        </View> 
-
-
-                                        <View style={itemStyle.rowContainer}>
-
-                                            <Text style={itemStyle.listLabelStyle}>도메인명 :</Text>
-                                            <Text style={itemStyle.listDataItemStyle}>{value[0].domain}</Text>
-
-                                        </View> 
-
-                                    </View>    
-
-
-                                </View>
-                            )                          
-                        })}
-
-
-
+                                    </View>   
+                                    <View style={itemStyle.rowContainer}>
+                                        <Text style={itemStyle.listLabelStyle}>사업자주소 :</Text>
+                                        <Text style={itemStyle.listDataItemStyle}>{value[0].address}</Text>
+                                    </View>   
+                                    <View style={itemStyle.rowContainer}>
+                                        <Text style={itemStyle.listLabelStyle}>사업자전화번호 :</Text>
+                                        <Text style={itemStyle.listDataItemStyle}>{value[0].phone}</Text>
+                                    </View> 
+                                    <View style={itemStyle.rowContainer}>
+                                        <Text style={itemStyle.listLabelStyle}>도메인명 :</Text>
+                                        <Text style={itemStyle.listDataItemStyle}>{value[0].domain}</Text>
+                                    </View> 
+                                </View>    
+                            </View>
+                        )        
+                    })}
                 </View>
-                </ScrollView>
-
+            </ScrollView>
         )
     }
 }
