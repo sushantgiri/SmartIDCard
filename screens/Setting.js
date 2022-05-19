@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign:"center",
     width:'70%',
-    marginTop: 20
+    paddingTop: 20
   },
   bottomButton:{
     padding:15

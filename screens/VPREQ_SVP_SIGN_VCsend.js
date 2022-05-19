@@ -1,14 +1,35 @@
 import React from 'react'
-import { StyleSheet, View,Text, Button,TextInput, TouchableOpacity, TouchableHighlight, Modal, LogBox} from 'react-native'
+import { 
+	StyleSheet, View, Text, Image, TextInput, ScrollView,
+	TouchableOpacity, TouchableHighlight, LogBox, Animated, Easing,
+	ToastAndroid, Platform, Dimensions, Alert, SafeAreaView
+} from 'react-native'
+
+import ReactNativeBiometrics from 'react-native-biometrics'
+import TouchID from 'react-native-touch-id'
 
 import CryptoJS from 'react-native-crypto-js';
 import SecureStorage from 'react-native-secure-storage'
+import {format} from "date-fns" // Date Format
+import { WebView } from 'react-native-webview';
+import jwt_decode from "jwt-decode"
+
+import Modal from 'react-native-modal' // Modal
+import CLoader from './common/Loader'; // Loader
+import CHeader from './common/Header'; // Header
 
 var AES = require("react-native-crypto-js").AES;
 import {DualDID} from '@estorm/dual-did';
+import {createIconSetFromFontello} from 'react-native-vector-icons';
 const didJWT = require('did-jwt')
 const Web3 = require('web3')
 const web3 = new Web3('http://182.162.89.51:4313')
+
+var imgCard = require('../screens/assets/images/png/ic_issue.png')
+var imgClose = require('../screens/assets/images/png/ic_btn_cls.png')
+var imageCheck = require('../screens/assets/images/png/ic_chk.png')
+var imageChain = require('../screens/assets/images/png/ic_chain.png')
+var verifyingLoader = require('../screens/assets/images/png/verifying_loader.png')
 
 var socketRoom ='';
 var socketURL = '';
@@ -18,455 +39,1062 @@ var ws = '';
 var reqTypeOnUse = '';
 var issuerDIDOnUse = '';
 var issuerURLOnUse = '';
+var signTypeOnUse = '';
 var signDataOnUse = '';
-var signTypeOnUse ='';
-
+var signDataHtml = '';
 var encryptionKeyOnUse ='';
-var challenger = Math.floor(Math.random() *10000) + 1;
+var challenger = String(Math.floor(Math.random() * 10000) + 1);
 
+var closeIcon = require('../screens/assets/images/png/close_scanner.png');
+var loadingIcon = require('../screens/assets/images/png/refresh_loading.png');
+var cardIcon = require('../screens/assets/images/png/secondary.png');
+var verificationFailedIcon = require('../screens/assets/images/png/verification_failed.png');
 
 function createDualSigner (jwtSigner, ethAccount) {
-  return { jwtSigner, ethAccount }
+  	return { jwtSigner, ethAccount }
 }
-function VC({vc}){
-  //date calculate
-  var toDate = vc.exp * 1000
-  var expDate = new Date(toDate)
-  //if(JSON.stringify(vc.vc.type) == '["VerifiableCredential","certificate"]'){
+
+function Card({vc}){
     return (
-    <View>
-      <View style={styles.certificateCard}>
-              <Text style={styles.vcText}>인증서</Text>
-              <Text>만료일 : {expDate.toString()}</Text>
-              <Text>이름 : {vc.vc.credentialSubject.name}</Text>
-              <Text>Email: {vc.vc.credentialSubject.email}</Text>
-              <Text>생일 : {vc.vc.credentialSubject.birthday}</Text>
-              <Text>성별 : {vc.vc.credentialSubject.gender}</Text>
-              <Text>Phone: {vc.vc.credentialSubject.phone}</Text>
-      </View>
-
-    </View>
-    )
-  //} //else {
-  //return (
-    //<View>
-      //<View style={styles.vcCard}>
-              //<Text style={styles.vcText}>운전 면허증</Text>
-              //<Text>이름 : {vc.vc.credentialSubject.name}</Text>
-              //<Text>발급 기관: {vc.vc.credentialSubject.issueAgency}</Text>
-              //<Text>발급 날짜: {vc.vc.credentialSubject.issueDate}</Text>
-              //<Text>ID : {vc.vc.credentialSubject.idNo}</Text>
-      //</View>
-
-    //</View>
-  //)
-  //}
+		<View style={certificateStyles.itemActualContainer}>
+			<Image source={cardIcon} />
+			<Text style={certificateStyles.cardLabelStyle}>{vc.vc.type[1]}</Text>
+		</View>
+	)
 }
-export default class VPREQ_SVP_SIGN_VCsend extends React.Component {
-    state = {
-    password: '',
-    dataKey: '',
-    address: '',
-    privateKey:'',
-    mnemonic:'',
-    VCarray:[],
-    VCjwtArray:[],
 
-    showingData: '',
-    reqType:'',
-    issuerDID:'',
-    checkedArray:[],
-    confirmCheckPassword:'',
-    modalVisible: false
-  }
+function Info({svc}){
+	return (
+		<ScrollView>
+			<View style={providersStyle.detailContainer}>
+				<Text style={providersStyle.labelStyle}>도메인명</Text>
+				<Text style={providersStyle.valueStyle} >{svc.domain}</Text>
+
+				<Text style={providersStyle.labelStyle}>사업자명</Text>
+				<Text style={providersStyle.valueStyle}>{svc.company}</Text>
+
+				<Text style={providersStyle.labelStyle}>대표자명</Text>
+				<Text style={providersStyle.valueStyle}>{svc.ceo}</Text>
+
+				<Text style={providersStyle.labelStyle}>사업자주소</Text>
+				<Text style={providersStyle.valueStyle}>{svc.address}</Text>
+
+				<Text style={providersStyle.labelStyle}>사업자전화번호</Text>
+				<Text style={providersStyle.valueStyle}>{svc.phone}</Text>
+			</View>
+		</ScrollView>
+	)
+}
+
+export default class VPREQ_VCsend extends React.Component {
+	state = {
+		password: '',
+		dataKey: '',
+		address: '',
+		privateKey:'',
+		mnemonic:'',
+		VCarray:[],
+		VCjwtArray:[],
+
+		checkedArray:[],
+		confirmCheckPassword:'',
+		ModalShow : false,
+		ViewMode: 0,
+
+		SVCArray:[],
+		type: '',
+		name:'',
+		SVCTimeArray:[],
+		spinValue : new Animated.Value(0),
+		showPasswordModal: false,
+		isBiometricEnabled: false,
+		isFaceEnabled: false,
+        isFingerPrintEnabled: false,
+		selectedCard: [],
+	}
   
-  //비밀번호 확인 input control
-  handleConfirmPWchange = confirmCheckPassword => {
-    this.setState({ confirmCheckPassword })
-  }
-  /** getDidData : 
-   *        "현재 state의 password"를 이용하여 암호화된 State를 가져와 복호화 하여 State에 저장함
-   *        settingCheckArray()로 연결
-   * 
-   */
-  getDidData = async () => {
-      await SecureStorage.getItem(passwordInMobile).then((docKey) => {
-        this.setState({dataKey: docKey}, async function() {
-            await SecureStorage.getItem(this.state.dataKey).then((userData) => {
-            if( userData != null){
-              let bytes  = CryptoJS.AES.decrypt(userData, this.state.dataKey);
-              let originalText = bytes.toString(CryptoJS.enc.Utf8);
-              this.setState(JSON.parse(originalText))
-              this.settingCheckArray();
-            }
-            })
-        })
-      })
-  }
-  /**
-   *  settingCheckArray :
-   *        체크된 array를 따로 구분하기 위한 arrChecked[] 를 state에 포함시킴
-   *        현재 VC의 개수와 같은 길이의 array를 만들고, checked attribute를 false로 포함함
-   */
-  settingCheckArray = () => {
-    arrChecked = [];
-    for (var i = 1; i<=this.state.VCarray.length;i++){
-      arrChecked = arrChecked.concat([{"checked" : false}])
-    } 
-    this.setState({
-      checkedArray: arrChecked
-    })
-  }
-  
-  /**
-   *  close :
-   *      현재 진행상황을 취소하고 VC관리 페이지로 이동
-   * 
-   */
-  close = () => {
-    ws.send('{"type":"exit"}');
+  	//비밀번호 확인 input control
+	handleConfirmPWchange = confirmCheckPassword => {
+		this.setState({ confirmCheckPassword })
+	}
+
+	biometricAuthentication = () =>{
+		ReactNativeBiometrics.isSensorAvailable()
+		.then((resultObject) => {
+			const { available, biometryType,error } = resultObject;
+
+			console.log('Available', available);
+			console.log('BiometricType', biometryType);
+			console.log('Biometric Error', error);
+
+			if(error){
+				this.setModalShow();
+				console.log('Biometric authentication failed to due to ', error);
+				return;
+			}
+
+			if (available && biometryType === ReactNativeBiometrics.TouchID) {
+				console.log('TouchID');
+				this.createSimplePrompt();
+			} else if (available && biometryType === ReactNativeBiometrics.FaceID) {
+				console.log('FaceID');
+				this.createSimplePrompt();
+			} else if (available && biometryType === ReactNativeBiometrics.Biometrics) {
+				console.log('Biometrics');
+				this.createSimplePrompt();
+			} else {
+				this.setModalShow();
+			}
+		})
+	}
+
+	showMessage = (message) => {
+		if (Platform.OS === 'android') {
+			ToastAndroid.show(message, ToastAndroid.SHORT);
+		} else {
+			Alert.alert('Alert', message);
+			// AlertIOS.alert(message);
+		}
+	}
+
+	createSimplePrompt = () => {
+		ReactNativeBiometrics.simplePrompt({promptMessage: 'Authenticate your Smart ID Card'})
+		.then((resultObject) => {
+			const { success, error } = resultObject
+			if (success) {
+				this.showMessage("Authentication Successful")
+				this.pickVCinArray()
+			}
+			if(error){
+				this.setModalShow();
+			}
+		})
+		.catch(() => {
+			console.log('Biometrics Failed')
+			this.setModalShow()
+		})
+	}
+
+	// Cancel
+	cancel = () => { 
+		// WebSocket Exit
+		ws.send('{"type":"exit"}');
+		ws.onmessage = (e) => {};
+		ws.onerror = (e) => {};
+		ws.onclose = (e) => {};
+		// WebSocket Exit
+
+		// WebSocket Close
 		ws.close();
-    
-    this.props.navigation.navigate('VCselect',{password:this.state.password});
-  }
+		ws.onmessage = (e) => {};
+		ws.onerror = (e) => {};
+		ws.onclose = (e) => {};
+		// WebSocket Close
+		
+    	this.props.navigation.push('VCselect',{password:this.state.password});
+  	}
 
+  	setStateData = async() => {
+		await SecureStorage.getItem('isBiometricsEnabled').then((isBio) => {
+			this.setState({isBiometricEnabled: isBio === 'true'}); // Set Biometrics
+		})
 
-  /**
-   *  VCclick :
-   *        현재 클릭된 VC를 찾아 checkboxClicked()로 보내준다
-   *        
-   */
-  VCclick = e =>{
-    for (var i=0;this.state.VCarray.length;i++){
-      if(e == this.state.VCarray[i]){
-        this.checkboxClicked(i)
-        return
-      }
+		await SecureStorage.getItem('isFaceEnabled').then((isFaceEnabled) => {
+			console.log('Face Data', isFaceEnabled);
+			this.setState({isFaceEnabled: isFaceEnabled === 'true'}); // Set Biometrics
+		})
+
+		await SecureStorage.getItem('isFingerPrintEnabled').then((isFingerPrintEnabled) => {
+			console.log('FingerPrint Data', isFingerPrintEnabled);
+			this.setState({isFingerPrintEnabled: isFingerPrintEnabled === 'true'}); // Set Biometrics
+		})
+
+	  	// Get password
+		await SecureStorage.getItem('userToken').then((pw) => {
+			this.setState({ password:pw }); // Set password
+		})
+
+		// Get dataKey
+		let pw = this.state.password;
+		await SecureStorage.getItem(pw).then((dk) => {
+			this.setState({ dataKey:dk }); // Set dataKey
+		})
+		
+		// Get userData
+		let dk = this.state.dataKey;
+		await SecureStorage.getItem(dk).then((ud) => {
+			if(ud != null) {
+				// Set state
+				let bytes = CryptoJS.AES.decrypt(ud, dk);
+				let originalText = bytes.toString(CryptoJS.enc.Utf8);
+				console.log(originalText);
+				this.setState(JSON.parse(originalText))
+			}
+		})
+
+		// VC Reverse
+		this.setState({ 
+			VCarray:this.state.VCarray.reverse(),
+			VCjwtArray:this.state.VCjwtArray.reverse()
+		})
+
+		// Set checkedArray
+		// 체크된 array를 따로 구분하기 위한 arrChecked[] 를 state에 포함시킴
+		// 현재 VC의 개수와 같은 길이의 array를 만들고, checked attribute를 false로 포함함
+		arrChecked = [];
+		for (var i = 1; i <= this.state.VCarray.length; i++){
+			arrChecked = arrChecked.concat([{"checked" : false}])
+		} 
+		this.setState({ checkedArray: arrChecked })
+
+		// Reset confirmCheckPassword
+		this.setState({confirmCheckPassword:''})
+		this.setState({selectedCard:[]})
+
+		// 애니메이션 설정
+		Animated.loop(
+			Animated.timing(
+				this.state.spinValue,
+				{
+					toValue: 1,
+					duration: 3000,
+					easing: Easing.linear,
+					useNativeDriver: true,
+				}
+			)
+		).start()
+		
+		// WebSocket Connection
+		//TODO ://
+		ws = new WebSocket(socketURL);
+		ws.onopen = () => { ws.send('{"type":"authm", "no":"'+socketRoom+'"}'); }
+		ws.onmessage = (e) => { this.sendChallenger(); }
+		ws.onerror = (e) => { this.setState({ViewMode: 3}); };
+		ws.onclose = (e) => { this.setState({ViewMode: 3}); };
+		// WebSocket Connection
+  	}
+
+	// SVP Function
+	sendChallenger = async () => {
+      	ws.send('{"type":"challenger","data":"'+challenger+'"}');
+      	ws.onmessage = (e) => {
+			const json = JSON.parse(e.data);
+			if(json.type == "vp") this.verifyVP(json.data);
+			if(json.type == "exit") this.setState({ViewMode: 3});
+     	}
+		ws.onerror = (e) => { this.setState({ViewMode: 3}); };
+		ws.onclose = (e) => { this.setState({ViewMode: 3}); };
+  	}
+
+	verifyVP = async (vp) => {
+		const key = CryptoJS.enc.Hex.parse(encryptionKeyOnUse);
+		const dec = CryptoJS.AES.decrypt(vp,key,{iv:key}).toString(CryptoJS.enc.Utf8);
+		const json = JSON.parse(dec);
+		const vpJwt = json.data;
+		
+		const privateKey = this.state.privateKey;
+		const ethAccount = web3.eth.accounts.privateKeyToAccount(privateKey)
+		const dualSigner = createDualSigner(didJWT.SimpleSigner(privateKey.replace('0x','')), ethAccount)
+		const dualDid = new DualDID(dualSigner, 'Issuer(change later)', 'Dualauth.com(change later)',web3,'0x76A2dd4228ed65129C4455769a0f09eA8E4EA9Ae')
+
+		const result = await dualDid.verifyVP(vpJwt, challenger);
+		console.log('Result---->', result)
+		const code = result.code;
+		const data = result.data;
+		const msg = result.msg;
+		const success = result.success;
+		const isTrusted = result.isTrusted;
+
+		if(code == "000.0" && success) {
+			console.log('Type---->', result.data.verifiablePresentation)
+			const svcs = result.data.verifiablePresentation.verifiableCredential;
+			console.log('CEO---->', svcs[0].credentialSubject.ceo)
+			let svca = [];
+			let svc = null;
+
+			for(let i = 0; i < svcs.length; i++){
+				svc = svcs[i].credentialSubject;
+				svca.push(svc);
+			}
+			
+			console.log('SVCAArray----->', svca);
+			this.setState({ ViewMode:1, SVCArray:svca});
+		}else{
+			console.log('Error Here');
+			this.setState({ViewMode: 3})
+		}
     }
-  }
 
-  /**
-   * checkbocClicked :
-   *        현재 index를 parameter로 받아, Array의 원소중 체크가 되어 있는지 확인하여,
-   *        checked 의 값을 false 나 true로 바꿔주고 state에 저장한다.
-   * @param {*} index 
-   */
-  checkboxClicked = index => {
-    this.state.checkedArray[index].checked = !this.state.checkedArray[index].checked
-    arrChecked = this.state.checkedArray
-    this.setState({checkedArray: this.state.checkedArray})
-  }
+	nextPage = () => {
+		this.signDataParse()
+		this.setState({ ViewMode:2 })
+    	//this.state.isFaceEnabled ? this.biometricAuthentication(): this.setModalShow()
+	}
+	// SVP Function
 
-  /**
-   * passwordCheck :
-   *      입력된 password의 input값과 현재 state의 password가 일치하는지 확인
-   * 
-   */
-  passwordCheck = () => {
-    if(this.state.confirmCheckPassword == this.state.password){
-     
-      this.setState({modalVisible:false}, function(){
-        this.pickVCinArray()
-      })
-     
-    } else {
-      alert('비밀번호 불일치')
+	// Sign Function
+	signDataParse = async () => {
+		if(signTypeOnUse === "json"){
+			//signDataOnUse = signDataOnUse.replace("localhost:8080", "192.168.200.55:8080"); // TEMP
+
+			const json = JSON.parse(signDataOnUse);
+			const key = json.key;
+			const type = json.type;
+			const data = json.data;
+			const account = json.account;
+			const name = json.name;
+			const date = json.date;
+
+			console.log("key", key);
+			console.log("type", type);
+			console.log("account", account);
+			console.log("name", name);
+			console.log("date", date);
+			//console.log("data", data);
+
+			signDataHtml = data;
+		}
+	}
+
+	signDataClose = () => {
+		this.setState({ ViewMode:1 });
+	}
+
+	signDataSubmit = () => {
+		this.state.isFaceEnabled ? this.biometricAuthentication(): this.setModalShow()
+	}
+	
+
+	signVCCreate = async () => {
+		var vcSubmitArr = [];
+		
+		const privateKey = this.state.privateKey;
+    	const ethAccount = web3.eth.accounts.privateKeyToAccount(privateKey)
+    	const dualSigner = createDualSigner(didJWT.SimpleSigner(privateKey.replace('0x','')), ethAccount)
+    	const dualDid = new DualDID(dualSigner, 'Issuer(change later)', 'Dualauth.com(change later)',web3,'0x3CF0CB3cD457b959F6027676dF79200C8EF19907')
+
+		console.log(signDataOnUse);
+
+		const vcID = "http://www.smartidcard.com/vc/mobileSign";
+		const vcType = ['VerifiableCredential', 'mobileSign'];
+		const holder = this.state.address;
+		const credentialSubject = JSON.parse(signDataOnUse);
+		const credentialStatus = {"type":"none"};
+		const expDay = 365; // 만료일 : 1년
+		const expirationDate = parseInt(new Date().getTime()/1000) + expDay * 24 * 60 * 60;
+		const issuanceDate = new Date().toISOString();
+    	const signVC = await dualDid.createVC(vcID, vcType, holder, credentialSubject, credentialStatus, expirationDate, issuanceDate);
+
+    	vcSubmitArr = vcSubmitArr.concat([signVC.jwt]);
+		
+		this.makeVPJWT(vcSubmitArr)
+	}
+	// Sign Function
+
+	// Modal Function
+	setModalShow = () => {
+		this.setState({ModalShow:!this.state.ModalShow})
+	}
+
+	passwordCheck = () => {
+    	if(this.state.confirmCheckPassword == this.state.password){
+			this.setModalShow()
+			this.pickVCinArray()
+   		} else {
+      		alert('비밀번호가 일치하지 않습니다.')
+    	}
+  	}
+
+   	// pickVCinArray
+   	// 현재 제출해야 하는 VC를 VCjwtArray에서 가져와 jwt로 제출할 수 있도록
+   	// vcSubmitArr[] 에 포함시킨다.
+   	// 생성된 vcSubmitArr[]를 makeVCJWTandSign()로 보낸다
+	pickVCinArray = () => {
+		this.signVCCreate();
+	}
+
+	// makeVPJWT
+	//pickVCinArray에서 전달받은 VC의 JWT를 VP로 만들어 제출
+	// @param { pickVCinArray 로부터 전달받은 VCjwt의 array} vcjwtArray
+	makeVPJWT = async (vcjwtArray) => {
+		const privateKey = this.state.privateKey;
+		const ethAccount = web3.eth.accounts.privateKeyToAccount(privateKey)
+		const dualSigner = createDualSigner(didJWT.SimpleSigner(privateKey.replace('0x','')), ethAccount)
+		const dualDid = new DualDID(dualSigner, 'Issuer(change later)', 'Dualauth.com(change later)',web3,'0x76A2dd4228ed65129C4455769a0f09eA8E4EA9Ae')
+		
+		const vp = await dualDid.createVP(vcjwtArray,nonce)
+		var key = CryptoJS.enc.Hex.parse(encryptionKeyOnUse)
+		var cipherText = CryptoJS.AES.encrypt(vp,key,{iv:key}).toString();
+
+		console.log('CipherText', cipherText);
+		console.log('Key', key);
+		console.log('IV', key);
+
+		ws.send('{"type":"vp", "data":"'+cipherText+'"}');
+		ws.onmessage = (e) => {};
+		ws.onerror = (e) => {};
+		ws.onclose = (e) => {};
+		
+		this.successVPsubmit();
+	}
+
+	successVPsubmit = () => {
+		// WebSocket Close
+		ws.close();
+		ws.onmessage = (e) => {};
+		ws.onerror = (e) => {};
+		ws.onclose = (e) => {};
+		// WebSocket Close
+
+		// this.props.navigation.push('CardScanningTest',{name: this.state.name, type: this.state.type});
+		this.props.navigation.push('VCselect',{password:this.state.password});
+	}
+
+	hidePasswordModal = () => {
+        this.setState({ showPasswordModal: false })
     }
-  }
 
-  /**
-   * pickVCinArray :
-   *        현재 제출해야 하는 VC를 VCjwtArray에서 가져와 jwt로 제출할 수 있도록
-   *        vcSubmitArr[] 에 포함시킨다.
-   *        
-   *        생성된 vcSubmitArr[]를 makeVCJWTandSign()로 보낸다
-   * 
-   */
-  pickVCinArray = () => {
-    var vcSubmitArr = [];
-    for(var i = 0; i<this.state.VCjwtArray.length;i++){
-      if(this.state.checkedArray[i].checked == true){
-        var jwtString = this.state.VCjwtArray[i].split(',')[1].split(':')[1]
-        vcSubmitArr = vcSubmitArr.concat([jwtString.substring(1,jwtString.length-2)])
-      }
+    showPasswordModal = () => {
+        this.setState({ showPasswordModal: true })
     }
-    this.makeVCJWTandSign(vcSubmitArr)
-  }
-  /**
-   * makeVCJWTandSign :
-   *        pickVCinArray에서 전달받은 VC의 JWT를 VP로 만들어 제출함
-   *        signData를 가져와 VC로 만들어 포함시키고
-   *        후에 전달받은 VC 데이터를 VCverify로 전달하여 구성함
-   * @param { pickVCinArray 로부터 전달받은 VCjwt의 array} vcjwtArray 
-   */
+	// Modal Function  
 
-  makeVCJWTandSign = async (vcjwtArray) => {
-    const privateKey = this.state.privateKey;
-    const ethAccount = web3.eth.accounts.privateKeyToAccount(privateKey)
-    const dualSigner = createDualSigner(didJWT.SimpleSigner(privateKey.replace('0x','')), ethAccount)
-    const dualDid = new DualDID(dualSigner, 'Issuer(change later)', 'Dualauth.com(change later)',web3,'0x3CF0CB3cD457b959F6027676dF79200C8EF19907')
-    
-    const signObj = {"data" : signDataOnUse};
-    const signVC = await dualDid.createVC("http://www.smartidcard.com/vc/mobileSign",['VerifiableCredential', 'mobileSign'],"holderSign",signObj,{"type":"none"},parseInt(new Date().getTime()/1000) + 60 * 5,
-    new Date().toISOString());
+  	render() {
+		LogBox.ignoreAllLogs(true)
+		
+		const { confirmCheckPassword, ModalShow, ViewMode, SVPValue } = this.state
 
-    vcjwtArray = vcjwtArray.concat([signVC.jwt]);
+		// 애니메이션 수행
+		const spin = this.state.spinValue.interpolate({
+			inputRange: [0, 1],
+			outputRange: ['0deg', '360deg'],
+		});
+		// 애니메이션 수행
 
-    const vp = await dualDid.createVP(vcjwtArray,nonce)
-    
-    var key = CryptoJS.enc.Hex.parse(encryptionKeyOnUse)
-    var cipherText = CryptoJS.AES.encrypt(vp,key,{iv:key}).toString();
-    ws.send('{"type":"vp", "data":"'+cipherText+'"}')
-    ws.onmessage = (e) => {
-            console.log(e)
-            
-    }
-    alert("VP 제출 완료")
-    this.successVPsubmit();
-  }
+		const {navigation} = this.props
+		const BLE = navigation.getParam('BLE', 'null')
+		if(BLE !== 'null' && BLE === 'BLE'){
+			console.log('BLE Entered');	
+			// return;
+		}
+		const userRoom = navigation.getParam('roomNo',"value")
+		const userSocket = navigation.getParam('socketUrl',"Url")
+		const userPW = navigation.getParam('userPW',"passwordValue")
+		const userNonce = navigation.getParam('nonce',"nonceVal")
+		const issuerReqType = navigation.getParam('reqType',"reqTypeVal")
+		const issuerDID = navigation.getParam('issuerDID',"issuerDIDVal")
+		const issuerURL = navigation.getParam('issuerURL',"issuerURLVal")
+		const signData = navigation.getParam('signData',"signDataVal")
+    	const signType = navigation.getParam('signType',"signTypeVal")
+		const encryptionKey = navigation.getParam('encryptKey',"encryptKeyVal")
 
-  /**
-   * checkVCexist :
-   *        현재 선택된 VC가 있는지 확인하고,
-   *        VC가 선택된 경우에만 modal을 open함
-   */
-  checkVCexist = () => {
-    var empty = true;
-    for( var i = 0; i< this.state.checkedArray.length;i++){
-      if(this.state.checkedArray[i].checked == true){
-        empty = false;
-      }
-    }
-    if(empty) {
-      alert("VC를 선택해 주세요")
-    } else if (empty == false) {
-      this.setState({ modalVisible: true})
-    }
-  }
+		socketRoom = userRoom;
+		socketURL = userSocket;
+		nonce = userNonce;
+		reqTypeOnUse = issuerReqType;
+		issuerDIDOnUse = issuerDID;
+		issuerURLOnUse = issuerURL;
+		passwordInMobile = userPW;
+		signTypeOnUse = signType;
+		signDataOnUse = signData;
+		encryptionKeyOnUse = encryptionKey;
 
-  /**
-   *  successVPsubmit :
-   *      현재 page에서의 VP 전달 과정이 완료된 후, VCselect 페이지로 돌아감
-   * 
-   */
-  successVPsubmit = () => {
-    ws.send('{"type":"exit"}')
-    this.props.navigation.navigate('VCselect',{password:this.state.password});
-  }
+		console.log(spin);
+		
+		if(ViewMode == 0){
+			return (
+				<ScrollView style={providersStyle.scrollContainer}>
+					<View style={providersStyle.rootContainer}>
+						<TouchableOpacity
+							onPress={this.cancel}>
+						<View style={providersStyle.closeContainer}>
+							<Image source={closeIcon} />
+						</View>
+						</TouchableOpacity>
+						<Text style={providersStyle.headerStyle}>검증된 서비스 제공자의 정보입니다.</Text>
+						<View style={providersStyle.statusContainer}>
+							<Text style={providersStyle.statusLabel}>검증여부 확인</Text>
+							<View style={providersStyle.loadingContainer}>
+								<Text style={providersStyle.loadingNewLabelStyle}>{'진행중...'} </Text>
+							</View>
+						</View>
+						<View style={providersStyle.detailContainer}>
+							<Image source={verifyingLoader} style={providersStyle.refreshStyle} />
+						</View>
+					</View>
+            	</ScrollView>
+			)	
+		}
 
-  /**
-   *  modalCancel:
-   * 
-   *      현재 modal 창을 닫음
-   * 
-   */
+		if(ViewMode == 1){
+			return (
+				<ScrollView>
+					<View style={providersStyle.rootContainer}>
+						<TouchableOpacity
+							onPress={this.cancel}>
+							<View style={providersStyle.closeContainer}>
+								<Image source={closeIcon} />
+							</View>
+						</TouchableOpacity>
+						<Text style={providersStyle.headerStyle}>검증된 서비스 제공자의 정보입니다.</Text>
+						<View style={providersStyle.verifiedNewStatusContainer}>
+							<Text style={providersStyle.statusLabel}>검증여부 확인</Text>
+							<View style={providersStyle.verifiedNewContainer}>
+								<Text style={providersStyle.verifiedNewLabelStyle}>인증완료</Text>
+							</View>
+						</View>	
+						
+						{this.state.SVCArray.map((svc,index) => {
+							return (
+								<Info svc={svc} key={index}/>
+							)
+						})}
+						
+						<TouchableOpacity onPress={this.nextPage}>
+							<View style={providersStyle.buttonContainer}>
+								<Text style={providersStyle.buttonLabelStyle}>다음</Text>
+							</View>
+						</TouchableOpacity>
+						<View></View>
+					</View>
+				</ScrollView>
+			)
+		}
 
-  modalCancel = () => {
-    this.setState({ modalVisible: false})
-  }  
+		if(ViewMode == 2){
+			return(
+				<View style={providersStyle.rootContainer}>
+					<TouchableOpacity onPress={this.signDataClose}>
+						<View style={page.signDataClose}>
+							<Image source={closeIcon} />
+						</View>
+					</TouchableOpacity>
+					<SafeAreaView style={page.signDataMain}>
+						<WebView 
+							source={{ html : signDataHtml }}
+							scalesPageToFit={(Platform.OS === 'ios') ? false : true}
+						/>
+					</SafeAreaView>
+					<TouchableOpacity onPress={() => { this.signDataSubmit() }}>
+						<View style={certificateStyles.buttonContainer}>
+							<Text style={certificateStyles.buttonLabelStyle}>제출</Text>
+						</View>
+					</TouchableOpacity>
+			 		<Modal
+						style={modal.wrap}
+						animationIn={'slideInUp'}
+						backdropOpacity={0.5}
+						isVisible={ModalShow}
+					>
+						<View style={modal.header}>
+							<TouchableOpacity 
+								style={modal.close} 
+								activeOpacity={0.8} 
+								onPress={this.setModalShow}
+							>
+								<Image source={imgClose}></Image>
+							</TouchableOpacity>
+						</View>
+						<View style={modal.contents}>
+							<Text style={modal.title}>비밀번호를 입력하세요</Text>
+							<TextInput
+								name='confirmCheckPassword'
+								value={confirmCheckPassword}
+								placeholder='비밀번호'
+								secureTextEntry
+								onChangeText={this.handleConfirmPWchange}
+								style={modal.textInput}
+							/>
+							<TouchableOpacity 
+								style={modal.button} 
+								activeOpacity={0.8} 
+								onPress={this.passwordCheck}
+							>
+								<Text style={modal.buttonText}>확인</Text>
+							</TouchableOpacity>
+						</View>
+					</Modal>
+				</View>
+			)
+		}
 
-
-  cardStyle = bool => {
-    
-    if(this.state.checkedArray[bool] != null){
-      if(this.state.checkedArray[bool].checked == true){    
-        return{
-          backgroundColor:'#8FF',
-          borderRadius:12,
-          width:300,
-          margin:10,
-          padding:10
-        }
-      } else {
-        return{
-          backgroundColor:'#eff',
-          borderRadius:12,
-          width:300,
-          margin:10,
-          padding:10
-        }
-      }
-    }
-  }
+		if(ViewMode == 3) {
+			return (
+				<ScrollView style={providersStyle.scrollContainer}>
+                	<View style={providersStyle.rootContainer}>
+						<TouchableOpacity onPress={this.cancel}>
+							<View style={providersStyle.closeContainer}>
+								<Image source={closeIcon} />
+							</View>
+						</TouchableOpacity>
+                    	<Text style={providersStyle.headerStyle}>검증된 서비스 제공자의 정보입니다.</Text>
+                    	<View style={providersStyle.errorStatusContainer}>
+                        	<Text style={providersStyle.statusLabel}>검증여부 확인</Text>
+                        	<View style={providersStyle.errorContainer}>
+                            	<Text style={providersStyle.errorLabelStyle}>{'검증실패'} </Text>
+                        	</View>
+                    	</View>
+						<View style={{flexDirection:'column',height: Dimensions.get('window').height/2, justifyContent:'center'}}>
+							<Image source={verificationFailedIcon} style={providersStyle.failedImageStyle}/>
+						</View>
+						<TouchableOpacity onPress={this.cancel}>
+							<View style={providersStyle.buttonContainer}>
+								<Text style={providersStyle.buttonLabelStyle}>닫기</Text>
+							</View>
+				    	</TouchableOpacity>
+                	</View>
+            	</ScrollView>
+			)
+		}
+	}
   
-  /**
-   *  setConnection :
-   *        웹소켓에 연결후, 현재 room Number를 전송함
-   *        이후 challenger를 전달함
-   *  sendChallenger :
-   *        랜덤값인 challenger를 전달함
-   *        받아온 SVP 데이터를 showingData에 저장함
-   */
-
-  setConnection = () => {
-    ws = new WebSocket(socketURL);
-    ws.onopen = () => {
-        ws.send('{"type":"authm", "no":"'+socketRoom+'"}');
-        ws.onmessage = (e) => {
-            this.sendChallenger();
-        }
-    }
-  }
-
-  sendChallenger = () => {
-      ws.send('{"type":"challenger","data":"'+challenger+'"}');
-      ws.onmessage = (e) => {
-          this.setState({showingData: JSON.stringify(e)})
-      }
-  }
-
-
-  render() {
-      
-    LogBox.ignoreAllLogs(true)
-    
-    const { confirmCheckPassword, modalVisible} = this.state
-
-    const {navigation} = this.props
-    const userRoom = navigation.getParam('roomNo',"value")
-    const userSocket = navigation.getParam('socketUrl',"Url")
-    const userPW = navigation.getParam('userPW',"passwordValue")
-    const userNonce = navigation.getParam('nonce',"nonceVal")
-    const issuerReqType = navigation.getParam('reqType',"reqTypeVal")
-    const issuerDID = navigation.getParam('issuerDID',"issuerDIDVal")
-    const issuerURL = navigation.getParam('issuerURL',"issuerURLVal")
-    const signData = navigation.getParam('signData',"signDataVal")
-    const signType = navigation.getParam('signType',"signTypeVal")
-    const encryptionKey = navigation.getParam('encryptKey',"encryptKeyVal")
-
-    socketRoom = userRoom;
-    socketURL = userSocket;
-    nonce = userNonce;
-    reqTypeOnUse = issuerReqType;
-    issuerDIDOnUse = issuerDID;
-    issuerURLOnUse = issuerURL;
-    passwordInMobile = userPW;
-    signTypeOnUse = signType;
-    signDataOnUse = signData;
-    encryptionKeyOnUse = encryptionKey;
-    
-    return (
-      <View style={styles.container}>
-      <Modal animationType="slide" transparent={true} visible={modalVisible}>
-          <View style={styles.centeredView}>
-            <View style={styles.modalView}>
-              <Text style={{fontWeight:"bold",fontSize:25}}> 비밀번호를 입력해주세요 </Text>
-              <TextInput
-                name='confirmCheckPassword'
-                value={confirmCheckPassword}
-                placeholder='비밀번호'
-                secureTextEntry
-                onChangeText={this.handleConfirmPWchange}
-                style={styles.inputText}
-              />
-              <View style={styles.modalButtonGroup}>
-              <TouchableHighlight
-                style={styles.modalButton}
-                onPress={this.passwordCheck}
-                >
-                <Text style={styles.textStyle}>확인</Text>
-              </TouchableHighlight>
-              <TouchableHighlight
-                style={styles.modalCancel}
-                onPress={this.modalCancel}
-                >
-                <Text style={styles.textStyle}>취소</Text>
-              </TouchableHighlight>
-              </View>
-            </View>
-          </View>
-        </Modal>
-        <View>
-            <Text>SVP : {this.state.showingData}</Text>
-            <Text>req Type : {reqTypeOnUse} </Text>
-            <Text>issuerDID : {issuerDIDOnUse} </Text>
-            <Text>issuerURL : {issuerURLOnUse}</Text>
-            <Text>Sign Type : {signTypeOnUse}</Text>
-            <Text>Sign Data : {signDataOnUse}</Text>
-        </View>
-        <Text>VC를 선택해주세요</Text>
-        
-        <View>{this.state.VCarray.map((vc,index) => {return(
-          <View>
-          <TouchableOpacity  style={this.cardStyle(index)} onPress={() => this.VCclick(vc)}><VC vc={vc} key={vc.exp}/>
-          </TouchableOpacity>   
-          </View>
-        )
-        })}
-        
-        </View>
-        <View style={{ flexDirection:"row"}}>
-        <TouchableOpacity style={styles.bottomLeftButton} onPress={this.checkVCexist}><Text style={styles.buttonLeftText}>VP 생성 및 제출</Text></TouchableOpacity>
-        <TouchableOpacity style={styles.bottomButton} onPress={this.close}><Text style={styles.buttonText}>취소</Text></TouchableOpacity>
-        </View>
-      </View>
-    )
-  }
-  
-  
-  componentDidMount(){
-   this.getDidData();
-   this.setConnection();
-  }
+  	componentDidMount(){
+   		this.setStateData();
+		console.log("Triggered1");
+  	}
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  modalButton: {
-    backgroundColor: '#316BFF',
-    alignContent:'center',
-    justifyContent:'center',
-    alignItems:'center',
-    padding: 15,
-    borderRadius: 12,
-    width:120,
-    margin:20
-  },
-  modalButtonGroup:{
-    flexDirection: 'row'
-  },
-  modalCancel:{
-    backgroundColor: '#f89',
-    
-    alignItems:'center',
-    padding: 15,
-    borderRadius: 12,
-    width:120,
-    margin:20
-  },
-  modalText: {
-    marginBottom: 15,
-    textAlign: "center"
-  },
-  bottomLeftButton:{
-    backgroundColor: '#c3d4ff',
-    paddingTop:10,
-    paddingBottom:10,
-    height:50,
-    marginRight:5,
+const common = StyleSheet.create({
+    wrap : { flex:1, position:'relative', backgroundColor:'#FFFFFF' },
+    header : { padding:20, paddingBottom:0, },
+    contents : { flex:1, position:'relative', padding:20, },
+    footer : { padding:0, },
+    title : { fontSize:22, fontWeight:'bold' },
+    textInput : {
+        width:'100%', fontSize:20, marginBottom:8,
+        paddingTop:15, paddingBottom:15, paddingLeft:12, paddingRight:12, 
+        borderWidth:2, borderRadius:8, borderColor:'#CED2D4',
+    },
+    buttonView : { width:'100%', alignItems:'center', },
+    button : { 
+        width:'100%', alignItems:'center', color:'#FFFFFF',
+        padding:30, backgroundColor:'#1ECB9C', 
+        borderWidth:0, borderRadius:0,
+    },
+    buttonText : { color:'#FFFFFF', fontSize:22, fontWeight:'bold' },
+});
 
-    borderRadius: 12,
-    width:'40%',
-    alignItems:'center'
-  },
-  buttonLeftText: {
-    color: '#316BFF',
-    fontWeight:'bold'
-  },
-  bottomButton: {
-    backgroundColor: '#316BFF',
-    paddingTop:10,
-    paddingBottom:10,
-    marginLeft:5,
-    marginBottom:20,
-    height:50,
-    borderRadius: 12,
-    width:'40%',
-    alignItems:'center'
-  },
+const page = StyleSheet.create({
+	buttonView : { width:'100%', flexDirection:'row', alignItems:'center', },
+	button : { 
+        width:'50%', alignItems:'center', color:'#FFFFFF',
+        padding:30, borderWidth:0, borderRadius:0,
+    },
+	buttonLeft : { backgroundColor:'#1ECB9C', },
+	buttonRight : { backgroundColor:'#999999', },
+	card : { 
+		alignItems:'center', flexDirection:'row'
+	},
+	cardFirst : { marginRight:10 },
+	cardSecond : { },
+	cardImage : { marginRight:10, },
+	cardText : { color:'#333333', fontSize:20, fontWeight:'bold', },
+	header : { flexDirection:'row', }, 
+	title : { fontSize:22, fontWeight:'bold', marginBottom:22, },
+	information : { 
+		borderRadius:8, paddingTop:14, paddingBottom:14, 
+		paddingLeft:24, paddingRight:24, backgroundColor:'#F5F8FB',	
+	},
+	informationEmpty : { width:'100%', height:'100%', flexDirection:'row', justifyContent:'center', alignItems:'center', },
+	informationBlock : { paddingTop:10, paddingBottom:10, },
+	informationTitle : { flexDirection:'row', },
+	informationTitleText : { marginLeft:5, fontSize:20, fontWeight:'bold', },
+	informationContent : { flexDirection:'row', },
+	informationContentText : { fontSize:18, color:'#7D848F', marginTop:5, marginLeft:23, flex:1, flexWrap:'wrap', },
+	animation : {
+		flexDirection:'row', borderRadius:8, right:0, position:'absolute', padding:10, 
+		backgroundColor:'#7ae4ff', justifyContent:'center', alignItems:'center', 
+		/*
+		background:linear-gradient(132deg, '#dcfff6', '#7ae4ff', '#defff0');
+		backgroundSize:300% 300%, animation: AnimationName 1.5s ease infinite,
+		*/
+	},
+	animationText : { padding:8, paddingRight:0, fontSize:18, fontWeight:'bold', },
+	signDataMain : { 
+		flex:1, 
+		position:'relative', 
+		backgroundColor:'#FFFFFF', 
+	},
+	signDataClose : {
+		flexDirection:'row',
+        marginTop: 20,
+        padding: 20,
+        justifyContent: 'flex-end',
+	}
+});
+
+const modal = StyleSheet.create({
+    wrap : {
+        position:'absolute', width:'100%', height:'auto', zIndex:20, 
+        backgroundColor:'#FFFFFF', padding:20, margin:0, bottom: 0, 
+        borderTopRightRadius:16, borderTopLeftRadius:16,
+    },
+    header : { position:'relative', height:50, },
+	close : { position:'absolute', right:0 },
+    contents : {},
+	textInput : {
+        // width:'100%', fontSize:20, marginBottom:8,
+        // paddingTop:15, paddingBottom:15, paddingLeft:12, paddingRight:12, 
+        // borderWidth:2, borderRadius:8, borderColor:'#CED2D4',
+
+		fontSize:16, marginBottom:8,
+        paddingTop:15, paddingBottom:15, paddingLeft:12, paddingRight:12, 
+        borderWidth:1, borderRadius:6, borderColor:'#CED2D5',marginTop: 24,
+		// marginStart: 24, marginEnd: 24
+    },
+    title : { 
+		color:'#1A2433',
+		fontSize: 18,
+		// marginStart: 24,
+		// letterSpacing:-0.6, fontSize:22, marginBottom:20, fontWeight:'bold', 
+	},
+	cards : { 
+		width:'100%', marginBottom:20, 
+		flex:1, flexDirection:'row', justifyContent:'flex-start',
+	},
+	card : { 
+		flex:0.5, borderWidth:1, borderColor:'#333333', borderRadius:8,
+		paddingTop:20, paddingBottom:20, alignItems:'center',
+	},
+	cardFirst : { marginRight:10 },
+	cardSecond : { },
+	cardImage : { marginBottom:10 },
+	cardText : { color:'#333333', fontSize:20, fontWeight:'bold', textAlign:'center' },
+    button : { 
+        // width:'100%', backgroundColor:'#ffffff', 
+        // padding:0, paddingTop:20, paddingBottom:20, 
+        // borderWidth:1, borderColor:'#333333', borderRadius:8,
+        // flexDirection:'row', justifyContent:'center', alignItems:'center',
+		
+		backgroundColor: '#1ECB9C',
+        borderRadius: 8,
+        paddingTop: 15,
+        paddingBottom:15,
+        paddingStart: 32,
+        paddingEnd:32,
+        marginBottom: 20,
+        // marginStart: 24,
+        // marginEnd: 24,
+        marginTop: 24,
+    },
+    buttonText : {
+		//  color:'#333333', fontWeight:'bold', fontSize:22, paddingLeft:10,
+
+		 color: '#FFFFFF',
+        fontWeight:'600',
+        fontSize: 18,
+        alignSelf: 'center'
+		
+		},
+});
+
+
+const providersStyle = StyleSheet.create({
+
+	scrollContainer: {
+		backgroundColor: '#ffffff',
+        flex: 1,
+	},
+
+    rootContainer: {
+        backgroundColor: '#ffffff',
+        flex: 1,
+    },
+
+    closeContainer: {
+        flexDirection:'row',
+        marginTop: 20,
+        padding: 20,
+        marginBottom: 20,
+        justifyContent: 'flex-end',
+    },
+
+    headerStyle:{
+        color: '#1A2433',
+        fontSize: 18,
+        marginStart: 24,
+        marginBottom: 22,
+    },
+
+	loadingStyle: {
+		
+	},
+
+	verifiedStatusContainer:{
+		borderRadius: 8,
+        backgroundColor:'#FEF2EF',
+        marginStart: 24,
+        marginEnd: 24,
+        padding: 16,
+        flexDirection: 'row',
+        alignItems:'center',
+        justifyContent:'space-between'
+	},
+
+	verifiedNewStatusContainer:{
+		borderRadius: 8,
+        backgroundColor:'#EFF8FF',
+        marginStart: 24,
+        marginEnd: 24,
+        padding: 16,
+        flexDirection: 'row',
+        alignItems:'center',
+        justifyContent:'space-between'
+	},
+
+	errorStatusContainer:{
+		borderRadius: 8,
+        backgroundColor:'#FEF2EF',
+        marginStart: 24,
+        marginEnd: 24,
+        padding: 16,
+        flexDirection: 'row',
+        alignItems:'center',
+        justifyContent:'space-between'
+	},
+
+
+    statusContainer: {
+        borderRadius: 8,
+        backgroundColor:'#EEFCF8',
+        marginStart: 24,
+        marginEnd: 24,
+        padding: 16,
+        flexDirection: 'row',
+         alignItems:'center',
+         justifyContent:'space-between'
+    },
+
+    statusLabel: {
+        color: '#44424A',
+        fontWeight: '600',
+        fontSize: 16,
+    },
+
+	errorLabel: {
+        color: '#E1451A',
+        fontWeight: '600',
+        fontSize: 16,
+    },
+
+	verifiedContainer: {
+		borderRadius: 20,
+		backgroundColor: '#F7AF9B'
+	},
+
+	verifiedNewContainer: {
+		borderRadius: 20,
+		backgroundColor: '#C8E7FF'
+	},
+
+
+
+	verifiedLabelStyle: {
+		color: '#E1451A',
+        fontSize: 16,
+        fontWeight: '600',
+        paddingStart: 12,
+        paddingEnd: 12,
+        paddingTop: 8,
+        paddingBottom: 8,
+	},
+
+	verifiedNewLabelStyle: {
+		color: '#0083FF',
+        fontSize: 16,
+        fontWeight: '600',
+        paddingStart: 12,
+        paddingEnd: 12,
+        paddingTop: 8,
+        paddingBottom: 8,
+	},
+
+	errorLabelStyle: {
+		color: '#E1451A',
+        fontSize: 16,
+        fontWeight: '600',
+        paddingStart: 12,
+        paddingEnd: 12,
+        paddingTop: 8,
+        paddingBottom: 8,
+	},
+
+	failedImageStyle: {
+		alignSelf: 'center',
+	},
+    loadingContainer: {
+        borderRadius: 20,
+        backgroundColor: '#BAEEE1',
+    },
+
+	errorContainer: {
+		borderRadius: 20,
+        backgroundColor: '#F7AF9B',
+	},
+
+    loadingLabelStyle: {
+        color: '#0083FF',
+        fontSize: 16,
+        fontWeight: '600',
+        paddingStart: 12,
+        paddingEnd: 12,
+        paddingTop: 8,
+        paddingBottom: 8,
+    },
+
+	loadingNewLabelStyle: {
+        color: '#1ECB9C',
+        fontSize: 16,
+        fontWeight: '600',
+        paddingStart: 12,
+        paddingEnd: 12,
+        paddingTop: 8,
+        paddingBottom: 8,
+    },
+
+	errorLabelStyle: {
+        color: '#E1451A',
+        fontSize: 16,
+        fontWeight: '600',
+        paddingStart: 12,
+        paddingEnd: 12,
+        paddingTop: 8,
+        paddingBottom: 8,
+    },
+
+    detailContainer: {
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#E5EBED',
+        marginStart: 27,
+        marginEnd: 27,
+        padding: 18,
+        marginTop: 21,
+
+    },
+
+	refreshStyle: {
+		marginTop:20,
+		marginBottom: 20,
+	},
+
+    labelStyle: {
+        color: 'rgba(26, 36, 51, 0.9)',
+        fontWeight: '600',
+        fontSize:16,
+        marginBottom: 8,
+
+    },
+
+    valueStyle: {
+        color: 'rgba(153, 153, 153, 0.9)',
+        fontSize: 15,
+        fontWeight: '500',
+        marginBottom: 18,
+    },
+
+    buttonContainer: {
+        backgroundColor: '#1ECB9C',
+        borderRadius: 8,
+        paddingTop: 15,
+        paddingBottom:15,
+        paddingStart: 32,
+        paddingEnd:32,
+        marginBottom: 20,
+        marginStart: 24,
+        marginEnd: 24,
+        marginTop: 24,
+    },
+
+    buttonLabelStyle: {
+        color: '#FFFFFF',
+        fontWeight:'600',
+        fontSize: 18,
+        alignSelf: 'center'
+    },
+
+	
+})
+
+const certificateStyles = StyleSheet.create({
+
+    rootContainer: {
+        backgroundColor: '#ffffff',
+        flex: 1,
+    },
+
+    closeContainer: {
+        flexDirection:'row',
+        marginTop: 20,
+        padding: 20,
+        marginBottom: 20,
+        justifyContent: 'flex-end',
+
+    },
+
+    headerStyle:{
+        color: '#1A2433',
+        fontSize: 18,
+        marginStart: 24,
+        marginBottom: 22,
+
+    },
+
+	itemActualContainer: {
+		flexDirection: 'row',
+		alignItems: 'center',
+	},
+
+    itemContainer: {
+        borderRadius:8,
+        borderWidth:1,
+        borderColor: '#E5EBED',
+        paddingTop: 15,
+        paddingBottom: 15,
+        paddingStart:20,
+        paddingEnd: 20,
+        flexDirection: 'row',
+        marginStart: 21,
+        marginEnd: 21,
+        alignItems: 'center',
+        marginBottom: 21,
+    },
+
+    cardLabelStyle: {
+        color: 'rgba(26, 36, 51, 0.9)',
+        fontSize: 16,
+        fontWeight: '500',
+        marginStart: 35,
+
+    },
+    listWrapper: {
+        flex: 1,
+    },
+
+    buttonContainer: {
+        backgroundColor: '#1ECB9C',
+        borderRadius: 8,
+        paddingTop: 15,
+        paddingBottom:15,
+        paddingStart: 32,
+        paddingEnd:32,
+        marginBottom: 20,
+        marginStart: 24,
+        marginEnd: 24,
+        marginTop: 24,
+    },
+
+    buttonLabelStyle: {
+        color: '#FFFFFF',
+        fontWeight:'600',
+        fontSize: 18,
+        alignSelf: 'center'
+    },
+
+    cardItem : { 
+		width:'80%', height:400, backgroundColor:'#1ECB9C',
+    	borderRadius:12, position:'relative', marginLeft:'10%', marginRight:'10%',
+		paddingTop:20, paddingBottom:20, paddingLeft:30, paddingRight:30,
+	},
+
 })

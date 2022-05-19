@@ -44,7 +44,6 @@ var loadingIcon = require('../screens/assets/images/png/refresh_loading.png');
 var cardIcon = require('../screens/assets/images/png/secondary.png');
 var verificationFailedIcon = require('../screens/assets/images/png/verification_failed.png');
 
-
 function createDualSigner (jwtSigner, ethAccount) {
   	return { jwtSigner, ethAccount }
 }
@@ -52,10 +51,9 @@ function createDualSigner (jwtSigner, ethAccount) {
 function Card({vc}){
     return (
 		<View style={certificateStyles.itemActualContainer}>
-						<Image source={cardIcon} />
-						<Text style={certificateStyles.cardLabelStyle}>{vc.vc.type[1]}</Text>
-		</View> 
-			
+			<Image source={cardIcon} />
+			<Text style={certificateStyles.cardLabelStyle}>{vc.vc.type[1]}</Text>
+		</View>
 	)
 }
 
@@ -63,21 +61,20 @@ function Info({svc}){
 	return (
 		<ScrollView>
 			<View style={providersStyle.detailContainer}>
+				<Text style={providersStyle.labelStyle}>도메인명</Text>
+				<Text style={providersStyle.valueStyle} >{svc.domain}</Text>
 
-							<Text style={providersStyle.labelStyle}>도메인명</Text>
-							<Text style={providersStyle.valueStyle} >{svc.domain}</Text>
-	
-							<Text style={providersStyle.labelStyle}>사업자명</Text>
-							<Text style={providersStyle.valueStyle}>{svc.company}</Text>
-	
-							<Text style={providersStyle.labelStyle}>대표자명</Text>
-							<Text style={providersStyle.valueStyle}>{svc.ceo}</Text>
-	
-							<Text style={providersStyle.labelStyle}>사업자주소</Text>
-							<Text style={providersStyle.valueStyle}>{svc.address}</Text>
-	
-							<Text style={providersStyle.labelStyle}>사업자전화번호</Text>
-							<Text style={providersStyle.valueStyle}>{svc.phone}</Text>
+				<Text style={providersStyle.labelStyle}>사업자명</Text>
+				<Text style={providersStyle.valueStyle}>{svc.company}</Text>
+
+				<Text style={providersStyle.labelStyle}>대표자명</Text>
+				<Text style={providersStyle.valueStyle}>{svc.ceo}</Text>
+
+				<Text style={providersStyle.labelStyle}>사업자주소</Text>
+				<Text style={providersStyle.valueStyle}>{svc.address}</Text>
+
+				<Text style={providersStyle.labelStyle}>사업자전화번호</Text>
+				<Text style={providersStyle.valueStyle}>{svc.phone}</Text>
 			</View>
 		</ScrollView>
 	)
@@ -115,52 +112,46 @@ export default class VPREQ_VCsend extends React.Component {
 		this.setState({ confirmCheckPassword })
 	}
 
-	 biometricAuthentication = () =>{
+	biometricAuthentication = () =>{
+		ReactNativeBiometrics.isSensorAvailable()
+		.then((resultObject) => {
+			const { available, biometryType,error } = resultObject;
 
+			console.log('Available', available);
+			console.log('BiometricType', biometryType);
+			console.log('Biometric Error', error);
 
+			if(error){
+				this.setModalShow();
+				console.log('Biometric authentication failed to due to ', error);
+				return;
+			}
 
-			ReactNativeBiometrics.isSensorAvailable()
-				.then((resultObject) => {
-					const { available, biometryType,error } = resultObject;
-
-					console.log('Available', available);
-					console.log('BiometricType', biometryType);
-					console.log('Biometric Error', error);
-
-					if(error){
-						this.setModalShow();
-						console.log('Biometric authentication failed to due to ', error);
-						return;
-					}
-
-					if (available && biometryType === ReactNativeBiometrics.TouchID) {
-						console.log('TouchID');
-						this.createSimplePrompt();
-					} else if (available && biometryType === ReactNativeBiometrics.FaceID) {
-						console.log('FaceID');
-						this.createSimplePrompt();
-					} else if (available && biometryType === ReactNativeBiometrics.Biometrics) {
-						this.createSimplePrompt();
-						console.log('Biometrics');
-					} else {
-						this.setModalShow();
-					}
-
-					
-				})
-		
-		
+			if (available && biometryType === ReactNativeBiometrics.TouchID) {
+				console.log('TouchID');
+				this.createSimplePrompt();
+			} else if (available && biometryType === ReactNativeBiometrics.FaceID) {
+				console.log('FaceID');
+				this.createSimplePrompt();
+			} else if (available && biometryType === ReactNativeBiometrics.Biometrics) {
+				console.log('Biometrics');
+				this.createSimplePrompt();
+			} else {
+				this.setModalShow();
+			}
+		})
 	}
 
 	showMessage = (message) => {
 		if (Platform.OS === 'android') {
 			ToastAndroid.show(message, ToastAndroid.SHORT);
-		  } else {
+		} else {
 			Alert.alert('Alert', message);
 			// AlertIOS.alert(message);
-		  }
+		}
 	}
 
+	/*
 	createSimplePrompt1 = () => {
 		ReactNativeBiometrics.simplePrompt({promptMessage: 'Authenticate your Smart ID Card'})
 				.then((resultObject) => {
@@ -171,63 +162,57 @@ export default class VPREQ_VCsend extends React.Component {
 					this.setModalShow();
 				})
 	}
+	*/
 
 	createSimplePrompt = () => {
 		ReactNativeBiometrics.simplePrompt({promptMessage: 'Authenticate your Smart ID Card'})
-				.then((resultObject) => {
-					const { success, error } = resultObject
-
-						if (success) {
-							this.showMessage("Authentication Successful")
-							this.pickVCinArray()
-						} 
-
-						if(error){
-							this.setModalShow();
-						}
-					
-
-					
-				})
-				.catch(() => {
-					console.log('Biometrics Failed')
-					this.setModalShow()
-				})
+		.then((resultObject) => {
+			const { success, error } = resultObject
+			if (success) {
+				this.showMessage("Authentication Successful")
+				this.pickVCinArray()
+			}
+			if(error){
+				this.setModalShow();
+			}
+		})
+		.catch(() => {
+			console.log('Biometrics Failed')
+			this.setModalShow()
+		})
 	}
+
+	/*
 	createSignatire = () => {
-			let epochTimeSeconds = Math.round((new Date()).getTime() / 1000).toString()
-			let payload = epochTimeSeconds + 'SMART_ID_CARD'
+		let epochTimeSeconds = Math.round((new Date()).getTime() / 1000).toString()
+		let payload = epochTimeSeconds + 'SMART_ID_CARD'
 
-			ReactNativeBiometrics.createSignature({
-				promptMessage: 'Authenticate your Smart ID Card',
-				payload: payload
-			})
-			.then((resultObject) => {
-				const { success, signature } = resultObject
-
-				if (success) {
-
-				}
-			})
+		ReactNativeBiometrics.createSignature({
+			promptMessage: 'Authenticate your Smart ID Card',
+			payload: payload
+		})
+		.then((resultObject) => {
+			const { success, signature } = resultObject
+			if (success) { }
+		})
 	}
-
+	
 	createKeys = () => {
 		ReactNativeBiometrics.biometricKeysExist()
+		.then((resultObject) => {
+			const { keysExist } = resultObject
+			if (keysExist) {
+			} else {
+				ReactNativeBiometrics.createKeys('Confirm fingerprint')
 				.then((resultObject) => {
-					const { keysExist } = resultObject
-
-					if (keysExist) {
-
-					} else {
-					ReactNativeBiometrics.createKeys('Confirm fingerprint')
-						.then((resultObject) => {
-							const { publicKey } = resultObject
-							console.log(publicKey)
-							// sendPublicKeyToServer(publicKey)
-						})
-					}
+					const { publicKey } = resultObject
+					console.log(publicKey)
+					// sendPublicKeyToServer(publicKey)
 				})
+			}
+		})
 	}
+	*/
 
 	// Cancel
 	cancel = () => { 
@@ -245,11 +230,10 @@ export default class VPREQ_VCsend extends React.Component {
 		ws.onclose = (e) => {};
 		// WebSocket Close
 		
-    	this.props.navigation.navigate('VCselect',{password:this.state.password});
+    	this.props.navigation.push('VCselect',{password:this.state.password});
   	}
 
   	setStateData = async() => {
-
 		await SecureStorage.getItem('isBiometricsEnabled').then((isBio) => {
 			this.setState({isBiometricEnabled: isBio === 'true'}); // Set Biometrics
 		})
@@ -263,6 +247,7 @@ export default class VPREQ_VCsend extends React.Component {
 			console.log('FingerPrint Data', isFingerPrintEnabled);
 			this.setState({isFingerPrintEnabled: isFingerPrintEnabled === 'true'}); // Set Biometrics
 		})
+
 	  	// Get password
 		await SecureStorage.getItem('userToken').then((pw) => {
 			this.setState({ password:pw }); // Set password
@@ -305,7 +290,6 @@ export default class VPREQ_VCsend extends React.Component {
 		this.setState({confirmCheckPassword:''})
 		this.setState({selectedCard:[]})
 
-
 		// 애니메이션 설정
 		Animated.loop(
 			Animated.timing(
@@ -342,10 +326,6 @@ export default class VPREQ_VCsend extends React.Component {
   	}
 
 	verifyVP = async (vp) => {
-		// TTA TEMP : T2 - Submitted time
-		const sDatetime = format(new Date(), "yyyy-MM-dd HH:mm:ss.sss");
-		// TTA TEMP : T2 - Submitted time
-
 		const key = CryptoJS.enc.Hex.parse(encryptionKeyOnUse);
 		const dec = CryptoJS.AES.decrypt(vp,key,{iv:key}).toString(CryptoJS.enc.Utf8);
 		const json = JSON.parse(dec);
@@ -378,19 +358,9 @@ export default class VPREQ_VCsend extends React.Component {
 			
 			console.log('SVCAArray----->', svca);
 			this.setState({ ViewMode:1, SVCArray:svca});
-
-			// TTA TEMP : T2 - Verified time
-			const vDatetime = format(new Date(), "yyyy-MM-dd HH:mm:ss.sss");
-			alert("Submitted time : " + sDatetime + "\nVerified time : " + vDatetime);
-			// TTA TEMP : T2 - Verified time
 		}else{
 			console.log('Error Here');
 			this.setState({ViewMode: 3})
-
-			// TTA TEMP : T2 - Verified time
-			const vDatetime = format(new Date(), "yyyy-MM-dd HH:mm:ss.sss");
-			alert("Submitted time : " + sDatetime + "\nVerified time : " + vDatetime);
-			// TTA TEMP : T2 - Verified time
 		}
     }
 
@@ -503,8 +473,8 @@ export default class VPREQ_VCsend extends React.Component {
 				console.log('Name ====>', this.state.VCarray[i].vc.credentialSubject.name);
 				console.log('Name ====>', this.state.VCarray[i].vc.type[1]);
 
-			this.setState({name:  this.state.VCarray[i].vc.credentialSubject.name})
-			this.setState({type: this.state.VCarray[i].vc.type[1]})
+				this.setState({name:  this.state.VCarray[i].vc.credentialSubject.name})
+				this.setState({type: this.state.VCarray[i].vc.type[1]})
 
 				var jwtString = this.state.VCjwtArray[i].split(',')[1].split(':')[1]
 				vcSubmitArr = vcSubmitArr.concat([jwtString.substring(1,jwtString.length-2)])
@@ -540,9 +510,6 @@ export default class VPREQ_VCsend extends React.Component {
 	}
 
 	successVPsubmit = () => {
-		console.log('SVC Array', this.state.SVCArray);
-		// this.saveSVCLocally();
-		this.saveVerifiedData();
 		// WebSocket Close
 		ws.close();
 		ws.onmessage = (e) => {};
@@ -550,12 +517,14 @@ export default class VPREQ_VCsend extends React.Component {
 		ws.onclose = (e) => {};
 		// WebSocket Close
 
+		console.log('SVC Array', this.state.SVCArray);
+		// this.saveSVCLocally();
+		this.saveVerifiedData();
 		this.props.navigation.push('CardScanningTest',{name: this.state.name, type: this.state.type});
 		// this.props.navigation.push('VCselect',{password:this.state.password});
 	}
 
 	updateItemInStorage = async(response, verifiedJSON, keyJSON) => {
-
 		var localDataArray = JSON.parse(response);
 		var newData= {[new Date().toLocaleDateString()] : verifiedJSON};
 		var updatedDataArray  = localDataArray.concat(newData);
@@ -567,14 +536,12 @@ export default class VPREQ_VCsend extends React.Component {
 	}
 
 	addNewItemInStorage = async(dataArray, keyJSON) => {
-
 		SecureStorage.setItem(keyJSON, JSON.stringify(dataArray));
 		const got = await SecureStorage.getItem(keyJSON)
 		console.log('New --->', got)
 	}
 
-
-	 saveVerifiedData = async() =>{
+	saveVerifiedData = async() =>{
 		var dataArray = [];
 		var today = new Date().toLocaleDateString()
 		var keyJSON = JSON.stringify(this.state.selectedCard);
@@ -596,15 +563,12 @@ export default class VPREQ_VCsend extends React.Component {
 			}else{
 				this.addNewItemInStorage(dataArray, keyJSON);
 			}
-
 		})
-		
 	}
 
 	mockLocal = async() => {
 		let today = '1/27/2022';
 		console.log('Today', today);
-
 
 		var SVCTimeArrayLocal = await SecureStorage.getItem('svca');
 		if(SVCTimeArrayLocal){
@@ -625,94 +589,90 @@ export default class VPREQ_VCsend extends React.Component {
                     },
                 )				
 				console.log('First Date Time....', this.state.SVCTimeArray);
-
-
 			}
 		}
-
 	}
 
 	saveSVCLocally = async() => {
+		var today = new Date().toLocaleDateString()
+		today = '1/25/2022';
+		console.log('Today===>',today);
 
-			var today = new Date().toLocaleDateString()
-		     today = '1/25/2022';
-			console.log('Today===>',today);
-	
-			var SVCTimeArrayLocal = await SecureStorage.getItem('svca');
-			if(SVCTimeArrayLocal){
-				var isPresent = false;
-				JSON.parse(SVCTimeArrayLocal).map((timeStamp,index) => {
-					if(timeStamp[today] != null && timeStamp[today] != 'undefined'){
-						isPresent = true;
-					}
-				});
-				if(!isPresent){
-					var object = {};
-					object[today] = this.state.SVCArray;
-					console.log('Object--->',object);
-			
-					this.setState({
-						SVCTimeArray: SVCTimeArrayLocal
-					})
-					console.log('Before State', this.state.SVCTimeArray);
-
-					// JSON.parse(SVCTimeArrayLocal).push(object);
-
-					this.setState({
-						SVCTimeArray: JSON.stringify(this.state.SVCTimeArray).slice(0,-2)+
-						","+{
-							today : this.state.SVCArray
-						}
-						+"]"
-					})
-					console.log('After State', this.state.SVCTimeArray);
-
-		
-					console.log('First Time in SVC Array....', this.state.SVCTimeArray);
-	
-					// SecureStorage.setItem('svca', JSON.stringify(this.state.SVCTimeArray));
-
-					return;
+		var SVCTimeArrayLocal = await SecureStorage.getItem('svca');
+		if(SVCTimeArrayLocal){
+			var isPresent = false;
+			JSON.parse(SVCTimeArrayLocal).map((timeStamp,index) => {
+				if(timeStamp[today] != null && timeStamp[today] != 'undefined'){
+					isPresent = true;
 				}
-				JSON.parse(SVCTimeArrayLocal).map((timeStamp, index) =>{
-					console.log('TimeStamp', timeStamp);
-					if(timeStamp[today] != null && timeStamp[today] != 'undefined'){
-						var data = timeStamp[today];
-						var newData = data.concat(this.state.SVCArray[0]);
-	
-						var object = {};
-						object[today] = newData;
-					   
-						this.state.SVCTimeArray[index] = object;
-
-						console.log('TimeStampArray', this.state.SVCTimeArray);
-	
-						this.setState({});
-	
-						console.log('Repeating Time....', this.state.SVCTimeArray);
-						SecureStorage.setItem('svca', JSON.stringify(this.state.SVCTimeArray));
-
-
-						console.log('Time Array', this.state.SVCTimeArray);
-						console.log('Data', newData);
-					 
-					}
-				})
-
-
-			}else{
+			});
+			if(!isPresent){
 				var object = {};
-                object[today] = this.state.SVCArray;
-				this.setState(
-                    {
-                        SVCTimeArray: this.state.SVCTimeArray.concat(object),
-                    },
-                )				
-				console.log('First Time....', this.state.SVCTimeArray);
+				object[today] = this.state.SVCArray;
+				console.log('Object--->',object);
+		
+				this.setState({
+					SVCTimeArray: SVCTimeArrayLocal
+				})
+				console.log('Before State', this.state.SVCTimeArray);
 
-				SecureStorage.setItem('svca', JSON.stringify(this.state.SVCTimeArray));
+				// JSON.parse(SVCTimeArrayLocal).push(object);
 
+				this.setState({
+					SVCTimeArray: JSON.stringify(this.state.SVCTimeArray).slice(0,-2)+
+					","+{
+						today : this.state.SVCArray
+					}
+					+"]"
+				})
+				console.log('After State', this.state.SVCTimeArray);
+
+	
+				console.log('First Time in SVC Array....', this.state.SVCTimeArray);
+
+				// SecureStorage.setItem('svca', JSON.stringify(this.state.SVCTimeArray));
+
+				return;
 			}
+			JSON.parse(SVCTimeArrayLocal).map((timeStamp, index) =>{
+				console.log('TimeStamp', timeStamp);
+				if(timeStamp[today] != null && timeStamp[today] != 'undefined'){
+					var data = timeStamp[today];
+					var newData = data.concat(this.state.SVCArray[0]);
+
+					var object = {};
+					object[today] = newData;
+					
+					this.state.SVCTimeArray[index] = object;
+
+					console.log('TimeStampArray', this.state.SVCTimeArray);
+
+					this.setState({});
+
+					console.log('Repeating Time....', this.state.SVCTimeArray);
+					SecureStorage.setItem('svca', JSON.stringify(this.state.SVCTimeArray));
+
+
+					console.log('Time Array', this.state.SVCTimeArray);
+					console.log('Data', newData);
+					
+				}
+			})
+
+
+		}else{
+			var object = {};
+			object[today] = this.state.SVCArray;
+			this.setState(
+				{
+					SVCTimeArray: this.state.SVCTimeArray.concat(object),
+				},
+			)				
+			console.log('First Time....', this.state.SVCTimeArray);
+
+			SecureStorage.setItem('svca', JSON.stringify(this.state.SVCTimeArray));
+
+		}
 	}
 
 	hidePasswordModal = () => {
@@ -726,7 +686,6 @@ export default class VPREQ_VCsend extends React.Component {
             showPasswordModal: true
         })
     }
-
 	// Modal Function  	
 
   	render() {
@@ -768,116 +727,91 @@ export default class VPREQ_VCsend extends React.Component {
 		console.log(spin);
 		
 		if(ViewMode == 0){
-
-			
-
 			return (
 				<ScrollView style={providersStyle.scrollContainer}>
-                <View  style={providersStyle.rootContainer}>
-					<TouchableOpacity
-						onPress={this.cancel}>
-                    <View style={providersStyle.closeContainer}>
-                        <Image source={closeIcon} />
-                    </View>
-					</TouchableOpacity>
-
-                    <Text style={providersStyle.headerStyle}>검증된 서비스 제공자의 정보입니다.</Text>
-
-                    <View style={providersStyle.statusContainer}>
-
-                        <Text style={providersStyle.statusLabel}>검증여부 확인</Text>
-                        <View style={providersStyle.loadingContainer}>
-                            <Text style={providersStyle.loadingNewLabelStyle}>{'진행중...'} </Text>
-                        </View>
-                    </View>
-
-				<View style={providersStyle.detailContainer}>
-					<Image source={verifyingLoader} style={providersStyle.refreshStyle} />
-				</View>
-                </View>
-            </ScrollView>
-			)	
-		}
-		if(ViewMode == 1){
-				return (
-					<ScrollView>
-					<View  style={providersStyle.rootContainer}>
-					<TouchableOpacity
-						onPress={this.cancel}>
+					<View style={providersStyle.rootContainer}>
+						<TouchableOpacity
+							onPress={this.cancel}>
 						<View style={providersStyle.closeContainer}>
 							<Image source={closeIcon} />
 						</View>
-					</TouchableOpacity>
-	
+						</TouchableOpacity>
 						<Text style={providersStyle.headerStyle}>검증된 서비스 제공자의 정보입니다.</Text>
-	
+						<View style={providersStyle.statusContainer}>
+							<Text style={providersStyle.statusLabel}>검증여부 확인</Text>
+							<View style={providersStyle.loadingContainer}>
+								<Text style={providersStyle.loadingNewLabelStyle}>{'진행중...'} </Text>
+							</View>
+						</View>
+						<View style={providersStyle.detailContainer}>
+							<Image source={verifyingLoader} style={providersStyle.refreshStyle} />
+						</View>
+					</View>
+            	</ScrollView>
+			)	
+		}
+
+		if(ViewMode == 1){
+			return (
+				<ScrollView>
+					<View style={providersStyle.rootContainer}>
+						<TouchableOpacity
+							onPress={this.cancel}>
+							<View style={providersStyle.closeContainer}>
+								<Image source={closeIcon} />
+							</View>
+						</TouchableOpacity>
+						<Text style={providersStyle.headerStyle}>검증된 서비스 제공자의 정보입니다.</Text>
 						<View style={providersStyle.verifiedNewStatusContainer}>
-	
 							<Text style={providersStyle.statusLabel}>검증여부 확인</Text>
 							<View style={providersStyle.verifiedNewContainer}>
 								<Text style={providersStyle.verifiedNewLabelStyle}>인증완료</Text>
 							</View>
-						</View>
-	
+						</View>	
 						
-
 						{this.state.SVCArray.map((svc,index) => {
 							return (
 								<Info svc={svc} key={index}/>
 							)
 						})}
-							<TouchableOpacity onPress={this.nextPage}>
-								<View style={providersStyle.buttonContainer}>
-									<Text style={providersStyle.buttonLabelStyle}>다음</Text>
-								</View>
-		
-							</TouchableOpacity>
-						<View>
-	
-	
-						</View>
-	
+						
+						<TouchableOpacity onPress={this.nextPage}>
+							<View style={providersStyle.buttonContainer}>
+								<Text style={providersStyle.buttonLabelStyle}>다음</Text>
+							</View>
+						</TouchableOpacity>
+						<View></View>
 					</View>
 				</ScrollView>
-				)
+			)
 		}
+
 		if(ViewMode == 2){
-
 			return(
-				<View style={certificateStyles.rootContainer}>
-
-        
-				<TouchableOpacity  onPress={this.cancel}>
-					<View style={certificateStyles.closeContainer}>
-						<Image source={closeIcon} />
-					</View>
-				</TouchableOpacity>
-
-				<Text style={certificateStyles.headerStyle}>인증서를 선택하시고 제출하세요.</Text>
-
-				<View style={certificateStyles.listWrapper}>
-				{this.state.VCarray.map((vc, index)=>{
+				<View style={certificateStyles.rootContainer}>        
+					<TouchableOpacity  onPress={this.cancel}>
+						<View style={certificateStyles.closeContainer}>
+							<Image source={closeIcon} />
+						</View>
+					</TouchableOpacity>
+					<Text style={certificateStyles.headerStyle}>인증서를 선택하시고 제출하세요.</Text>
+					<View style={certificateStyles.listWrapper}>
+					{this.state.VCarray.map((vc, index)=>{
 						return(
 							<TouchableOpacity style={this.cardStyle(index)} onPress={() => this.cardSelect(vc)}>
 									<Card vc={vc} key={vc.exp}/>
 							</TouchableOpacity>
 						)
-				})}
-				</View>
-
-			<TouchableOpacity onPress={() => {
-				console.log('FaceEnabled', this.state.isFaceEnabled)
-				this.cardSend()
-				}}>
-
-
-			 <View style={certificateStyles.buttonContainer}>
-				<Text style={certificateStyles.buttonLabelStyle}>제출</Text>
-			  </View>
-
-			</TouchableOpacity>
-
-
+					})}
+					</View>
+					<TouchableOpacity onPress={() => {
+						console.log('FaceEnabled', this.state.isFaceEnabled)
+						this.cardSend()
+					}}>
+						<View style={certificateStyles.buttonContainer}>
+							<Text style={certificateStyles.buttonLabelStyle}>제출</Text>
+						</View>
+					</TouchableOpacity>
 			 		<Modal
 						style={modal.wrap}
 						animationIn={'slideInUp'}
@@ -912,117 +846,37 @@ export default class VPREQ_VCsend extends React.Component {
 							</TouchableOpacity>
 						</View>
 					</Modal>
-
-
-			
-
-		</View>
+				</View>
 			)
-			// return (
-			// 	<View style={common.wrap}>
-			// 		<CHeader />
-			// 		<ScrollView style={common.contents}>
-			// 			<View>
-			// 				{this.state.VCarray.map((vc,index) => {
-			// 					return ( 
-			// 						<TouchableOpacity style={this.cardStyle(index)} onPress={() => this.cardSelect(vc)}>
-										// <Card vc={vc} key={vc.exp}/>
-			// 						</TouchableOpacity>   
-			// 					)
-			// 				})}
-			// 			</View>
-			// 		</ScrollView>
-			// 		<View style={common.footer}>
-			// 			<View style={page.buttonView}>
-			// 				<TouchableOpacity 
-			// 					style={[page.button, page.buttonLeft]} 
-			// 					activeOpacity={0.8} 
-			// 					onPress={this.cardSend}
-			// 				>
-			// 					<Text style={common.buttonText}>제출</Text>
-			// 				</TouchableOpacity>
-			// 				<TouchableOpacity 
-			// 					style={[page.button, page.buttonRight]} 
-			// 					activeOpacity={0.8} 
-			// 					onPress={this.cancel}
-			// 				>
-			// 					<Text style={common.buttonText}>취소</Text>
-			// 				</TouchableOpacity>
-			// 			</View>
-			// 		</View>
-			// 		<Modal
-			// 			style={modal.wrap}
-			// 			animationIn={'slideInUp'}
-			// 			backdropOpacity={0.5}
-			// 			isVisible={ModalShow}
-			// 		>
-			// 			<View style={modal.header}>
-			// 				<TouchableOpacity 
-			// 					style={modal.close} 
-			// 					activeOpacity={0.8} 
-			// 					onPress={this.setModalShow}
-			// 				>
-			// 					<Image source={imgClose}></Image>
-			// 				</TouchableOpacity>
-			// 			</View>
-			// 			<View style={modal.contents}>
-			// 				<Text style={modal.title}>비밀번호를 입력하세요.</Text>
-			// 				<TextInput
-			// 					name='confirmCheckPassword'
-			// 					value={confirmCheckPassword}
-			// 					placeholder='비밀번호'
-			// 					secureTextEntry
-			// 					onChangeText={this.handleConfirmPWchange}
-			// 					style={modal.textInput}
-			// 				/>
-			// 				<TouchableOpacity 
-			// 					style={modal.button} 
-			// 					activeOpacity={0.8} 
-			// 					onPress={this.passwordCheck}
-			// 				>
-			// 					<Text style={modal.buttonText}>확인</Text>
-			// 				</TouchableOpacity>
-			// 			</View>
-			// 		</Modal>
-			// 	</View>
-			// )
 		}
 
 		if(ViewMode == 3) {
-
 			return (
 				<ScrollView style={providersStyle.scrollContainer}>
-                <View  style={providersStyle.rootContainer}>
-					<TouchableOpacity
-						onPress={this.cancel}>
-                    <View style={providersStyle.closeContainer}>
-                        <Image source={closeIcon} />
-                    </View>
-					</TouchableOpacity>
-
-                    <Text style={providersStyle.headerStyle}>검증된 서비스 제공자의 정보입니다.</Text>
-
-                    <View style={providersStyle.errorStatusContainer}>
-
-                        <Text style={providersStyle.statusLabel}>검증여부 확인</Text>
-                        <View style={providersStyle.errorContainer}>
-                            <Text style={providersStyle.errorLabelStyle}>{'검증실패'} </Text>
-                        </View>
-                    </View>
-					<View style={{flexDirection:'column',height: Dimensions.get('window').height/2, justifyContent:'center'}}>
-						<Image source={verificationFailedIcon} style={providersStyle.failedImageStyle}/>
-					</View>
-					<TouchableOpacity onPress={this.cancel}>
-								<View style={providersStyle.buttonContainer}>
-									<Text style={providersStyle.buttonLabelStyle}>닫기</Text>
-								</View>
-		
-				    </TouchableOpacity>
-
-                </View>
-            </ScrollView>
+                	<View style={providersStyle.rootContainer}>
+						<TouchableOpacity onPress={this.cancel}>
+							<View style={providersStyle.closeContainer}>
+								<Image source={closeIcon} />
+							</View>
+						</TouchableOpacity>
+                    	<Text style={providersStyle.headerStyle}>검증된 서비스 제공자의 정보입니다.</Text>
+                    	<View style={providersStyle.errorStatusContainer}>
+                        	<Text style={providersStyle.statusLabel}>검증여부 확인</Text>
+                        	<View style={providersStyle.errorContainer}>
+                            	<Text style={providersStyle.errorLabelStyle}>{'검증실패'} </Text>
+                        	</View>
+                    	</View>
+						<View style={{flexDirection:'column',height: Dimensions.get('window').height/2, justifyContent:'center'}}>
+							<Image source={verificationFailedIcon} style={providersStyle.failedImageStyle}/>
+						</View>
+						<TouchableOpacity onPress={this.cancel}>
+							<View style={providersStyle.buttonContainer}>
+								<Text style={providersStyle.buttonLabelStyle}>닫기</Text>
+							</View>
+				    	</TouchableOpacity>
+                	</View>
+            	</ScrollView>
 			)
-			
 		}
 	}
   

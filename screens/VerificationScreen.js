@@ -12,6 +12,7 @@ import CryptoJS from 'react-native-crypto-js';
 import SecureStorage from 'react-native-secure-storage'
 import {format} from "date-fns" // Date Format
 import axios from 'axios';
+import jwt_decode from "jwt-decode"
 
 
 import Modal from 'react-native-modal' // Modal
@@ -124,6 +125,7 @@ export default class VerificationScreen extends React.Component {
 		bnsReceived: false,
 		terminalDescription: '',
 		shopName: '',
+		deviceName : '',
 		callbackURL: '',
 		terminalID: '',
 		terminals : {},
@@ -255,7 +257,12 @@ export default class VerificationScreen extends React.Component {
 
 	// Cancel
 	cancel = () => { 
-    	this.props.navigation.navigate('VCselect',{password:this.state.password});
+		this.props.navigation.push('VCselect', {password:this.state.password});
+		
+		/*
+		if(this.state.bnsReceived) this.props.navigation.push('SelectOptions'); // BNS
+		else this.props.navigation.push('VCselect', {password:this.state.password}); // QR Reading
+		*/
   	}
 
   	setStateData = async() => {
@@ -406,9 +413,42 @@ export default class VerificationScreen extends React.Component {
 
 	nextPage = () => {
 		if(this.state.bnsReceived) this.setState({ ViewMode:2 }); // BNS
-		else this.props.navigation.push('VCselect',{password:this.state.password}); // QR Reading
+		else this.props.navigation.push('VCselect', {password:this.state.password}); // QR Reading
 	}
 	// SVP Function
+
+	// TVP Function
+	verifyTVP = (tvp, nonce) => {
+		// TODO : TVP 블록체인 검증 필요
+		const tvpDecode = jwt_decode(tvp);
+        const tvcDecode = jwt_decode(tvpDecode.vp.verifiableCredential[0]);
+		const tvcCS = tvcDecode.vc.credentialSubject;
+		
+		let matadata = [];
+		Object.keys(tvcCS).map((key) => {
+			let matadataKey = [key];
+			let matadataVal = tvcCS[key];
+
+			// 오픈터미널 예외처리
+			if(matadataKey == 'shopName') matadataKey = '상점명';
+			if(matadataKey == 'terminalOwner') matadataKey = '터미널소유자';
+			// 오픈터미널 예외처리
+
+			let frontShow = true;
+			if(matadataKey == 'callbackUrl') frontShow = false;
+			if(matadataKey == 'terminalId') frontShow = false;
+			
+			if(frontShow) {
+				matadata.push(<Text style={providersStyle.labelStyle}>{matadataKey}</Text>);
+				matadata.push(<Text style={providersStyle.valueStyle}>{matadataVal}</Text>);
+			}
+		});
+
+		return (
+			<View style={providersStyle.detailContainer}>{matadata}</View>
+		)
+    }
+	// TVP Function
 
 	// Card Function
 	cardStyle = index => {
@@ -550,6 +590,9 @@ export default class VerificationScreen extends React.Component {
 			var vcSubmitArr = [];
 			for(var i = 0; i<this.state.VCjwtArray.length;i++){
 			if(this.state.checkedArray[i].checked == true){
+				this.setState({name:  this.state.VCarray[i].vc.credentialSubject.name}) // 스캐닝 화면에서 필요한 변수
+				this.setState({type: this.state.VCarray[i].vc.type[1]}) // 스캐닝 화면에서 필요한 변수
+
 				var jwtString = this.state.VCjwtArray[i].split(',')[1].split(':')[1]
 				vcSubmitArr = vcSubmitArr.concat([jwtString.substring(1,jwtString.length-2)])
 			}
@@ -787,25 +830,24 @@ export default class VerificationScreen extends React.Component {
 	}
 
 	sendDataToCallbackURL = async(VP) => {
+		/*
 		console.log('TerminalID', this.state.terminalID);
 		console.log('VP', VP);
 		console.log('TerminalOTP', this.state.otps);
 		console.log('CallbackURL', this.state.callbackURL);
+		*/
+
+		//this.setState({ callbackURL:"http://idcard.namusoft.co.kr/deviceApi/verify" }) // TEMP
 
 		let params = "?TerminalID=" + this.state.terminalID + "&TerminalOTP=" + this.state.otps + "&VP=" + VP;
 		const headers = { 'Content-type': 'application/json; charset=UTF-8' }
 		const response = await axios.get(this.state.callbackURL + params, {headers});
-		console.log('Response--->', response.data);
 		
-		let error = false;
-		if(!response.status === 200) { error = true; alert('OT ERROR', response.status); }
-		if(!response.data.result) { error = true; alert('OT ERROR', response.msg); }
+		console.log('Response--->', response);
 		
-
-		if(!error) {
-			this.saveVerifiedData();
-			this.props.navigation.push('VCselect',{password:this.state.password});
-		}
+		this.saveVerifiedData();
+		this.props.navigation.push('CardScanningTest',{name: this.state.name, type: this.state.type});
+		//this.props.navigation.push('VCselect',{password:this.state.password});
 	}
 
 	hidePasswordModal = () => {
@@ -824,7 +866,6 @@ export default class VerificationScreen extends React.Component {
 
   	render() {
 		LogBox.ignoreAllLogs(true)
-
 		
 		encryptionKeyOnUse = encryptionKey;
 		
@@ -863,45 +904,33 @@ export default class VerificationScreen extends React.Component {
 
 		console.log(spin);
 		
-				
 		if(ViewMode == 2){
-
 			return(
 				<View style={certificateStyles.rootContainer}>
-
-        
-				<TouchableOpacity  onPress={this.cancel}>
-					<View style={certificateStyles.closeContainer}>
-						<Image source={closeIcon} />
-					</View>
-				</TouchableOpacity>
-
-				<Text style={certificateStyles.headerStyle}>인증서를 선택하시고 제출하세요.</Text>
-
-				<View style={certificateStyles.listWrapper}>
-				{this.state.VCarray.map((vc, index)=>{
-						return(
-							<TouchableOpacity style={this.cardStyle(index)} onPress={() => this.cardSelect(vc)}>
-									<Card vc={vc} key={vc.exp}/>
-							</TouchableOpacity>
-						)
-				})}
-				</View>
-
-			<TouchableOpacity onPress={() => {
-				console.log('FaceEnabled', this.state.isFaceEnabled)
-				this.cardSend()
-				}}>
-
-
-			 <View style={certificateStyles.buttonContainer}>
-				<Text style={certificateStyles.buttonLabelStyle}>제출</Text>
-			  </View>
-
-			</TouchableOpacity>
-
-
-			 		<Modal
+					<TouchableOpacity  onPress={this.cancel}>
+						<View style={certificateStyles.closeContainer}>
+							<Image source={closeIcon} />
+						</View>
+					</TouchableOpacity>
+					<Text style={certificateStyles.headerStyle}>인증서를 선택하시고 제출하세요.</Text>
+						<View style={certificateStyles.listWrapper}>
+							{this.state.VCarray.map((vc, index)=>{
+								return(
+									<TouchableOpacity style={this.cardStyle(index)} onPress={() => this.cardSelect(vc)}>
+										<Card vc={vc} key={vc.exp}/>
+									</TouchableOpacity>
+								)
+							})}
+						</View>
+						<TouchableOpacity onPress={() => {
+							console.log('FaceEnabled', this.state.isFaceEnabled)
+							this.cardSend()
+						}}>
+						<View style={certificateStyles.buttonContainer}>
+							<Text style={certificateStyles.buttonLabelStyle}>제출</Text>
+						</View>
+					</TouchableOpacity>
+					<Modal
 						style={modal.wrap}
 						animationIn={'slideInUp'}
 						backdropOpacity={0.5}
@@ -935,107 +964,79 @@ export default class VerificationScreen extends React.Component {
 							</TouchableOpacity>
 						</View>
 					</Modal>
-
-
-			
-
-		</View>
+				</View>
 			)
-	
 		}
 
 		if(ViewMode == 3) {
-
 			return (
 				<ScrollView style={providersStyle.scrollContainer}>
-                <View  style={providersStyle.rootContainer}>
-					<TouchableOpacity
-						onPress={this.cancel}>
-                    <View style={providersStyle.closeContainer}>
-                        <Image source={closeIcon} />
-                    </View>
-					</TouchableOpacity>
-
-                    <Text style={providersStyle.headerStyle}>검증된 서비스 제공자의 정보입니다.</Text>
-
-                    <View style={providersStyle.errorStatusContainer}>
-
-                        <Text style={providersStyle.statusLabel}>검증여부 확인</Text>
-                        <View style={providersStyle.errorContainer}>
-                            <Text style={providersStyle.errorLabelStyle}>{'검증실패'} </Text>
-                        </View>
-                    </View>
-					<View style={{flexDirection:'column',height: Dimensions.get('window').height/2, justifyContent:'center'}}>
-						<Image source={verificationFailedIcon} style={providersStyle.failedImageStyle}/>
+					<View style={providersStyle.rootContainer}>
+						<TouchableOpacity onPress={this.cancel}>
+							<View style={providersStyle.closeContainer}>
+								<Image source={closeIcon} />
+							</View>
+						</TouchableOpacity>
+						<Text style={providersStyle.headerStyle}>검증된 서비스 제공자의 정보입니다.</Text>
+						<View style={providersStyle.errorStatusContainer}>
+							<Text style={providersStyle.statusLabel}>검증여부 확인</Text>
+							<View style={providersStyle.errorContainer}>
+								<Text style={providersStyle.errorLabelStyle}>{'검증실패'} </Text>
+							</View>
+						</View>
+						<View style={{flexDirection:'column',height: Dimensions.get('window').height/2, justifyContent:'center'}}>
+							<Image source={verificationFailedIcon} style={providersStyle.failedImageStyle}/>
+						</View>
+						<TouchableOpacity onPress={this.cancel}>
+							<View style={providersStyle.buttonContainer}>
+								<Text style={providersStyle.buttonLabelStyle}>닫기</Text>
+							</View>
+						</TouchableOpacity>
 					</View>
-					<TouchableOpacity onPress={this.cancel}>
-								<View style={providersStyle.buttonContainer}>
-									<Text style={providersStyle.buttonLabelStyle}>닫기</Text>
-								</View>
-		
-				    </TouchableOpacity>
-
-                </View>
-            </ScrollView>
+				</ScrollView>
 			)
-			
 		}
-				return (
-					<ScrollView>
-					<View  style={providersStyle.rootContainer}>
-					<TouchableOpacity
-						onPress={this.cancel}>
+				
+		return (
+			<ScrollView>
+				<View style={providersStyle.rootContainer}>
+					<TouchableOpacity onPress={this.cancel}>
 						<View style={providersStyle.closeContainer}>
 							<Image source={closeIcon} />
 						</View>
 					</TouchableOpacity>
-	
-						<Text style={providersStyle.headerStyle}>검증된 서비스 제공자의 정보입니다.</Text>
-	
+					<Text style={providersStyle.headerStyle}>검증된 서비스 제공자의 정보입니다.</Text>
 						<View style={providersStyle.verifiedNewStatusContainer}>
-	
 							<Text style={providersStyle.statusLabel}>검증여부 확인</Text>
 							<View style={providersStyle.verifiedNewContainer}>
 								<Text style={providersStyle.verifiedNewLabelStyle}>인증완료</Text>
 							</View>
 						</View>
-	
-						{this.state.bnsReceived && (
 
-								<View style={providersStyle.detailContainer}>
-
-								
-
-									<Text style={providersStyle.labelStyle}>상점명</Text>
-									<Text style={providersStyle.valueStyle} >{this.state.shopName}</Text>
-
-									<Text style={providersStyle.labelStyle}>터미널명</Text>
-									<Text style={providersStyle.valueStyle}>{this.state.terminalDescription === '' ? 'N/A': this.state.terminalDescription}</Text>
-
-								</View>
-
-						)}
+						{
+							this.state.bnsReceived
+							? this.verifyTVP(this.state.tvp, this.state.terminalID)
+							: null
+						}
 
 						{!this.state.bnsReceived && this.state.SVCArray.map((svc,index) => {
 							return (
 								<Info svc={svc} key={index}/>
 							)
 						})}
-							<TouchableOpacity onPress={this.nextPage}>
-								<View style={providersStyle.buttonContainer}>
-									<Text style={providersStyle.buttonLabelStyle}>확인</Text>
-								</View>
-		
-							</TouchableOpacity>
-						<View>
-	
-	
-						</View>
-	
-					</View>
-				</ScrollView>
-				)
 
+						<TouchableOpacity onPress={this.nextPage}>
+							<View style={providersStyle.buttonContainer}>
+								<Text style={providersStyle.buttonLabelStyle}>
+									{ this.state.bnsReceived == true ? "다음" : "확인" }
+								</Text>
+							</View>
+						</TouchableOpacity>
+						<View>
+					</View>
+				</View>
+			</ScrollView>
+		)
 	}
   
   	componentDidMount(){
@@ -1044,48 +1045,48 @@ export default class VerificationScreen extends React.Component {
 		const resultData = this.props.navigation.getParam('resultData', null);
 		const decryptedData = this.props.navigation.getParam('decryptedData', null);
 		const VCForm = this.props.navigation.getParam('vcform', null);
-		const shopName= this.props.navigation.getParam('shopName', null);
+		const shopName = this.props.navigation.getParam('shopName', null);
 		const terminalDescription = this.props.navigation.getParam('terminalDescription',null);
+		const deviceName = this.props.navigation.getParam('deviceName',null);
 		const tvp = this.props.navigation.getParam('tvp', null);
-
-		const otpData= this.props.navigation.getParam('otpData', null);
+		const otpData = this.props.navigation.getParam('otpData', null);
 		const terminals= this.props.navigation.getParam('terminals', null);
 
 		if(decryptedData && VCForm){
-			console.log('terminals--->', terminals);
-			this.setState({decryptedToBeSavedData: terminals});
-
+			/*
 			console.log('DecryptedData--->', decryptedData);
-			this.setState({callbackURL: decryptedData.vc.credentialSubject.callbackUrl})
+			console.log('terminals--->', terminals);
 			console.log('CallbackURL--->', decryptedData.vc.credentialSubject.callbackUrl)
-
-			this.setState({terminalID: decryptedData.vc.credentialSubject.terminalId})
 			console.log('TerminalID---->',decryptedData.vc.credentialSubject.terminalId)
-
 			console.log('TVP--->!!!!!', tvp);
-			this.setState({tvp: tvp});
-			
 			console.log('VCForm---->', VCForm);
-			this.setState({bnsReceived:true})
-			if(shopName !=null && terminalDescription != null){
-				this.setState({shopName: shopName, terminalDescription: terminalDescription});
-			}
+			console.log('SelectedOtp--->', otpData);
+			console.log('SelectedTerminal--->', terminals);
+			*/
 
-			if(otpData != null && terminals != null){
-				console.log('SelectedOtp--->', otpData);
-				console.log('SelectedTerminal--->', terminals);
-				this.setState({otps: otpData, terminals: terminals})
-			}
+			this.setState({decryptedToBeSavedData: terminals});
+			this.setState({callbackURL: decryptedData.vc.credentialSubject.callbackUrl})
+			this.setState({terminalID: decryptedData.vc.credentialSubject.terminalId})
+			this.setState({tvp: tvp});
+			this.setState({bnsReceived:true})
+			if(shopName !=null && terminalDescription != null){ this.setState({shopName: shopName, terminalDescription: terminalDescription}); }
+			if(deviceName != null){ this.setState({ deviceName : deviceName }); }
+			if(otpData != null && terminals != null){ this.setState({otps: otpData, terminals: terminals}) }
 			
 			return;
 		}
+
 		if(resultData){
+			/*
 			console.log('Result Data', resultData);
 			console.log('VerifiablePresentation--->', resultData.verifiablePresentation);
-			const svcs = resultData.verifiablePresentation.verifiableCredential;
-		
 			console.log('VerifiableCredential--->', svcs);
 			console.log('CredentialSubject--->', svcs[0].credentialSubject)
+			console.log('SVCAArray----->', svca);
+			*/
+
+			const svcs = resultData.verifiablePresentation.verifiableCredential;
+		
 			let svca = [];
 			let svc = null;
 
@@ -1093,8 +1094,7 @@ export default class VerificationScreen extends React.Component {
 				svc = svcs[i].credentialSubject;
 				svca.push(svc);
 			}
-			
-			console.log('SVCAArray----->', svca);
+
 			this.setState({ ViewMode:1, SVCArray:svca});
 
 			// TTA TEMP : T2 - Verified time

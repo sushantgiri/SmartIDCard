@@ -311,6 +311,7 @@ export default class VPInfo extends React.Component {
                     <Image style={vpStyle.backButton} source={require('../screens/assets/images/png/back_icon.png')} />
                 </TouchableOpacity>
                 <Text style={vpStyle.titleLabel}>정보 제공 내역</Text>
+                {/*
                 <View style={vpStyle.rowContainer}>
                     <View style={vpStyle.weekStyle}>
                         <Text style={vpStyle.weekLabel}>1주일</Text>
@@ -323,6 +324,7 @@ export default class VPInfo extends React.Component {
                         <Image source={require('../screens/assets/images/png/arrow_down.png')} />
                     </View>
                 </View>
+                */}
                 <View style={vpStyle.line} />
                     {!this.state.dataAvailable && (
                         <View style={itemStyle.noDataContainer}>
@@ -483,7 +485,7 @@ const vpStyle= StyleSheet.create({
     titleLabel: {
         color: '#44424A',
         marginStart: 24,
-        marginBottom: 24,
+        /*marginBottom: 24,*/
         fontSize: 24,
         fontWeight: '600',
     },

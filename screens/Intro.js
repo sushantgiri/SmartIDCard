@@ -22,16 +22,16 @@ export default class Intro extends React.Component {
                 </View>
 
                 <View style={intro.contents}>
-                    
-                    <View style={common.buttonView}>        
-                    <TouchableOpacity style={common.button} activeOpacity={0.8}>
+                    <View style={common.buttonView}>
+                        {/*
+                        <TouchableOpacity style={common.button} activeOpacity={0.8}>
                             <Text style={common.buttonText}>로그인</Text>
-                    </TouchableOpacity> 
-                    <TouchableOpacity style={common.createWalletButton} activeOpacity={0.8} onPress={this.goToSignup}>
+                        </TouchableOpacity> 
+                        */}
+                        <TouchableOpacity style={common.createWalletButton} activeOpacity={0.8} onPress={this.goToSignup}>
                             <Text style={common.createWalletText}>지갑 생성</Text>
-                    </TouchableOpacity> 
+                        </TouchableOpacity> 
                     </View>  
-
                     {/* <View style={intro.buttonView}>
                         <TouchableOpacity style={intro.button} activeOpacity={0.8} title='START' onPress={this.goToSignup}>
                             <Text style={intro.buttonText}>START</Text>
@@ -60,10 +60,10 @@ const common = StyleSheet.create({
        height: 100,
        top: 120
     },
-    buttonView : {  alignItems:'center',paddingEnd: 16, paddingStart: 16, paddingBottom: 32, 
-    flex: 1,
-    justifyContent: 'flex-end',
-     },
+    buttonView : {  
+        alignItems:'center', paddingEnd: 16, paddingStart: 16, paddingBottom: 32, 
+        flex: 1, justifyContent: 'flex-end', /*bottom:60*/ bottom:120
+    },
     button : { 
         width:'100%', alignItems:'center', color:'#FFFFFF',
         padding:20, backgroundColor:'#1ECB9C', 

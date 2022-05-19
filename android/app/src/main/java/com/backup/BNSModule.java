@@ -69,7 +69,6 @@ public class BNSModule extends ReactContextBaseJavaModule {
             }
 
             successCallback.invoke(terminals);
-
             return Unit.INSTANCE;
         });
     }

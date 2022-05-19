@@ -10,6 +10,7 @@ var announceIcon = require('../screens/assets/images/png/announce.png')
 var newCircleIcon = require('../screens/assets/images/png/new_circle.png')
 var cardStackIcon = require('../screens/assets/images/png/cardStack.png')
 var refreshIcon = require('../screens/assets/images/png/refresh.png')
+var biometricIcon = require('../screens/assets/images/png/biometric_icon.png')
 
 
 export default class SettingsScreen extends React.Component {
@@ -118,57 +119,63 @@ export default class SettingsScreen extends React.Component {
     render(){
         return(
             <ScrollView 
-            showsVerticalScrollIndicator={false}
-            style={settingsScreenStyle.bottomFix}>
+                showsVerticalScrollIndicator={false}
+                style={settingsScreenStyle.bottomFix}>
 
-            <View style={settingsScreenStyle.rootContainer}>
-
-                <View style={settingsScreenStyle.firstContainer}>
-
-                <Text style={settingsScreenStyle.headerlabel}>설정</Text>
-
-                <View style={settingsScreenStyle.addressContainer}>
-                    <View style={settingsScreenStyle.addressHeaderContainer}>
-                        <View style={settingsScreenStyle.dummyContainer}>
-                             <Image source={contactsIcon} />
-                              <Text style={settingsScreenStyle.addressHeaderLabel}>홍길동님</Text>
-                        </View>      
-                             <Image source={rightIcon} />
+                <View style={settingsScreenStyle.rootContainer}>
+                    <View style={settingsScreenStyle.firstContainer}>
+                        <Text style={settingsScreenStyle.headerlabel}>설정</Text>
+                        <View style={settingsScreenStyle.addressContainer}>
+                            {/*
+                            <View style={settingsScreenStyle.addressHeaderContainer}>
+                                <View style={settingsScreenStyle.dummyContainer}>
+                                    <Image source={contactsIcon} />
+                                    <Text style={settingsScreenStyle.addressHeaderLabel}>홍길동님</Text>
+                                </View>      
+                                <Image source={rightIcon} />
+                            </View>
+                            */}
+                            <View style={settingsScreenStyle.actualAddressContainer}>
+                                <Text style={settingsScreenStyle.addressLabel}>{this.props.address}</Text>
+                            </View>
+                        </View>
+                        <View>
+                            <View style={settingsOptions.mainContainer}>
+                                <View style={settingsOptions.mainSubContainer}>
+                                    <Image source={biometricIcon} />
+                                    <Text style={infoSection.announceLabelStyle}>생체인식</Text>
+                                </View>
+                                <Switch
+                                    style={settingsOptions.switchStyle}
+                                    trackColor={{ false: "#E6EBF3", true: "#EEFCF8" }}
+                                    thumbColor={this.state.isFaceEnabled ? "#109D77" : "#f4f3f4"}
+                                    ios_backgroundColor="#3e3e3e"
+                                    onValueChange={this.toggleFaceSwitch}
+                                    value={this.state.isFaceEnabled} />
+                            </View>
+                        </View>
+                    </View>
+                    <View style={settingsScreenStyle.secondContainer}>
+                        <View style={infoSection.infoContainer}>
+                            <View style={infoSection.announceContainer}>
+                                <View style={infoSection.infoFlex}>
+                                    <Image source={announceIcon} />
+                                    <Text style={infoSection.announceLabelStyle}>공지사항</Text>
+                                    <Image source={newCircleIcon} />
+                                </View>
+                                <Image source={rightIcon} />
+                            </View>
+                            <View style={infoSection.bottomAnnounceContainer}>
+                                <View style={infoSection.infoFlex}>
+                                    <Image source={cardStackIcon} />
+                                    <Text style={infoSection.announceLabelStyle}>앱 버전</Text>
+                                </View>
+                                <Text style={infoSection.versionStyle}>1.1.2</Text>
+                            </View>
+                        </View>
                     </View>
 
-                    <View style={settingsScreenStyle.actualAddressContainer}>
-                        <Text style={settingsScreenStyle.addressLabel}>{this.props.address}</Text>
-                    </View>
-
-                </View>
-
-
-            <View>
-                <View style={settingsOptions.mainContainer}>
-
-                    <View style={settingsOptions.mainSubContainer}>
-                        <View style={settingsOptions.item_square}/>
-                        <Text style={settingsOptions.item_title}>생체인식</Text>
-                    </View>
-
-                
-                    <Switch
-                        style={settingsOptions.switchStyle}
-                        trackColor={{ false: "#E6EBF3", true: "#EEFCF8" }}
-                        thumbColor={this.state.isFaceEnabled ? "#109D77" : "#f4f3f4"}
-                        ios_backgroundColor="#3e3e3e"
-                        onValueChange={this.toggleFaceSwitch}
-                        value={this.state.isFaceEnabled} />
-
-                </View>
-
-
-
-                </View>
-
-                </View>
-
-
+                {/*
                 <View style={settingsScreenStyle.secondContainer}>
 
 
@@ -185,7 +192,7 @@ export default class SettingsScreen extends React.Component {
 					})}
                     </View>
 
-
+                    
                     <View style={listStyle.lineStyle} />
 
                     <View style={infoSection.infoContainer}>
@@ -233,13 +240,16 @@ export default class SettingsScreen extends React.Component {
                         <Image source={rightIcon} />
 
                     </View>
+                    
 
 
 
 
                 </View>
+                */}
+                
 
-            </View>
+                </View>
             </ScrollView>
         )
     }
@@ -308,15 +318,15 @@ const infoSection = StyleSheet.create( {
     announceContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        // marginStart:24,
-        marginTop: 24,
+        marginStart : 10,
+        //marginTop: 24,
     },
 
     bottomAnnounceContainer: {
         flexDirection: 'row',
         alignItems: 'center',
         marginTop: 24,        
-        // marginStart:24,
+        marginStart : 10,
         marginBottom: 24,
     },
 
@@ -435,7 +445,7 @@ const settingsScreenStyle = StyleSheet.create({
     actualAddressContainer: {
         borderRadius: 8,
         backgroundColor: '#EEFCF8',
-        marginTop: 17,
+        marginTop: 0,
         marginBottom: 32
     },
 

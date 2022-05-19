@@ -98,7 +98,7 @@ export default class VCREQ_DIDsend extends React.Component {
 			<View style={common.wrap}>
 				<CHeader />
 				<View style={common.contents}>
-					<CLoader title={'신분증 발급이 진행중입니다.'} />
+					<CLoader title={'발급이 진행중입니다.'} />
 				</View>
 			</View>
 		)

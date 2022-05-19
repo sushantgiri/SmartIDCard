@@ -49,8 +49,10 @@ function wp (percentage) {
     return Math.round(value);
 }
 
-const slideWidth = wp(75);
-const itemHorizontalMargin = wp(2);
+const slideWidth = wp(65);
+const itemHorizontalMargin = wp(0);
+
+console.log(itemHorizontalMargin);
 
 const itemWidth = slideWidth + itemHorizontalMargin * 2;
 
@@ -259,9 +261,11 @@ export default class Home extends React.Component {
 
 			var encrypted = CryptoJS.AES.encrypt(JSON.stringify(VCform), key, { iv: iv });
 
+			/*
 			console.log('Key--------->!', key.toString());
 			console.log('IV--------->!', iv.toString());
 			console.log('Encrypted Value', encrypted.toString());
+			*/
 
 			this.setState(
 				{
@@ -273,13 +277,14 @@ export default class Home extends React.Component {
 					await SecureStorage.setItem(this.state.dataKey, cipherData);  
 				}
 			)
-
+			
+			/*
 			console.log('Test Pass')
 			console.log('VCForm', VCform);
 
 			console.log('VCarray', this.state.VCarray);
 			console.log('VCjwtArray', this.state.VCjwtArray);
-
+			*/
 		}
 
 		if(this.state.VCarray.length > 0){
@@ -401,59 +406,150 @@ export default class Home extends React.Component {
 		if(index  == 0){
 			return (	
 				<View style={cards.cardContainer}>
-
-							<View style={cards.indicatorWrapper}>
-								<Image style={cards.addNewStyle} source={require('../screens/assets/images/png/add_new.png')} />
-								<Text style={cards.lineStyle}> | </Text>
-								<Text style={cards.totalCountStyle}>{this.state.VCarray.length - 1}</Text>
-							</View>
-
-
-					<View style={common.contents}>
-
-						
-						<TouchableOpacity style={cards.noIDContainer} onPress={this.goScan}>
-								<Image source={require('../screens/assets/images/png/no_card_contact.png')}></Image>
-								<Text style={cards.noIDTextPrimary}>발급받기</Text>
-						</TouchableOpacity>
-
-						
-						{/* <Text style={cards.noIDTextSecondary}>아직 발급받은 ID가 없습니다. {"\n"}ID를 발급받아 주세요.</Text> */}
-						
+					{/*
+					<View style={cards.indicatorWrapper}>
+						<Image style={cards.addNewStyle} source={require('../screens/assets/images/png/add_new.png')} />
+						<Text style={cards.lineStyle}> | </Text>
+						<Text style={cards.totalCountStyle}>{this.state.VCarray.length - 1}</Text>
 					</View>
-					
+					*/}
+					<View style={common.contents}>
+						<TouchableOpacity style={cards.noIDContainer} onPress={this.goScan}>
+							<Image source={require('../screens/assets/images/png/no_card_contact.png')}></Image>
+							<Text style={cards.noIDTextPrimary}>발급받기</Text>
+						</TouchableOpacity>						
+						{/* <Text style={cards.noIDTextSecondary}>아직 발급받은 ID가 없습니다. {"\n"}ID를 발급받아 주세요.</Text> */}
+					</View>
 				</View>				
 			)
 		}
-		return (
-			<TouchableOpacity onPress={() => {
-				console.log
-				this.props.navigation.push('HappyCitizenship', {vc: item.vc, item: item});
+
+		// 사원증, 고용계약서
+		if(item.vc.type[1] === "사원증"){
+			const company = item.vc.credentialSubject.회사명.substring(0, item.vc.credentialSubject.회사명.length - 2);
+			let photo = item.vc.credentialSubject.사진.substring(0, item.vc.credentialSubject.사진.length - 2);
+			let matadata = [];
+			Object.keys(item.vc.credentialSubject).map((key) => {
+				const matadataKey = [key];
+				const matadataVal = item.vc.credentialSubject[key].substring(0, item.vc.credentialSubject[key].length - 2);
+				const frontCheck = item.vc.credentialSubject[key].slice(-1);
+				
+				if(matadataKey != '회사명' && matadataKey != '사진' && frontCheck === "Y") {
+					matadata.push(<Text style={cards.idcardContent}>{matadataVal}</Text>);
+				}
+			});
+
+			return (
+				<TouchableOpacity onPress={() => {
+					this.props.navigation.push('HappyCitizenship', {vc: item.vc, item: item});
+				}} style={cards.cardContainer}>
+					<View style={cards.cardContainer}>		
+						{/*	
+						<View style={cards.indicatorWrapper}>
+							<Text style={cards.currentIndexStyle}>{index}</Text>
+							<Text style={cards.lineStyle}> | </Text>
+							<Text style={cards.totalCountStyle}>{this.state.VCarray.length - 1}</Text>
+						</View>
+						*/}
+						<View style={cards.idcardFilledContainer}>
+							<View style={cards.cardHeaderSection}>
+								<Text style={cards.idcardTitle}>{company}</Text>
+							</View>
+							<View style={cards.dummySpaceArea} />
+							{/*
+							<View style={cards.idcardPhotoArea}>
+								<Image source={{uri:photo}} style={cards.idcardPhoto} />
+							</View>
+							*/}
+							<View style={cards.idcardContentArea}>
+								{matadata}
+							</View>
+						</View>
+						<View style={cards.indicatorWrapper}>
+							<Text style={cards.cardtype}>{item.vc.type[1]}</Text>
+						</View>
+					</View>
+				</TouchableOpacity>
+			)
+		}else if(item.vc.type[1] === "고용계약서"){
+			const title = item.vc.credentialSubject.고용계약서명;
+			let matadata = [];
+			Object.keys(item.vc.credentialSubject).map((key) => {
+				const matadataKey = [key];
+				const matadataVal = item.vc.credentialSubject[key];
+
+				let frontShow = true;
+				if(matadataKey == '고용계약서명') frontShow = false;
+				if(matadataKey == '고용계약서식별번호') frontShow = false;
+				if(matadataKey == '고용계약서내용') frontShow = false;
+				if(matadataKey == '고용계약서서명') frontShow = false;
+				
+				if(frontShow) matadata.push(<Text style={cards.idcardContent}>{matadataVal}</Text>);
+			});
+
+			return (
+				<TouchableOpacity onPress={() => {
+					this.props.navigation.push('HappyCitizenship', {vc: item.vc, item: item});
+				}} style={cards.cardContainer}>
+					<View style={cards.cardContainer}>		
+						{/*	
+						<View style={cards.indicatorWrapper}>
+							<Text style={cards.currentIndexStyle}>{index}</Text>
+							<Text style={cards.lineStyle}> | </Text>
+							<Text style={cards.totalCountStyle}>{this.state.VCarray.length - 1}</Text>
+						</View>
+						*/}
+						<View style={cards.contractFilledContainer}>
+							<View style={cards.cardHeaderSection}>
+								<Text style={cards.contractTitle}>{title}</Text>
+							</View>
+							<View style={cards.dummySpaceArea} />
+							{/*
+							<View style={cards.contractImageArea}>
+								<Image style={cards.idcardPhoto} />
+							</View>
+							*/}
+							<View style={cards.contractContentArea}>
+								{matadata}
+							</View>
+						</View>
+						<View style={cards.indicatorWrapper}>
+							<Text style={cards.cardtype}>{item.vc.type[1]}</Text>
+						</View>
+					</View>
+				</TouchableOpacity>
+			)
+		}else{		
+			return (
+				<TouchableOpacity onPress={() => {
+					this.props.navigation.push('HappyCitizenship', {vc: item.vc, item: item});
 				}} style={cards.cardContainer}>
 					<View style={cards.cardContainer}>
-
-							<View style={cards.indicatorWrapper}>
-								<Text style={cards.currentIndexStyle}>{index}</Text>
-								<Text style={cards.lineStyle}> | </Text>
-								<Text style={cards.totalCountStyle}>{this.state.VCarray.length - 1}</Text>
+						{/*
+						<View style={cards.indicatorWrapper}>
+							<Text style={cards.currentIndexStyle}>{index}</Text>
+							<Text style={cards.lineStyle}> | </Text>
+							<Text style={cards.totalCountStyle}>{this.state.VCarray.length - 1}</Text>
+						</View>
+						*/}
+						<View style={cards.filledContainer}>
+							<View style={cards.cardHeaderSection}>
+								<Text style={cards.cardTitle}>{item.vc.credentialSubject.name}</Text>
 							</View>
-
-
-							<View style={cards.filledContainer}>
-								<View style={cards.cardHeaderSection}>
-
-									<Image source={require('../screens/assets/images/png/first_icon.png')} style={cards.cardImageStyle}/>
-									<Text style={cards.cardTitle}>{item.vc.type[1]}</Text>
-
-								</View>
-								<View style={cards.dummySpaceArea} />
-								<Text style={cards.cardBottomTitle}>{item.vc.credentialSubject.name}</Text>
+							<View style={cards.dummySpaceArea} />
+							<View style={cards.contractContentArea}>
+								<Text style={cards.idcardContent}>{item.vc.credentialSubject.email}</Text>
+								<Text style={cards.idcardContent}>{item.vc.credentialSubject.phone}</Text>
 							</View>
-
-
-			</View>
-			</TouchableOpacity>
-		)
+						</View>
+						<View style={cards.indicatorWrapper}>
+							<Text style={cards.cardtype}>{item.vc.type[1]}</Text>
+						</View>
+					</View>
+				</TouchableOpacity>
+			)
+		}
+		// 사원증, 고용계약서
 	}
 	
 
@@ -591,7 +687,7 @@ export default class Home extends React.Component {
 				<View style={common.wrap}>
 					<CHeader />
 					<View style={common.contents}>
-						<CLoader title={'발급된 인증서를 확인하고 있습니다.'} />
+						<CLoader title={'발급된 ID를 확인하고 있습니다.'} />
 					</View>
 				</View>
 			)
@@ -641,14 +737,16 @@ export default class Home extends React.Component {
 
 				{!isSettingsSelected && !idSelection && (
 					<View style={common.contents}>
+						<Image source={require('../screens/assets/images/png/coupon_page.png')}></Image>
 						{	
-						COUPON_ENTRIES.map((entry, index)=>{
-							return(
-								this.couponView(entry.primaryIcon, entry.title, entry.actionIcon)
-							)
-						})
+							/*
+							COUPON_ENTRIES.map((entry, index)=>{
+								return(
+									this.couponView(entry.primaryIcon, entry.title, entry.actionIcon)
+								)
+							})
+							*/
 						}
-
 					</View>
 				)}
 
@@ -666,7 +764,7 @@ export default class Home extends React.Component {
 						onPress={() => this.setSettingsShow(false)}>	
 							<View style={home.certificateContainer}>
 								<Image source={this.state.isSettingsSelected ?myCertificateUnselectedIcon : myCertificateSelectedIcon}></Image>
-								<Text>{this.state.isSettingsSelected ? "나의 인증서" : "나의 인증서"}</Text>
+								<Text>{this.state.isSettingsSelected ? "인증서" : "인증서"}</Text>
 							</View>
 					</TouchableOpacity>
 
@@ -781,41 +879,21 @@ export default class Home extends React.Component {
 
 				{!isSettingsSelected && !idSelection && (
 					<View style={common.contents}>
-						{	
-						COUPON_ENTRIES.map((entry, index)=>{
-							return(
-								this.couponView(entry.primaryIcon, entry.title, entry.actionIcon)
-							)
-						})
-						}
-
+						<Image source={require('../screens/assets/images/png/coupon_page.png')} style={home.image}></Image>
 					</View>
 				)}
 
 				{
 					!isSettingsSelected && idSelection && (
 						<View style={cards.cardContainer}>
-							
-
 							<Carousel
 								data={this.state.VCarray}
 								renderItem = {this.setNewCard}
-								sliderWidth = {viewportWidth}
 								itemWidth = {itemWidth}
-								inactiveSlideScale={0.95}
-								inactiveSlideOpacity={1}
-								enableMomentum={true}
-								activeSlideAlignment={'start'}
+								sliderWidth = {viewportWidth}
 								containerCustomStyle={carousalStyle.slider}
-								contentContainerCustomStyle={carousalStyle.sliderContentContainer}
-								activeAnimationType={'spring'}
-								activeAnimationOptions = {{
-								friction : 4,
-								tension: 40
-								}}
-					/>
-
-					</View>
+							/>
+						</View>
 					)
 				}
 					{isSettingsSelected && (
@@ -840,7 +918,7 @@ export default class Home extends React.Component {
 						onPress={() => this.setSettingsShow(false)}>	
 							<View style={home.certificateContainer}>
 								<Image source={this.state.isSettingsSelected ?  myCertificateUnselectedIcon : myCertificateSelectedIcon}></Image>
-								<Text>{this.state.isSettingsSelected ? "나의 인증서" : "나의 인증서"}</Text>
+								<Text>{this.state.isSettingsSelected ? "인증서" : "인증서"}</Text>
 							</View>
 					</TouchableOpacity>
 
@@ -919,7 +997,7 @@ export default class Home extends React.Component {
 const common = StyleSheet.create({
     wrap : { flex:1, position:'relative', backgroundColor:'#FFFFFF' },
     header : { padding:20, paddingBottom:0, },
-    contents : { flex:1, position:'relative', padding:20, },
+    contents : { flex:1, position:'relative', padding:10, },
     footer : { padding:0, },
     title : { fontSize:22, fontWeight:'bold' },
     textInput : {
@@ -937,7 +1015,7 @@ const common = StyleSheet.create({
 });
 
 const home = StyleSheet.create({
-	image : { width:'100%', alignItems:'center', paddingTop:30, paddingBottom:30, },
+	image : { width:'100%', alignItems:'center', paddingTop:30, paddingBottom:30, height:'100%' },
 	info : { width:'100%', marginTop:40, alignItems:'center', },
 	span : { fontSize:20, },
 	strong : { fontSize:22, fontWeight:'bold', },
@@ -1048,12 +1126,14 @@ const home = StyleSheet.create({
 
 const carousalStyle = StyleSheet.create({
 	slider:{
-		marginTop: 15,
+		marginTop: 100,
+		marginBottom: 100,
 		overflow: 'visible'
 	},
 
 	sliderContentContainer: {
-        paddingVertical: 10 // for custom animation
+        paddingVertical: 10, // for custom animation
+		paddingHorizontal: 50,
     },
 })
 
@@ -1066,7 +1146,12 @@ const cards =  StyleSheet.create({
 
 	indicatorWrapper: {
 		flexDirection: 'row',
-		marginStart: 20,
+	},
+
+	cardtype : {
+		flex: 1,
+		textAlign:'center',
+		fontSize: 16,
 	},
 
 	addNewStyle:{
@@ -1098,7 +1183,7 @@ const cards =  StyleSheet.create({
 	},
 
 	filledContainer: {
-		backgroundColor: '#0C50A0',
+		backgroundColor: '#1ECB9C',
 		borderRadius: 4,
 		flex: 1,
 		margin: 20,
@@ -1112,9 +1197,7 @@ const cards =  StyleSheet.create({
 	},
 
 	cardTitle: {
-		fontSize: 14,
-		color: '#FFFFFF',
-		marginTop: 20
+		fontSize:20, color:'#FFFFFF', marginTop:20, marginStart:20
 	},
 
 	cardBottomTitle: {
@@ -1124,6 +1207,22 @@ const cards =  StyleSheet.create({
 		marginBottom: 20,
 		alignSelf:'flex-start',
 	},
+
+	// add
+	idcardFilledContainer : { backgroundColor:'#3562D5', borderRadius:4, flex:1, margin:20 },
+	idcardTitle : { fontSize:20, color:'#FFFFFF', marginTop:20, marginStart:20 },
+	idcardPhotoArea : { justifyContent:'center', alignItems:'center', marginTop:50, marginBottom:50, marginStart:20, marginRight:20 },
+	idcardPhoto : { width:200, height:220 },
+	idcardContentArea: { marginStart:20, marginBottom:20 },
+	idcardContent: { fontSize:18, color:'#ffffff', alignSelf:'flex-start' },
+
+	contractFilledContainer : { backgroundColor:'#2699CA', borderRadius:4, flex:1, margin:20 },
+	contractTitle : { fontSize:20, color:'#FFFFFF', marginTop:20, marginStart:20 },
+	contractImageArea : { justifyContent:'center', alignItems:'center', marginTop:50, marginBottom:50, marginStart:20, marginRight:20 },
+	contractImage : { width:200, height:220 },
+	contractContentArea: { marginStart:20, marginBottom:20 },
+	contractContent: { fontSize:18, color:'#ffffff', alignSelf:'flex-start' },
+	// add
 
 	dummySpaceArea:{
 		flex: 1,
