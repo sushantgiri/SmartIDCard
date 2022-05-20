@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>backup</string>
+	<string>Smart ID Card</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -39,8 +39,6 @@
 	</dict>
 	<key>NSAppleMusicUsageDescription</key>
 	<string>YOUR TEXT</string>
-  <key>NSFaceIDUsageDescription</key>
-  <string>YOUR TEXT</string>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>YOUR TEXT</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
