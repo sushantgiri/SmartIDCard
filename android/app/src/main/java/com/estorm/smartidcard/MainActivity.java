@@ -1,4 +1,4 @@
-package com.backup;
+package com.estorm.smartidcard;
 
 import com.facebook.react.ReactActivity;
 

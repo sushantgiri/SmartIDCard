@@ -55,7 +55,8 @@ var issuerDIDOnUse = '';
 var signDataOnUse = '';
 var signTypeOnUse ='';
 
-
+var resultCode = false;
+var resultMsg = '';
 
 function createDualSigner (jwtSigner, ethAccount) {
   	return { jwtSigner, ethAccount }
@@ -839,15 +840,37 @@ export default class VerificationScreen extends React.Component {
 
 		//this.setState({ callbackURL:"http://idcard.namusoft.co.kr/deviceApi/verify" }) // TEMP
 
+		this.setState({ViewMode: 4});
+
 		let params = "?TerminalID=" + this.state.terminalID + "&TerminalOTP=" + this.state.otps + "&VP=" + VP;
 		const headers = { 'Content-type': 'application/json; charset=UTF-8' }
 		const response = await axios.get(this.state.callbackURL + params, {headers});
 		
-		console.log('Response--->', response);
-		
-		this.saveVerifiedData();
-		this.props.navigation.push('CardScanningTest',{name: this.state.name, type: this.state.type});
-		//this.props.navigation.push('VCselect',{password:this.state.password});
+		console.log('Response.data', response.data);
+
+		if(response) {
+			this.setState({ViewMode: 5});
+			setTimeout(() => { this.props.navigation.push('VCselect',{password:this.state.password}); }, 2500)
+		}
+
+		/*
+		if(response.data.resultCode != undefined) { if(response.data.resultCode === "ok") resultCode = true; }
+		if(response.data.result != undefined) resultCode = response.data.result;
+
+		if(response.data.resultMsg != undefined) resultMsg = response.data.resultMsg;
+		if(response.data.msg != undefined) resultMsg = response.data.msg;
+
+		let error = false;
+		if(!resultCode) { error = true; console.log('OT ERROR', resultMsg); }
+		if(error) {
+			this.setState({ViewMode: 6});
+		}else{
+			this.saveVerifiedData();
+			this.setState({ViewMode: 5});
+			//this.props.navigation.push('CardScanningTest',{name: this.state.name, type: this.state.type});
+			//this.props.navigation.push('VCselect',{password:this.state.password});
+		}
+		*/		
 	}
 
 	hidePasswordModal = () => {
@@ -994,6 +1017,33 @@ export default class VerificationScreen extends React.Component {
 						</TouchableOpacity>
 					</View>
 				</ScrollView>
+			)
+		}
+
+		if(ViewMode == 4) {
+			return (
+				<View style={page.resultContent}>
+					<Image source={require('../screens/assets/images/png/card_scan.png')} style={page.resultImage}></Image>
+					<Text style={page.resultText}>ID를 제출하고 있습니다...</Text>
+				</View>
+			)		
+		}
+
+		if(ViewMode == 5) {
+			return (
+				<View style={page.resultContent}>
+					<Image source={require('../screens/assets/images/png/submit_ok.png')} style={page.resultImage}></Image>
+					<Text style={page.resultText}>ID 제출이 완료되었습니다.</Text>
+				</View>
+			)		
+		}
+
+		if(ViewMode == 6) {
+			return (
+				<View style={page.resultContent}>
+					<Image source={require('../screens/assets/images/png/submit_fail.png')} style={page.resultImage}></Image>
+					<Text style={page.resultText}>ID 제출이 실패하였습니다.</Text>
+				</View>
 			)
 		}
 				
@@ -1161,7 +1211,13 @@ const page = StyleSheet.create({
 		backgroundSize:300% 300%, animation: AnimationName 1.5s ease infinite,
 		*/
 	},
-	animationText : { padding:8, paddingRight:0, fontSize:18, fontWeight:'bold', }
+	animationText : { padding:8, paddingRight:0, fontSize:18, fontWeight:'bold', },
+
+	// ADD
+	resultContent : { flex:1, padding:10, alignItems:'center', justifyContent: 'center', },
+	resultImage : { paddingLeft:20, paddingRight:20, },
+	resultText : { fontSize:20, fontWeight:'bold', textAlign:'center', marginTop:30, color:'#333333' }
+	// ADD
 });
 
 const modal = StyleSheet.create({

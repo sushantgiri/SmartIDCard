@@ -112,7 +112,7 @@ export default class SelectOptions extends React.Component {
             }
             
             let bleCheck = false;
-            if(device.name === "oterminal-1") bleCheck = true;
+            if(device.name === "oterminal-2") bleCheck = true;
             // 중복 제거
             bleDatas.map((bleData, index) => {
                 let json = JSON.parse(bleData);
@@ -196,7 +196,7 @@ export default class SelectOptions extends React.Component {
             var otps = [];
             var params = '{"list":[';
             for(var i = 0; i < data.length; i++){
-                params += '{"serviceName":"oterminal-1","id":"' + data[i].OtpId + '"}';
+                params += '{"serviceName":"oterminal-2","id":"' + data[i].OtpId + '"}';
                 if(i < data.length - 1) params += ",";
                 otps.push(data[i].Otp);
             }
@@ -237,7 +237,7 @@ export default class SelectOptions extends React.Component {
                         <Text xt style={optionsStyle.optionLabelStyle}>QR 스캔{"\n"}Beacon이 없으면 QR을 스캔하세요</Text>
                     </View>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => { this.bnsCall(); }}>
+                <TouchableOpacity onPress={() => { this.bleScan(); }}>
                     <View style={optionsStyle.optionsContainer}>
                         <Image source={require('../screens/assets/images/png/ble_icon.png')} />
                         <Text xt style={optionsStyle.optionLabelStyle}>{ this.state.bleNotice }</Text>
@@ -248,7 +248,9 @@ export default class SelectOptions extends React.Component {
         )
     }
 
-    componentDidMount(){  }
+    componentDidMount(){ 
+        this.bleScan();
+    }
 }
 
 const optionsStyle = StyleSheet.create({

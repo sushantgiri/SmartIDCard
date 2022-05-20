@@ -1,4 +1,4 @@
-package com.backup;
+package com.estorm.smartidcard;
 
 
 import androidx.annotation.NonNull;
@@ -49,7 +49,7 @@ public class BNSModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void getTerminals(Callback successCallback, Callback errorCallback){
-        mOWProxy.getTerminals("oterminal-1", 2, (result) -> {
+        mOWProxy.getTerminals("oterminal-2", 2, (result) -> {
             // WritableNativeArray, WritableNativeMap을 이용하면 객체로 전달 가능
             WritableArray terminals = new WritableNativeArray();
 

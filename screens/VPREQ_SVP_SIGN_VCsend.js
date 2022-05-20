@@ -446,8 +446,11 @@ export default class VPREQ_VCsend extends React.Component {
 		ws.onclose = (e) => {};
 		// WebSocket Close
 
+		this.setState({ViewMode: 5});
+		setTimeout(() => { this.props.navigation.push('VCselect',{password:this.state.password}); }, 2000)
+
 		// this.props.navigation.push('CardScanningTest',{name: this.state.name, type: this.state.type});
-		this.props.navigation.push('VCselect',{password:this.state.password});
+		// this.props.navigation.push('VCselect',{password:this.state.password});
 	}
 
 	hidePasswordModal = () => {
@@ -646,6 +649,33 @@ export default class VPREQ_VCsend extends React.Component {
             	</ScrollView>
 			)
 		}
+
+		if(ViewMode == 4) {
+			return (
+				<View style={page.resultContent}>
+					<Image source={require('../screens/assets/images/png/card_scan.png')} style={page.resultImage}></Image>
+					<Text style={page.resultText}>ID를 제출하고 있습니다...</Text>
+				</View>
+			)		
+		}
+
+		if(ViewMode == 5) {
+			return (
+				<View style={page.resultContent}>
+					<Image source={require('../screens/assets/images/png/submit_ok.png')} style={page.resultImage}></Image>
+					<Text style={page.resultText}>ID 제출이 완료되었습니다.</Text>
+				</View>
+			)		
+		}
+
+		if(ViewMode == 6) {
+			return (
+				<View style={page.resultContent}>
+					<Image source={require('../screens/assets/images/png/submit_fail.png')} style={page.resultImage}></Image>
+					<Text style={page.resultText}>ID 제출이 실패하였습니다.</Text>
+				</View>
+			)
+		}
 	}
   
   	componentDidMount(){
@@ -720,7 +750,13 @@ const page = StyleSheet.create({
         marginTop: 20,
         padding: 20,
         justifyContent: 'flex-end',
-	}
+	},
+
+	// ADD
+	resultContent : { flex:1, padding:10, alignItems:'center', justifyContent: 'center', },
+	resultImage : { paddingLeft:20, paddingRight:20, },
+	resultText : { fontSize:20, fontWeight:'bold', textAlign:'center', marginTop:30, color:'#333333' }
+	// ADD
 });
 
 const modal = StyleSheet.create({

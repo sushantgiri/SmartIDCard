@@ -737,7 +737,7 @@ export default class Home extends React.Component {
 
 				{!isSettingsSelected && !idSelection && (
 					<View style={common.contents}>
-						<Image source={require('../screens/assets/images/png/coupon_page.png')}></Image>
+						<Image source={require('../screens/assets/images/png/coupon.png')}></Image>
 						{	
 							/*
 							COUPON_ENTRIES.map((entry, index)=>{
@@ -878,8 +878,9 @@ export default class Home extends React.Component {
 					
 
 				{!isSettingsSelected && !idSelection && (
-					<View style={common.contents}>
-						<Image source={require('../screens/assets/images/png/coupon_page.png')} style={home.image}></Image>
+					<View style={home.couponContent}>
+						<Image source={require('../screens/assets/images/png/coupon.png')} style={home.couponImage}></Image>
+						<Text style={home.couponText}>준비중입니다.</Text>
 					</View>
 				)}
 
@@ -1122,6 +1123,12 @@ const home = StyleSheet.create({
 		// alignItems: 'center',
 		// justifyContent: 'center',
 	  },
+	
+	// ADD
+	couponContent : { flex:1, position:'relative', padding:10, alignItems:'center', justifyContent: 'center', },
+	couponImage : { paddingLeft:20, paddingRight:20, },
+	couponText : { fontSize:20, fontWeight:'bold', textAlign:'center', marginTop:30 }
+	// ADD
 });
 
 const carousalStyle = StyleSheet.create({
