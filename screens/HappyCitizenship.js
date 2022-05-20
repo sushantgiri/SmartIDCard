@@ -439,14 +439,16 @@ export default class HappyCitizenship extends React.Component {
                             </TouchableOpacity>
                             : null
                         }
+
+                        {/*
                         <TouchableOpacity style={styles.searchContainer} onPress={() => {this.props.navigation.navigate('VPInfo', {cardKey: itemVCArray})}}>
                             <Text style={styles.searchTextStyle}>정보 제공 내역</Text>
                         </TouchableOpacity>
-                        {/*
                         <TouchableOpacity style={styles.searchContainer} onPress={() => {this.setPWModalShow()}}>
                             <Text style={styles.searchTextStyle}>삭제</Text>
                         </TouchableOpacity>
                         */}
+                        
                     </ScrollView>
                     { this.renderQRScanView() }
                 </View>
