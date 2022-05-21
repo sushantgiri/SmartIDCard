@@ -925,8 +925,8 @@ export default class VPREQ_VCsend extends React.Component {
 	}
   
   	componentDidMount(){
-   		this.setStateData();
-		console.log("Triggered1");
+		console.log("componentDidMount");
+		this.setStateData();
   	}
 }
 
