@@ -5,8 +5,7 @@ import Carousel from 'react-native-snap-carousel';
 import {
 	LogBox, ScrollView, StyleSheet, Text, View, 
 	Image, TouchableOpacity, TextInput, StatusBar,Dimensions,
-	NativeModules,
-	ToastAndroid, Platform,Alert
+	NativeModules, ToastAndroid, Platform,Alert, KeyboardAvoidingView
 } from 'react-native'
 import Swiper from 'react-native-swiper'
 import jwt_decode from "jwt-decode"
@@ -629,7 +628,7 @@ export default class Home extends React.Component {
 							<Image source={imgClose}></Image>
 						</TouchableOpacity>
 					</View>
-					<View style={modal.contents}>
+					<KeyboardAvoidingView style={modal.contents}>
 						<Text style={modal.title}>비밀번호를 입력하세요.</Text>
 						<TextInput
 							name='confirmCheckPassword'
@@ -646,7 +645,7 @@ export default class Home extends React.Component {
 						>
 							<Text style={modal.buttonText}>확인</Text>
 						</TouchableOpacity>
-					</View>
+					</KeyboardAvoidingView>
 				</Modal>
 			</View>
 		)
@@ -737,16 +736,10 @@ export default class Home extends React.Component {
 
 				{!isSettingsSelected && !idSelection && (
 					<View style={common.contents}>
-						<Image source={require('../screens/assets/images/png/coupon.png')}></Image>
-						{	
-							/*
-							COUPON_ENTRIES.map((entry, index)=>{
-								return(
-									this.couponView(entry.primaryIcon, entry.title, entry.actionIcon)
-								)
-							})
-							*/
-						}
+						<View style={home.couponContent}>
+							<Image source={require('../screens/assets/images/png/coupon.png')} style={home.couponImage}></Image>
+							<Text style={home.couponText}>준비중입니다.</Text>
+						</View>
 					</View>
 				)}
 

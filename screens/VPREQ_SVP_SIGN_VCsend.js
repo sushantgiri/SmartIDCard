@@ -2,7 +2,8 @@ import React from 'react'
 import { 
 	StyleSheet, View, Text, Image, TextInput, ScrollView,
 	TouchableOpacity, TouchableHighlight, LogBox, Animated, Easing,
-	ToastAndroid, Platform, Dimensions, Alert, SafeAreaView
+	ToastAndroid, Platform, Dimensions, Alert, SafeAreaView,
+	KeyboardAvoidingView
 } from 'react-native'
 
 import ReactNativeBiometrics from 'react-native-biometrics'
@@ -598,7 +599,7 @@ export default class VPREQ_VCsend extends React.Component {
 								<Image source={imgClose}></Image>
 							</TouchableOpacity>
 						</View>
-						<View style={modal.contents}>
+						<KeyboardAvoidingView style={modal.contents}>
 							<Text style={modal.title}>비밀번호를 입력하세요</Text>
 							<TextInput
 								name='confirmCheckPassword'
@@ -615,7 +616,7 @@ export default class VPREQ_VCsend extends React.Component {
 							>
 								<Text style={modal.buttonText}>확인</Text>
 							</TouchableOpacity>
-						</View>
+						</KeyboardAvoidingView>
 					</Modal>
 				</View>
 			)

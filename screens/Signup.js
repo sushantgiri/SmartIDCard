@@ -148,7 +148,10 @@ export default class Signup extends React.Component {
         let errorCode = 0;
 
         if(this.state.password != this.state.confirmPassword) errorCode = 3;
-        //if(this.state.password.length < 10) errorCode = 2;
+        //if(this.state.password.length < 8) errorCode = 2;
+        // 비밀번호 정책 : 최소 하나의 영문, 최소 하나의 숫자, 최소 하나의 특수문자, 최소 8글자, 최대 15글자
+        var reg = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,15}$/;
+        if(!reg.test(this.state.password)) errorCode = 2;
         if(this.state.password == '') errorCode = 1;
 
         switch(errorCode) {
@@ -156,7 +159,7 @@ export default class Signup extends React.Component {
                 alert('비밀번호를 입력하세요.')
                 break;
             case 2:
-                alert('비밀번호 정책을 확인하세요.')
+                alert('비밀번호 정책을 확인하세요.\n비밀번호 정책 : 최소 하나의 영문/숫자/특수문자 포함, 8자리 - 15자리')
                 break;
             case 3:
                 alert('비밀번호가 일치하지 않습니다.')
@@ -221,7 +224,7 @@ export default class Signup extends React.Component {
                             <TextInput
                             name='password'
                             value={password}
-                            placeholder='비밀번호 (10자리 이상)'
+                            placeholder='비밀번호'
                             secureTextEntry
                             onChangeText={this.handlePasswordChange}
                             style={common.textInput}
@@ -234,6 +237,7 @@ export default class Signup extends React.Component {
                             onChangeText={this.handleConfirmPWchange}
                             style={common.textInput}
                             />
+                            <Text>비밀번호 정책 : 최소 하나의 영문/숫자/특수문자 포함, 8자리 - 15자리</Text>
                         </View>  
                     </View>
                     <View style={common.footer}>

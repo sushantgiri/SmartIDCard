@@ -3,7 +3,8 @@ import React from 'react'
 import {
     StyleSheet, View, Text, Image, Dimensions,  
     TouchableOpacity, ScrollView, ToastAndroid, Platform, 
-    AlertIOS, SafeAreaView, TextInput, TouchableHighlight
+    AlertIOS, SafeAreaView, TextInput, TouchableHighlight,
+    KeyboardAvoidingView
 } from 'react-native'
 import Modal from 'react-native-modal' // Modal
 import {format} from "date-fns" // Date Format
@@ -135,7 +136,7 @@ export default class HappyCitizenship extends React.Component {
                         <Image source={imgClose}></Image>
                     </TouchableOpacity>
                 </View>
-                <View style={modal.contents}>
+                <KeyboardAvoidingView style={modal.contents}>
                     <Text style={modal.title}>비밀번호를 입력하세요</Text>
                     <TextInput
                         name='confirmCheckPassword'
@@ -150,7 +151,7 @@ export default class HappyCitizenship extends React.Component {
                         onPress={this.passwordCheck}>
                         <Text style={modal.buttonText}>확인</Text>
                     </TouchableOpacity>
-                </View>
+                </KeyboardAvoidingView>
             </Modal>
         )
     }
