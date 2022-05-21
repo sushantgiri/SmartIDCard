@@ -853,7 +853,7 @@ export default class VerificationScreen extends React.Component {
 
 		this.setState({ViewMode: 4});
 
-		let params = "?TerminalID=" + this.state.terminalID + "&TerminalOTP=" + this.state.otps + "&VP=" + VP;
+		let params = "?TerminalID=" + this.state.terminalID.replace("\n", "") + "&TerminalOTP=" + this.state.otps + "&VP=" + VP;
 		const headers = { 'Content-type': 'application/json; charset=UTF-8' }
 		const response = await axios.get(this.state.callbackURL + params, {headers});
 		
