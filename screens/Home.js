@@ -5,9 +5,10 @@ import Carousel from 'react-native-snap-carousel';
 import {
 	LogBox, ScrollView, StyleSheet, Text, View, 
 	Image, TouchableOpacity, TextInput, StatusBar,Dimensions,
-	NativeModules,
+	NativeModules,KeyboardAvoidingView,
 	ToastAndroid, Platform,Alert
 } from 'react-native'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import Swiper from 'react-native-swiper'
 import jwt_decode from "jwt-decode"
 import CryptoJS from 'react-native-crypto-js'
@@ -732,6 +733,41 @@ export default class Home extends React.Component {
 						</TouchableOpacity>
 						<Text style={cards.noIDTextSecondary}>아직 발급받은 ID가 없습니다. {"\n"}ID를 발급받아 주세요.</Text>
 					</View>
+				)}
+
+				{!isSettingsSelected && idSelection && (
+
+		<Modal
+		style={modal.wrap}
+		animationIn={'slideInUp'}
+		backdropOpacity={0.5}
+		isVisible={true}
+		>
+
+<KeyboardAwareScrollView enableOnAndroid={true} style={{height:"100%"}}
+            enableAutoAutomaticScroll={(Platform.OS === 'ios')} extraHeight={130} extraScrollHeight={130}>
+   
+                      {/* <KeyboardAvoidingView behavior={"padding"} >
+						  <View>
+						  <ScrollView> */}
+				<View>
+				<TextInput
+					name='confirmCheckPassword'
+					// value={confirmCheckPassword}
+					placeholder='비밀번호'
+					secureTextEntry
+					scrollEnabled={true}
+					// onChangeText={this.handleConfirmPWchange}
+					style={modal.textInput}
+						/>
+				
+				</View>
+				{/* </ScrollView>
+				</View>
+				</KeyboardAvoidingView> */}
+			 </KeyboardAwareScrollView>
+				
+				</Modal>
 				)}
 				
 
