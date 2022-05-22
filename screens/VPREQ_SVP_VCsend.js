@@ -2,7 +2,7 @@ import React from 'react'
 import { 
 	StyleSheet, View, Text, Image, TextInput, ScrollView,
 	TouchableOpacity, TouchableHighlight, LogBox, Animated, Easing,
-	ToastAndroid, Platform, Dimensions, Alert
+	ToastAndroid, Platform, Dimensions, Alert, KeyboardAvoidingView
 } from 'react-native'
 
 import ReactNativeBiometrics from 'react-native-biometrics'
@@ -415,11 +415,22 @@ export default class VPREQ_VCsend extends React.Component {
   	}
 	
 	cardSelect = e =>{
+		// 현재 선택된 VC 개수 확인
+		var selectedCount = 0;
+		for (var i = 0; i < this.state.checkedArray.length; i++){
+			if(this.state.checkedArray[i].checked == true) selectedCount += 1;
+		}		
+		// 현재 선택된 VC 개수 확인
+
 		for (var i = 0; this.state.VCarray.length; i++){
 			if(e == this.state.VCarray[i]){
-				this.state.checkedArray[i].checked = !this.state.checkedArray[i].checked
-    			//arrChecked = this.state.checkedArray
-    			this.setState({checkedArray: this.state.checkedArray})
+				if(!this.state.checkedArray[i].checked == true && selectedCount > 0) {
+					alert("제출할 ID는 하나만 선택 하실 수 있습니다.");
+				} else {
+					this.state.checkedArray[i].checked = !this.state.checkedArray[i].checked
+    				//arrChecked = this.state.checkedArray
+    				this.setState({checkedArray: this.state.checkedArray})
+				}
 				return
 			}
 		}
@@ -797,14 +808,17 @@ export default class VPREQ_VCsend extends React.Component {
 							<Image source={closeIcon} />
 						</View>
 					</TouchableOpacity>
-					<Text style={certificateStyles.headerStyle}>인증서를 선택하시고 제출하세요.</Text>
+					<Text style={certificateStyles.headerStyle}>ID를 선택하시고 제출하세요.</Text>
 					<View style={certificateStyles.listWrapper}>
 					{this.state.VCarray.map((vc, index)=>{
-						return(
-							<TouchableOpacity style={this.cardStyle(index)} onPress={() => this.cardSelect(vc)}>
-									<Card vc={vc} key={vc.exp}/>
-							</TouchableOpacity>
-						)
+						var vcShow = true;
+						if(vcShow){
+							return(
+								<TouchableOpacity style={this.cardStyle(index)} onPress={() => this.cardSelect(vc)}>
+										<Card vc={vc} key={vc.exp}/>
+								</TouchableOpacity>
+							)
+						}
 					})}
 					</View>
 					<TouchableOpacity onPress={() => {
@@ -830,7 +844,7 @@ export default class VPREQ_VCsend extends React.Component {
 								<Image source={imgClose}></Image>
 							</TouchableOpacity>
 						</View>
-						<View style={modal.contents}>
+						<KeyboardAvoidingView style={modal.contents}>
 							<Text style={modal.title}>비밀번호를 입력하세요</Text>
 							<TextInput
 								name='confirmCheckPassword'
@@ -847,7 +861,7 @@ export default class VPREQ_VCsend extends React.Component {
 							>
 								<Text style={modal.buttonText}>확인</Text>
 							</TouchableOpacity>
-						</View>
+						</KeyboardAvoidingView>
 					</Modal>
 				</View>
 			)
@@ -911,8 +925,8 @@ export default class VPREQ_VCsend extends React.Component {
 	}
   
   	componentDidMount(){
-   		this.setStateData();
-		console.log("Triggered1");
+		console.log("componentDidMount");
+		this.setStateData();
   	}
 }
 

@@ -147,7 +147,7 @@ export default class ScanScreen extends React.Component {
 							signType = response.data.data.sign.type
 					
 							console.log('VPREQ_SVP_SIGN_VCsend');
-							this.props.navigation.navigate('VPREQ_SVP_SIGN_VCsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqType,issuerDID:issuerDID,issuerURL:issuerURL,signData:signData,signType:signType,encryptKey:encryptKey})
+							this.props.navigation.push('VPREQ_SVP_SIGN_VCsend',{roomNo:roomNo,socketUrl:socketUrl,userPW:userPassword,nonce:nonce,reqType:reqType,issuerDID:issuerDID,issuerURL:issuerURL,signData:signData,signType:signType,encryptKey:encryptKey})
 						}
 					}
 				} else if (response.data.data.useSvp == false){

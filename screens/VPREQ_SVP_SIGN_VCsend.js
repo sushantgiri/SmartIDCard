@@ -2,7 +2,8 @@ import React from 'react'
 import { 
 	StyleSheet, View, Text, Image, TextInput, ScrollView,
 	TouchableOpacity, TouchableHighlight, LogBox, Animated, Easing,
-	ToastAndroid, Platform, Dimensions, Alert, SafeAreaView
+	ToastAndroid, Platform, Dimensions, Alert, SafeAreaView,
+	KeyboardAvoidingView
 } from 'react-native'
 
 import ReactNativeBiometrics from 'react-native-biometrics'
@@ -298,7 +299,8 @@ export default class VPREQ_VCsend extends React.Component {
 		const dualDid = new DualDID(dualSigner, 'Issuer(change later)', 'Dualauth.com(change later)',web3,'0x76A2dd4228ed65129C4455769a0f09eA8E4EA9Ae')
 
 		const result = await dualDid.verifyVP(vpJwt, challenger);
-		console.log('Result---->', result)
+		//console.log('Result---->', result)
+
 		const code = result.code;
 		const data = result.data;
 		const msg = result.msg;
@@ -306,9 +308,9 @@ export default class VPREQ_VCsend extends React.Component {
 		const isTrusted = result.isTrusted;
 
 		if(code == "000.0" && success) {
-			console.log('Type---->', result.data.verifiablePresentation)
 			const svcs = result.data.verifiablePresentation.verifiableCredential;
-			console.log('CEO---->', svcs[0].credentialSubject.ceo)
+			//console.log('Type---->', result.data.verifiablePresentation)
+			//console.log('CEO---->', svcs[0].credentialSubject.ceo)
 			let svca = [];
 			let svc = null;
 
@@ -317,7 +319,7 @@ export default class VPREQ_VCsend extends React.Component {
 				svca.push(svc);
 			}
 			
-			console.log('SVCAArray----->', svca);
+			//console.log('SVCAArray----->', svca);
 			this.setState({ ViewMode:1, SVCArray:svca});
 		}else{
 			console.log('Error Here');
@@ -508,8 +510,7 @@ export default class VPREQ_VCsend extends React.Component {
 			return (
 				<ScrollView style={providersStyle.scrollContainer}>
 					<View style={providersStyle.rootContainer}>
-						<TouchableOpacity
-							onPress={this.cancel}>
+						<TouchableOpacity onPress={this.cancel}>
 						<View style={providersStyle.closeContainer}>
 							<Image source={closeIcon} />
 						</View>
@@ -533,8 +534,7 @@ export default class VPREQ_VCsend extends React.Component {
 			return (
 				<ScrollView>
 					<View style={providersStyle.rootContainer}>
-						<TouchableOpacity
-							onPress={this.cancel}>
+						<TouchableOpacity onPress={this.cancel}>
 							<View style={providersStyle.closeContainer}>
 								<Image source={closeIcon} />
 							</View>
@@ -598,7 +598,7 @@ export default class VPREQ_VCsend extends React.Component {
 								<Image source={imgClose}></Image>
 							</TouchableOpacity>
 						</View>
-						<View style={modal.contents}>
+						<KeyboardAvoidingView style={modal.contents}>
 							<Text style={modal.title}>비밀번호를 입력하세요</Text>
 							<TextInput
 								name='confirmCheckPassword'
@@ -615,7 +615,7 @@ export default class VPREQ_VCsend extends React.Component {
 							>
 								<Text style={modal.buttonText}>확인</Text>
 							</TouchableOpacity>
-						</View>
+						</KeyboardAvoidingView>
 					</Modal>
 				</View>
 			)
@@ -679,8 +679,8 @@ export default class VPREQ_VCsend extends React.Component {
 	}
   
   	componentDidMount(){
+		console.log("componentDidMount");
    		this.setStateData();
-		console.log("Triggered1");
   	}
 }
 
