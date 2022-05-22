@@ -190,36 +190,31 @@ export default class VerificationScreen extends React.Component {
 
 	createSimplePrompt1 = () => {
 		ReactNativeBiometrics.simplePrompt({promptMessage: 'Authenticate your Smart ID Card'})
-				.then((resultObject) => {
-					console.log('ResultObject', resultObject)
-					this.showMessage("Authentication Successful")
-					this.pickVCinArray()
-				}).catch(()=>{
-					this.setModalShow();
-				})
+		.then((resultObject) => {
+			console.log('ResultObject', resultObject)
+			//this.showMessage("Authentication Successful")
+			this.pickVCinArray()
+		}).catch(()=>{
+			this.setModalShow();
+		})
 	}
 
 	createSimplePrompt = () => {
 		ReactNativeBiometrics.simplePrompt({promptMessage: 'Authenticate your Smart ID Card'})
-				.then((resultObject) => {
-					const { success, error } = resultObject
-
-						if (success) {
-							this.showMessage("Authentication Successful")
-							this.pickVCinArray()
-						} 
-
-						if(error){
-							this.setModalShow();
-						}
-					
-
-					
-				})
-				.catch(() => {
-					console.log('Biometrics Failed')
-					this.setModalShow()
-				})
+		.then((resultObject) => {
+			const { success, error } = resultObject
+			if (success) {
+				//this.showMessage("Authentication Successful")
+				this.pickVCinArray()
+			} 
+			if(error){
+				this.setModalShow();
+			}			
+		})
+		.catch(() => {
+			console.log('Biometrics Failed')
+			this.setModalShow()
+		})
 	}
 	createSignatire = () => {
 			let epochTimeSeconds = Math.round((new Date()).getTime() / 1000).toString()

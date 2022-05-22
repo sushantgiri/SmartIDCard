@@ -111,55 +111,48 @@ export default class Home extends React.Component {
 			return;
 		}
 		ReactNativeBiometrics.isSensorAvailable()
-				.then((resultObject) => {
-					const { available, biometryType,error } = resultObject;
-					console.log('Available', available);
-					console.log('BiometricType', biometryType);
-					console.log('Biometric Error', error);
-					if (available && biometryType === ReactNativeBiometrics.TouchID) {
-						console.log('TouchID');
-						this.createSimplePrompt()
-					} else if (available && biometryType === ReactNativeBiometrics.FaceID) {
-						console.log('FaceID');
-						this.createSimplePrompt()
-					} else if (available && biometryType === ReactNativeBiometrics.Biometrics) {
-						console.log('Biometrics');
-						this.createSimplePrompt()
-
-					} else {
-					console.log('Biometrics not supported')
-					}
-				})
+		.then((resultObject) => {
+			const { available, biometryType,error } = resultObject;
+			console.log('Available', available);
+			console.log('BiometricType', biometryType);
+			console.log('Biometric Error', error);
+			if (available && biometryType === ReactNativeBiometrics.TouchID) {
+				console.log('TouchID');
+				this.createSimplePrompt()
+			} else if (available && biometryType === ReactNativeBiometrics.FaceID) {
+				console.log('FaceID');
+				this.createSimplePrompt()
+			} else if (available && biometryType === ReactNativeBiometrics.Biometrics) {
+				console.log('Biometrics');
+				this.createSimplePrompt()
+			} else {
+			console.log('Biometrics not supported')
+			}
+		})
 	}
 
 	showMessage = (message) => {
 		if (Platform.OS === 'android') {
 			ToastAndroid.show(message, ToastAndroid.SHORT)
-		  } else {
-
+		} else {
 			Alert.alert('Alert', message);
-
 			// AlertIOS.alert(message);
-		  }
+		}
 	}
 
 	createSimplePrompt = () => {
 		ReactNativeBiometrics.simplePrompt({promptMessage: 'Authenticate your Smart ID Card'})
-				.then((resultObject) => {
-
-					const { success } = resultObject
-
-					if (success) {
-						this.showMessage("Authentication Successful")
-
-					} else {
-						this.showMessage("User cancelled")
-
-					}
-				})
-				.catch(() => {
-					this.showMessage("Biometrics failed")
-				})
+		.then((resultObject) => {
+			const { success } = resultObject
+			if (success) {
+				//this.showMessage("Authentication Successful")
+			} else {
+				this.showMessage("User cancelled")
+			}
+		})
+		.catch(() => {
+			this.showMessage("Biometrics failed")
+		})
 	}
 	createSignatire = () => {
 			let epochTimeSeconds = Math.round((new Date()).getTime() / 1000).toString()

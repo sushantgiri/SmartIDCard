@@ -24,11 +24,7 @@ export default class CHeader extends React.Component {
             //     </TouchableOpacity>
             // }
             centerComponent={''}
-            rightComponent={
-                <TouchableOpacity activeOpacity={0.8} onPress={this.goSearch}>
-                    <Image source={imageSearch}></Image>
-                </TouchableOpacity>
-            }
+            rightComponent={''}
             containerStyle={{
                 backgroundColor: '#FFFFFF',
                 borderWidth:1,
