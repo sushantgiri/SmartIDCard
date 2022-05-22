@@ -417,7 +417,7 @@ const settingsScreenStyle = StyleSheet.create({
         fontSize: 24,
         fontWeight: '600',
         // marginStart: 24,
-        marginTop: 16,
+        marginTop: 40,
     },
 
     addressContainer: {

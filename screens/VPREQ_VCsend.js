@@ -102,23 +102,20 @@ export default class VPREQ_VCsend extends React.Component {
 
 	createSimplePrompt = () => {
 		ReactNativeBiometrics.simplePrompt({promptMessage: 'Authenticate your Smart ID Card'})
-				.then((resultObject) => {
-					const { success } = resultObject
+		.then((resultObject) => {
+			const { success } = resultObject
 
-					if (success) {
-						this.showMessage("Authentication Successful")
-
-						this.pickVCinArray()
-
-					} else {
-						this.showMessage("User cancelled")
-
-					}
-				})
-				.catch(() => {
-					this.showMessage("Biometrics failed")
-					this.setModalShow()
-				})
+			if (success) {
+				//this.showMessage("Authentication Successful")
+				this.pickVCinArray()
+			} else {
+				this.showMessage("User cancelled")
+			}
+		})
+		.catch(() => {
+			this.showMessage("Biometrics failed")
+			this.setModalShow()
+		})
 	}
 
 	// Cancel

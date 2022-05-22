@@ -163,7 +163,7 @@ export default class VPREQ_VCsend extends React.Component {
 		.then((resultObject) => {
 			const { success, error } = resultObject
 			if (success) {
-				this.showMessage("Authentication Successful")
+				//this.showMessage("Authentication Successful")
 				this.pickVCinArray()
 			}
 			if(error){
