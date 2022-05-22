@@ -727,42 +727,6 @@ export default class Home extends React.Component {
 					</View>
 				)}
 
-				{!isSettingsSelected && idSelection && (
-
-		<Modal
-		style={modal.wrap}
-		animationIn={'slideInUp'}
-		backdropOpacity={0.5}
-		isVisible={true}
-		>
-
-<KeyboardAwareScrollView enableOnAndroid={true} style={{height:"100%"}}
-            enableAutoAutomaticScroll={(Platform.OS === 'ios')} extraHeight={130} extraScrollHeight={130}>
-   
-                      {/* <KeyboardAvoidingView behavior={"padding"} >
-						  <View>
-						  <ScrollView> */}
-				<View>
-				<TextInput
-					name='confirmCheckPassword'
-					// value={confirmCheckPassword}
-					placeholder='비밀번호'
-					secureTextEntry
-					scrollEnabled={true}
-					// onChangeText={this.handleConfirmPWchange}
-					style={modal.textInput}
-						/>
-				
-				</View>
-				{/* </ScrollView>
-				</View>
-				</KeyboardAvoidingView> */}
-			 </KeyboardAwareScrollView>
-				
-				</Modal>
-				)}
-				
-
 				{!isSettingsSelected && !idSelection && (
 					<View style={common.contents}>
 						<View style={home.couponContent}>
