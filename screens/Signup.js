@@ -1,5 +1,8 @@
 import React from 'react'
-import { StyleSheet, Text, ScrollView, View, TextInput, TouchableOpacity, Modal, TouchableHighlight} from 'react-native'
+import { StyleSheet, Text, ScrollView, View, TextInput, TouchableOpacity, Modal, TouchableHighlight, Image, 
+    ToastAndroid,
+    Platform,
+    AlertIOS} from 'react-native'
 
 // Crypto JS 모듈
 import CryptoJS from 'react-native-crypto-js';
@@ -41,8 +44,13 @@ var dataKey ='';
 /**  address Function
  *  랜덤한 Bytes 를 생성하여, Mnemonic, Privatekey, DID address 를 생성
 **/
+
+var imgClose = require('../screens/assets/images/png/arrow_left.png')
+
 function address() {
 	const { randomBytes } = require("crypto");
+    const crypto = require('crypto');
+
 	const { Mnemonic, HDKey, EthereumAddress } = require("wallet.ts");
 
 	// 랜덤한 32바이트에서 Mnemonic을 생성하여, Global variable : userMnemonic 에 저장
@@ -61,9 +69,15 @@ function address() {
 	//generate key for use in mobile device data exchange
 	//with 16 random bytes ( 128 bit long ) to store data in secure elements
 
-	const mobileBytes = randomBytes(16);
+	const mobileBytes = randomBytes(32);
+    crypto.randomBytes(32, (err, buf) => {
+        if (err) throw err;
+        console.log(`${buf.length} bytes of random data: ${buf.toString('hex')}`);
+     });
+    console.log('Bytes', mobileBytes);
 	dataKey = Web3Utils.bytesToHex(mobileBytes);
-	
+    console.log('Data Key', dataKey);
+
 	// Build mobile key end
 
 	// public key를 이용해 did address 를 생성하여, global variable : userAddress 에 저장
@@ -99,6 +113,14 @@ async function did () {
 	console.log(JSON.stringify((await dualDid.verifyJWT(did.jwt)), null, 4))
 }
 
+function notifyMessage(msg) {
+    if (Platform.OS === 'android') {
+      ToastAndroid.show(msg, ToastAndroid.SHORT)
+    } else {
+      AlertIOS.alert(msg);
+    }
+  }
+
 export default class Signup extends React.Component {
     state = {
         password: '',
@@ -126,7 +148,10 @@ export default class Signup extends React.Component {
         let errorCode = 0;
 
         if(this.state.password != this.state.confirmPassword) errorCode = 3;
-        //if(this.state.password.length < 10) errorCode = 2;
+        //if(this.state.password.length < 8) errorCode = 2;
+        // 비밀번호 정책 : 최소 하나의 영문, 최소 하나의 숫자, 최소 하나의 특수문자, 최소 8글자, 최대 15글자
+        var reg = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,15}$/;
+        if(!reg.test(this.state.password)) errorCode = 2;
         if(this.state.password == '') errorCode = 1;
 
         switch(errorCode) {
@@ -134,7 +159,7 @@ export default class Signup extends React.Component {
                 alert('비밀번호를 입력하세요.')
                 break;
             case 2:
-                alert('비밀번호 정책을 확인하세요.')
+                alert('비밀번호 정책을 확인하세요.\n비밀번호 정책 : 최소 하나의 영문/숫자/특수문자 포함, 8자리 - 15자리')
                 break;
             case 3:
                 alert('비밀번호가 일치하지 않습니다.')
@@ -147,7 +172,14 @@ export default class Signup extends React.Component {
             did(); // did 생성
 
             this.setState({ address: userAddress, privateKey: userPK, mnemonic: userMnemonic, dataKey: dataKey}, () => {
+                var encrypted = CryptoJS.AES.encrypt(JSON.stringify(this.state), dataKey);
+                console.log('encrypted.key---->', encrypted.key.toString());
+                console.log('encrypted.iv---->', encrypted.iv.toString());
+                console.log('encrypted.ciphertext---->', encrypted.ciphertext.toString());
+
                 let cipherData = CryptoJS.AES.encrypt(JSON.stringify(this.state), dataKey).toString();
+                console.log('Data Key--->', dataKey);
+                console.log('CipherData---->', cipherData);
             
                 /** State data 를 Secure Storage에 저장
                  * 
@@ -176,6 +208,14 @@ export default class Signup extends React.Component {
         if(ViewMode == 0){
             return (
                 <View style={common.wrap}>
+                    <TouchableOpacity
+                            style={common.closeButton} 
+						    activeOpacity={0.8}
+						    onPress={() => this.props.navigation.pop()}
+						>
+							<Image source={imgClose}></Image>
+					</TouchableOpacity>
+
                     <View style={common.header}>
                         <Text style={common.title}>지갑 암호 설정</Text>
                     </View>
@@ -184,7 +224,7 @@ export default class Signup extends React.Component {
                             <TextInput
                             name='password'
                             value={password}
-                            placeholder='비밀번호 (10자리 이상)'
+                            placeholder='비밀번호'
                             secureTextEntry
                             onChangeText={this.handlePasswordChange}
                             style={common.textInput}
@@ -197,6 +237,7 @@ export default class Signup extends React.Component {
                             onChangeText={this.handleConfirmPWchange}
                             style={common.textInput}
                             />
+                            <Text>비밀번호 정책 : 최소 하나의 영문/숫자/특수문자 포함, 8자리 - 15자리</Text>
                         </View>  
                     </View>
                     <View style={common.footer}>
@@ -224,16 +265,22 @@ export default class Signup extends React.Component {
             return (
                 <View style={common.wrap}>
                     <View style={common.header}>
-                        <Text style={common.title}>지갑이 생성되었습니다</Text>
+                        <Text style={common.successTitle}>지갑이 생성되었습니다.</Text>
                     </View>
                     <ScrollView style={common.contents}>
-                        <View style={signup.aBox}>
+                        {/* <View style={signup.aBox}>
                             <Text style={signup.aBoxText}>{this.state.address}</Text>
-                        </View>
+                        </View> */}
                         <View style={signup.bBox}>
                             <Text style={signup.bBoxText}>{this.state.mnemonic}</Text>
-                            <TouchableOpacity style={signup.bBoxButton} activeOpacity={0.8} onPress={()=>Clipboard.setString(this.state.mnemonic)}>
-                                <Text style={signup.bBoxButtonText}>복구코드 복사하기</Text>
+                            <TouchableOpacity style={signup.bBoxButton} activeOpacity={0.8} onPress={()=>{
+                                Clipboard.setString(this.state.mnemonic);
+                                notifyMessage('Text copied to clipboard\n' + this.state.mnemonic)
+                            }
+                               
+                                
+                                }>
+                                <Text selectable={true} style={signup.bBoxButtonText}>복구코드 복사하기</Text>
                             </TouchableOpacity>
                         </View>
                         <View style={signup.cBox}>
@@ -244,17 +291,17 @@ export default class Signup extends React.Component {
                         </View>
                         <View style={signup.dBox}>
                             <Text style={signup.dBoxText1}>
-                                ■ 복구코드는 앱을 재설치하거나 새로운 기기에 현재의 계정을 옮기기 위해 이용됩니다.
+                            &#9632; 복구코드는 앱을 재설치하거나 새로운 기기에 현재의 계정을 옮기기 위해 이용됩니다.
                             </Text>
                             <Text style={signup.dBoxText2}>
-                                ■ 이후에도 프로필 화면에서 확인 하실 수 있습니다.
+                            &#9632; 이후에도 프로필 화면에서 확인 하실 수 있습니다.
                             </Text>
                         </View>
                     </ScrollView>
-                    <View style={common.footer}>
-                        <View style={common.buttonView}>
-                            <TouchableOpacity style={common.button} activeOpacity={0.8} onPress={this.confirm}>
-                                <Text style={common.buttonText}>확인</Text>
+                    <View style={common.successFooter}>
+                        <View style={common.successButtonView}>
+                            <TouchableOpacity style={common.successButton} activeOpacity={0.8} onPress={this.confirm}>
+                                <Text style={common.buttonText}>안전하게 보관했어요</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -266,44 +313,57 @@ export default class Signup extends React.Component {
 
 const common = StyleSheet.create({
     wrap : { flex:1, position:'relative', backgroundColor:'#FFFFFF' },
-    header : { padding:20, paddingBottom:0, },
+    header : { padding:20, paddingBottom:0, alignSelf: 'center' },
+    closeButton: {padding: 20},
     contents : { flex:1, position:'relative', padding:20, },
-    footer : { padding:0, },
+    footer : { padding:0 },
+    successFooter: {padding: 0, marginBottom: 20},
     title : { fontSize:22, fontWeight:'bold' },
+    successTitle: {fontSize:22, fontWeight:'bold', marginTop: 20, marginBottom: 30},
     textInput : {
         width:'100%', fontSize:20, marginBottom:8,
         paddingTop:15, paddingBottom:15, paddingLeft:12, paddingRight:12, 
         borderWidth:2, borderRadius:8, borderColor:'#CED2D4',
     },
     buttonView : { width:'100%', alignItems:'center', },
+    successButtonView : {  alignItems:'center'},
+    successButton: {
+        width: '90%',
+        alignItems:'center', color:'#FFFFFF',
+        padding:20, backgroundColor:'#1ECB9C', 
+        borderWidth:0, borderRadius:8,
+    },
     button : { 
         width:'100%', alignItems:'center', color:'#FFFFFF',
         padding:30, backgroundColor:'#1ECB9C', 
         borderWidth:0, borderRadius:0,
     },
-    buttonText : { color:'#FFFFFF', fontSize:22, fontWeight:'bold' }
+    buttonText : { color:'#FFFFFF', fontSize:18, fontWeight:'bold' }
+
 });
 
 const signup = StyleSheet.create({
     aBox : { padding:20, borderRadius:8, backgroundColor: '#E9EAEF', marginBottom:20, },
     aBoxText : { fontSize:18, color:'#7D848F', },
 
-    bBox : { padding:20, borderRadius:8, backgroundColor: '#41528B', marginBottom:20, },
-    bBoxText : { fontSize:18, color:'#FFFFFF', },
+    bBox : { padding: 20,
+        borderRadius:8, backgroundColor: '#41528B', marginBottom:30, },
+    bBoxText : { fontSize:18, color:'#FFFFFF', marginStart: 30, marginEnd: 30, textAlign: 'center' },
     bBoxButton : { 
-        width:'100%', marginTop:20, padding:20, alignItems:'center',
+        width: '50%', marginTop:20, padding:10, alignItems:'center',
         borderWidth:1, borderColor:'#1ECB9C', borderRadius:8, 
+        alignSelf: 'center',
     },
     bBoxButtonText : { color:'#1ECB9C', fontWeight:'bold', },
 
-    cBox : { flex:1, flexDirection:'row', alignItems:'flex-start', marginBottom:20, },
+    cBox : { flex:1, flexDirection:'row', alignItems:'flex-start', marginBottom:20, marginTop: 30 },
     cBoxText1 : { 
         backgroundColor:'#1ECB9C', borderRadius:4, color:'#FFFFFF',
-        fontWeight:'bold', padding:12, fontSize:16,
+        fontWeight:'bold', padding:4, fontSize:16,
     },
-    cBoxText2 : { flex:1, fontSize:16, color:'#109D77', padding:0, marginLeft:10, },
+    cBoxText2 : { flex:1, fontSize:16, color:'#109D77', padding:0, marginLeft:10, fontWeight: 'bold' },
 
-    dBox : { padding:20, borderWidth:1, borderColor:'#DDDDDD', borderRadius:8, },
+    dBox : { padding:20, borderRadius:8, },
     dBoxText1 : { fontSize:15, paddingBottom:10, },
     dBoxText2 : { fontSize:15, },
 });

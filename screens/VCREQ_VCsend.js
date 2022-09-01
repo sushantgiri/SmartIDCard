@@ -111,8 +111,9 @@ export default class VCREQ_VCsend extends React.Component {
    * 
    */
   close = () => {
+    ws.send('{"type":"exit"}');
+		ws.close();
     
-    ws.send('{"type":"exit"}')
     this.props.navigation.navigate('VCselect',{password:this.state.password});
   }
 

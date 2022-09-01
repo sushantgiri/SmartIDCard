@@ -120,8 +120,9 @@ def jscFlavor = 'org.webkit:android-jsc:+'
  */
 def enableHermes = project.ext.react.get("enableHermes", false);
 
+
 android {
-    compileSdkVersion 28
+    compileSdkVersion 30
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -129,11 +130,11 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.backup"
+        applicationId "com.estorm.smartidcard"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode 6
+        versionName "1.6"
         missingDimensionStrategy 'react-native-camera', 'general'
         missingDimensionStrategy 'react-native-camera', 'mlkit'
         multiDexEnabled true
@@ -153,6 +154,14 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        release {
+            if (project.hasProperty('MYAPP_UPLOAD_STORE_FILE')) {
+                storeFile file(MYAPP_UPLOAD_STORE_FILE)
+                storePassword MYAPP_UPLOAD_STORE_PASSWORD
+                keyAlias MYAPP_UPLOAD_KEY_ALIAS
+                keyPassword MYAPP_UPLOAD_KEY_PASSWORD
+            }
+        }
     }
     buildTypes {
         debug {
@@ -161,7 +170,8 @@ android {
         release {
             // Caution! In production, you need to generate your own keystore file.
             // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            //signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
@@ -190,6 +200,13 @@ dependencies {
     implementation "com.facebook.react:react-native:0.63.3"  // From node_modules
 
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.0.0"
+
+    implementation (files("libs/nowirecore-0.0.11.aar"))
+    implementation "com.google.code.gson:gson:2.8.7"
+    implementation 'com.marcelkliemannel:kotlin-onetimepassword:1.0.0'
+    implementation group: 'com.sun.xml.security', name: 'xml-security-impl', version: '1.0'
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.1"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.2.2"
 
     debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}") {
       exclude group:'com.facebook.fbjni'

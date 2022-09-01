@@ -149,7 +149,7 @@ export default class Home extends React.Component {
 				<View style={common.wrap}>
 					<CHeader />
 					<View style={common.contents}>
-						<CLoader title={'발급된 인증서를 확인하고 있습니다.'} />
+						<CLoader title={'발급된 ID를 확인하고 있습니다.'} />
 					</View>
 				</View>
 			)
@@ -164,8 +164,8 @@ export default class Home extends React.Component {
 							<Image source={imgNoData}></Image>
 						</View>
 						<View style={home.info}>
-							<Text style={home.span}>발급받은 인증서가 없습니다</Text>
-							<Text style={home.strong}>인증서를 발급해주세요 👀👇</Text>
+							<Text style={home.span}>발급받은 ID가 없습니다</Text>
+							<Text style={home.strong}>ID를 발급해주세요 👀👇</Text>
 						</View>
 					</View>
 					<View style={common.footer}>

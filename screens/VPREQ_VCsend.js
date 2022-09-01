@@ -2,7 +2,11 @@ import React from 'react'
 import { 
 	StyleSheet, View, Text, Image, TextInput, ScrollView,
 	TouchableOpacity, TouchableHighlight, LogBox, 
+	ToastAndroid, Platform, AlertIOS, Dimensions,
+	KeyboardAvoidingView
 } from 'react-native'
+import ReactNativeBiometrics from 'react-native-biometrics'
+
 
 import CryptoJS from 'react-native-crypto-js';
 import SecureStorage from 'react-native-secure-storage'
@@ -19,6 +23,7 @@ const web3 = new Web3('http://182.162.89.51:4313')
 
 var imgCard = require('../screens/assets/images/png/ic_issue.png')
 var imgClose = require('../screens/assets/images/png/ic_btn_cls.png')
+var cardIcon = require('../screens/assets/images/png/secondary.png');
 
 var socketRoom ='';
 var socketURL = '';
@@ -30,6 +35,8 @@ var issuerDIDOnUse = '';
 var issuerURLOnUse = '';
 var encryptionKeyOnUse ='';
 var challenger = Math.floor(Math.random() *10000) + 1;
+var closeIcon = require('../screens/assets/images/png/close_scanner.png');
+
 
 function createDualSigner (jwtSigner, ethAccount) {
   	return { jwtSigner, ethAccount }
@@ -37,9 +44,10 @@ function createDualSigner (jwtSigner, ethAccount) {
 
 function Card({vc}){
     return (
-		<View style={page.card}>
-			<Image style={page.cardImage} source={imgCard}></Image>
-			<Text style={page.cardText}>{vc.vc.type[1]}</Text>
+		<View style={certificateStyles.itemActualContainer}>
+			<Image source={cardIcon} />
+			<Text style={certificateStyles.cardLabelStyle}>{vc.vc.type[1]}</Text>
+
 		</View>
 	)
 }
@@ -56,7 +64,9 @@ export default class VPREQ_VCsend extends React.Component {
 
 		checkedArray:[],
 		confirmCheckPassword:'',
-		ModalShow : false
+		ModalShow : false,
+		isFaceEnabled: false,
+        isFingerPrintEnabled: false,
 	}
   
   	//비밀번호 확인 input control
@@ -64,13 +74,70 @@ export default class VPREQ_VCsend extends React.Component {
 		this.setState({ confirmCheckPassword })
 	}
 
+	biometricAuthentication = () =>{
+		ReactNativeBiometrics.isSensorAvailable()
+				.then((resultObject) => {
+					const { available, biometryType } = resultObject
+					if (available && biometryType === ReactNativeBiometrics.TouchID) {
+						this.createSimplePrompt()
+					} else if (available && biometryType === ReactNativeBiometrics.FaceID) {
+						this.createSimplePrompt()
+					} else if (available && biometryType === ReactNativeBiometrics.Biometrics) {
+						this.createSimplePrompt()
+					} else {
+						this.setModalShow()
+					console.log('Biometrics not supported')
+					}
+				})
+	}
+
+
+	showMessage = (message) => {
+		if (Platform.OS === 'android') {
+			ToastAndroid.show(message, ToastAndroid.SHORT)
+		  } else {
+			AlertIOS.alert(message);
+		  }
+	}
+
+	createSimplePrompt = () => {
+		ReactNativeBiometrics.simplePrompt({promptMessage: 'Authenticate your Smart ID Card'})
+		.then((resultObject) => {
+			const { success } = resultObject
+
+			if (success) {
+				//this.showMessage("Authentication Successful")
+				this.pickVCinArray()
+			} else {
+				this.showMessage("User cancelled")
+			}
+		})
+		.catch(() => {
+			this.showMessage("Biometrics failed")
+			this.setModalShow()
+		})
+	}
+
 	// Cancel
-	cancel = () => { 
-    	ws.send('{"type":"exit"}')
+	cancel = () => {
+		if(ws != null){
+			ws.close();
+		} 
     	this.props.navigation.navigate('VCselect',{password:this.state.password});
   	}
 
   	setStateData = async() => {
+
+		await SecureStorage.getItem('isFaceEnabled').then((isFaceEnabled) => {
+			console.log('Face Data', isFaceEnabled);
+			this.setState({isFaceEnabled: isFaceEnabled === 'true'}); // Set Biometrics
+		})
+
+		await SecureStorage.getItem('isFingerPrintEnabled').then((isFingerPrintEnabled) => {
+			console.log('FingerPrint Data', isFingerPrintEnabled);
+			this.setState({isFingerPrintEnabled: isFingerPrintEnabled === 'true'}); // Set Biometrics
+		})
+
 	  	// Get password
 		await SecureStorage.getItem('userToken').then((pw) => {
 			this.setState({ password:pw }); // Set password
@@ -123,24 +190,61 @@ export default class VPREQ_VCsend extends React.Component {
     	if(this.state.checkedArray[index] != null){
       		if(this.state.checkedArray[index].checked == true){
         		return{
-		 			borderWidth:1, borderColor:'#1ECB9C', 
-					padding:20, marginBottom:15
+		 			// borderWidth:1, borderColor:'#1ECB9C', 
+					// padding:20, marginBottom:15
+
+					borderRadius:8,
+					borderWidth:1,
+					borderColor: '#1ECB9C',
+					paddingTop: 15,
+					paddingBottom: 15,
+					paddingStart:20,
+					paddingEnd: 20,
+					flexDirection: 'row',
+					marginStart: 21,
+					marginEnd: 21,
+					alignItems: 'center',
+					marginBottom: 21,
        			}
 			} else {
 				return{
-					borderWidth:1, borderColor:'#333333', 
-					padding:20, marginBottom:15
+					// borderWidth:1, borderColor:'#333333', 
+					// padding:20, marginBottom:15
+
+					borderRadius:8,
+					borderWidth:1,
+					borderColor: '#E5EBED',
+					paddingTop: 15,
+					paddingBottom: 15,
+					paddingStart:20,
+					paddingEnd: 20,
+					flexDirection: 'row',
+					marginStart: 21,
+					marginEnd: 21,
+					alignItems: 'center',
+					marginBottom: 21,
 				}	
 			}		
     	}
   	}
 	
 	cardSelect = e =>{
+		// 현재 선택된 VC 개수 확인
+		var selectedCount = 0;
+		for (var i = 0; i < this.state.checkedArray.length; i++){
+			if(this.state.checkedArray[i].checked == true) selectedCount += 1;
+		}		
+		// 현재 선택된 VC 개수 확인
+
 		for (var i = 0; this.state.VCarray.length; i++){
 			if(e == this.state.VCarray[i]){
-				this.state.checkedArray[i].checked = !this.state.checkedArray[i].checked
-    			//arrChecked = this.state.checkedArray
-    			this.setState({checkedArray: this.state.checkedArray})
+				if(!this.state.checkedArray[i].checked == true && selectedCount > 0) {
+					alert("제출할 ID는 하나만 선택 하실 수 있습니다.");
+				} else {
+					this.state.checkedArray[i].checked = !this.state.checkedArray[i].checked
+    				//arrChecked = this.state.checkedArray
+    				this.setState({checkedArray: this.state.checkedArray})
+				}
 				return
 			}
 		}
@@ -153,7 +257,10 @@ export default class VPREQ_VCsend extends React.Component {
 		}
 
 		if(!cardSelected) {	alert("VC를 선택해 주세요") } 
-		else { this.setModalShow() }
+		else { 
+			this.state.isFaceEnabled ? this.biometricAuthentication(): this.setModalShow()
+			// this.setModalShow() 
+		}
 	}
 	// Card Function
 
@@ -206,7 +313,7 @@ export default class VPREQ_VCsend extends React.Component {
 	}
 
 	successVPsubmit = () => {
-		ws.send('{"type":"exit"}')
+		ws.close();		
 		this.props.navigation.push('VCselect',{password:this.state.password});
 	}
 	// Modal Function  	
@@ -236,10 +343,38 @@ export default class VPREQ_VCsend extends React.Component {
 		encryptionKeyOnUse = encryptionKey;
 
 		return (
-			<View style={common.wrap}>
-				<CHeader />
-				<ScrollView style={common.contents}>
-					<View>
+			<View style={certificateStyles.rootContainer}>
+				{/* <CHeader /> */}
+				<TouchableOpacity  onPress={this.cancel}>
+					<View style={certificateStyles.closeContainer}>
+						<Image source={closeIcon} />
+					</View>
+				</TouchableOpacity>
+
+				<View style={certificateStyles.listWrapper}>
+				{this.state.VCarray.map((vc, index)=>{
+					var vcShow = true;
+					if(vcShow){
+						return(
+							<TouchableOpacity style={this.cardStyle(index)} onPress={() => this.cardSelect(vc)}>
+									<Card vc={vc} key={vc.exp}/>
+							</TouchableOpacity>
+						)
+					}
+				})}
+				</View>
+
+				<TouchableOpacity
+				onPress={this.cardSend}
+					>
+
+
+			 <View style={certificateStyles.buttonContainer}>
+				<Text style={certificateStyles.buttonLabelStyle}>제출</Text>
+			  </View>
+
+			</TouchableOpacity>
+					{/* <View>
 						{this.state.VCarray.map((vc,index) => {
 							return(
 								<TouchableOpacity style={this.cardStyle(index)} onPress={() => this.cardSelect(vc)}>
@@ -247,9 +382,8 @@ export default class VPREQ_VCsend extends React.Component {
 								</TouchableOpacity>   
 							)
 						})}
-					</View>
-				</ScrollView>
-				<View style={common.footer}>
+					</View> */}
+				{/* <View style={common.footer}>
 					<View style={page.buttonView}>
 						<TouchableOpacity 
 							style={[page.button, page.buttonLeft]} 
@@ -266,9 +400,44 @@ export default class VPREQ_VCsend extends React.Component {
 							<Text style={common.buttonText}>취소</Text>
 						</TouchableOpacity>
 					</View>
-				</View>
+				</View> */}
 
-				<Modal
+<Modal
+						style={modal.wrap}
+						animationIn={'slideInUp'}
+						backdropOpacity={0.5}
+						isVisible={ModalShow}
+					>
+						<View style={modal.header}>
+							<TouchableOpacity 
+								style={modal.close} 
+								activeOpacity={0.8} 
+								onPress={this.setModalShow}
+							>
+								<Image source={imgClose}></Image>
+							</TouchableOpacity>
+						</View>
+						<KeyboardAvoidingView style={modal.contents}>
+							<Text style={modal.title}>비밀번호를 입력하세요</Text>
+							<TextInput
+								name='confirmCheckPassword'
+								value={confirmCheckPassword}
+								placeholder='비밀번호'
+								secureTextEntry
+								onChangeText={this.handleConfirmPWchange}
+								style={modal.textInput}
+							/>
+							<TouchableOpacity 
+								style={modal.button} 
+								activeOpacity={0.8} 
+								onPress={this.passwordCheck}
+							>
+								<Text style={modal.buttonText}>확인</Text>
+							</TouchableOpacity>
+						</KeyboardAvoidingView>
+					</Modal>
+
+				{/* <Modal
 					style={modal.wrap}
 					animationIn={'slideInUp'}
 					backdropOpacity={0.5}
@@ -301,7 +470,7 @@ export default class VPREQ_VCsend extends React.Component {
 							<Text style={modal.buttonText}>확인</Text>
 						</TouchableOpacity>
 					</View>
-				</Modal>
+				</Modal> */}
 			</View>
 		)
 	}
@@ -310,6 +479,58 @@ export default class VPREQ_VCsend extends React.Component {
    		this.setStateData();
   	}
 }
+
+const certificateStyles =StyleSheet.create({
+	rootContainer: {
+        backgroundColor: '#ffffff',
+        flex: 1,
+    },
+
+    closeContainer: {
+        flexDirection:'row',
+        marginTop: 20,
+        padding: 20,
+        marginBottom: 20,
+        justifyContent: 'flex-end',
+
+    },
+
+	buttonContainer: {
+        backgroundColor: '#1ECB9C',
+        borderRadius: 8,
+        paddingTop: 15,
+        paddingBottom:15,
+        paddingStart: 32,
+        paddingEnd:32,
+        marginBottom: 20,
+        marginStart: 24,
+        marginEnd: 24,
+        marginTop: 24,
+    },
+
+    buttonLabelStyle: {
+        color: '#FFFFFF',
+        fontWeight:'600',
+        fontSize: 18,
+        alignSelf: 'center'
+    },
+	listWrapper: {
+        flex: 1,
+    },
+
+	itemActualContainer: {
+		flexDirection: 'row',
+		alignItems: 'center',
+	},
+
+	cardLabelStyle: {
+        color: 'rgba(26, 36, 51, 0.9)',
+        fontSize: 16,
+        fontWeight: '500',
+        marginStart: 35,
+
+    },
+})
 
 const common = StyleSheet.create({
     wrap : { flex:1, position:'relative', backgroundColor:'#FFFFFF' },
@@ -358,12 +579,18 @@ const modal = StyleSheet.create({
 	close : { position:'absolute', right:0 },
     contents : {},
 	textInput : {
-        width:'100%', fontSize:20, marginBottom:8,
+        // width:'100%', fontSize:20, marginBottom:8,
+        // paddingTop:15, paddingBottom:15, paddingLeft:12, paddingRight:12, 
+        // borderWidth:2, borderRadius:8, borderColor:'#CED2D4',
+
+		fontSize:16, marginBottom:8,
         paddingTop:15, paddingBottom:15, paddingLeft:12, paddingRight:12, 
-        borderWidth:2, borderRadius:8, borderColor:'#CED2D4',
+        borderWidth:1, borderRadius:6, borderColor:'#CED2D5',marginTop: 24,
     },
     title : { 
-		letterSpacing:-0.6, fontSize:22, marginBottom:20, fontWeight:'bold', 
+		color:'#1A2433',
+		fontSize: 18,
+		// letterSpacing:-0.6, fontSize:22, marginBottom:20, fontWeight:'bold', 
 	},
 	cards : { 
 		width:'100%', marginBottom:20, 
@@ -378,10 +605,29 @@ const modal = StyleSheet.create({
 	cardImage : { marginBottom:10 },
 	cardText : { color:'#333333', fontSize:20, fontWeight:'bold', textAlign:'center' },
     button : { 
-        width:'100%', backgroundColor:'#ffffff', 
-        padding:0, paddingTop:20, paddingBottom:20, 
-        borderWidth:1, borderColor:'#333333', borderRadius:8,
-        flexDirection:'row', justifyContent:'center', alignItems:'center', 
+        // width:'100%', backgroundColor:'#ffffff', 
+        // padding:0, paddingTop:20, paddingBottom:20, 
+        // borderWidth:1, borderColor:'#333333', borderRadius:8,
+        // flexDirection:'row', justifyContent:'center', alignItems:'center', 
+
+		backgroundColor: '#1ECB9C',
+        borderRadius: 8,
+        paddingTop: 15,
+        paddingBottom:15,
+        paddingStart: 32,
+        paddingEnd:32,
+        marginBottom: 20,
+        // marginStart: 24,
+        // marginEnd: 24,
+        marginTop: 24,
     },
-    buttonText : { color:'#333333', fontWeight:'bold', fontSize:22, paddingLeft:10, },
+    buttonText : { 
+		// color:'#333333', fontWeight:'bold', fontSize:22, paddingLeft:10,
+
+		color: '#FFFFFF',
+        fontWeight:'600',
+        fontSize: 18,
+        alignSelf: 'center'
+		
+	 },
 });

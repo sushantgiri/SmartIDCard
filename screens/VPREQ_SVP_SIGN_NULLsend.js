@@ -90,8 +90,9 @@ export default class VPREQ_SVP_SIGN_NULLsend extends React.Component {
    * 
    */
   close = () => {
+    ws.send('{"type":"exit"}');
+		ws.close();
     
-    ws.send('{"type":"exit"}')
     this.props.navigation.navigate('VCselect',{password:this.state.password});
   }
 
