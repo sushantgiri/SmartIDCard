@@ -16,12 +16,14 @@ import Clipboard from '@react-native-community/clipboard'
 
 import CLoader from './common/Loader'; // Loader
 
+// Web3 Configuration
+import * as webConfig from './config/WebConfig'
+
 // JWT / Web3 모듈 적용
 const didJWT = require('did-jwt');
 const Web3Utils = require('web3-utils');
 
-const Web3 = require('web3')
-const web3 = new Web3('http://182.162.89.51:4313')
+const web3 = webConfig.fetchWeb3();
 
 // Core _ ethereum 모듈 ( 임도형 이사님 제공 )
 const { DualDID } = require('@estorm/dual-did')
@@ -103,7 +105,7 @@ async function did () {
 	const ethAccount = web3.eth.accounts.privateKeyToAccount(privateKey)
 	const dualSigner = createDualSigner(didJWT.SimpleSigner(privateKey.replace('0x','')), ethAccount)
 
-	const dualDid = new DualDID(dualSigner, 'Issuer(change later)', 'Dualauth.com(change later)',web3,smartContractAddress)
+	const dualDid = new DualDID(dualSigner, webConfig.issuerName, webConfig.serviceEndPoint,web3,webConfig.signUpContractAddress)
 	
 	const did = await dualDid.createDid()
 

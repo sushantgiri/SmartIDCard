@@ -14,10 +14,12 @@ import SecureStorage from 'react-native-secure-storage'
 import QRCode from 'react-native-qrcode-svg';
 import {DualDID} from '@estorm/dual-did';
 import TimerCountdown from './TimerCountdown';
-
+// Web3 Configuration
+import * as webConfig from './config/WebConfig'
 const didJWT = require('did-jwt')
-const Web3 = require('web3')
-const web3 = new Web3('http://182.162.89.51:4313')
+
+
+const web3 = webConfig.fetchWeb3()
 
 // TTA TEMP
 import CryptoJS from 'react-native-crypto-js';
@@ -244,7 +246,7 @@ export default class HappyCitizenship extends React.Component {
         const privateKey = this.state.privateKey;
 		const ethAccount = web3.eth.accounts.privateKeyToAccount(privateKey)
 		const dualSigner = createDualSigner(didJWT.SimpleSigner(privateKey.replace('0x','')), ethAccount)
-		const dualDid = new DualDID(dualSigner, 'Issuer(change later)', 'Dualauth.com(change later)',web3,'0x76A2dd4228ed65129C4455769a0f09eA8E4EA9Ae')	
+		const dualDid = new DualDID(dualSigner, webConfig.issuerName, webConfig.serviceEndPoint,web3,webConfig.contractAddress)	
 		const vp = await dualDid.createVP(vc,nonce)
 
         var data = {nonce: nonce, vp: vp};
