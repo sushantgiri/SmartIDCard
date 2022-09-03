@@ -2,6 +2,8 @@ import React from 'react'
 import { StyleSheet, View, Text, Linking, Image} from 'react-native'
 
 import SecureStorage from 'react-native-secure-storage'
+import { AsyncStorage } from 'react-native';
+
 
 import CLoader from './common/Loader'; // Loader
 
@@ -17,11 +19,20 @@ export default class LoadingScreen extends React.Component {
     }
 
     _bootstrapAsync = async () => {
+    
         const userToken = await SecureStorage.getItem('userToken');
-        setTimeout(() => {
-            this.props.navigation.navigate(userToken ? 'App' : 'Auth');
+        const localValue = await AsyncStorage.getItem("userState");
+        
+        setTimeout(() => {   
+            if(!localValue || localValue == null) {
+                this.props.navigation.navigate('Auth');
+            }else{
+                this.props.navigation.navigate(userToken ? 'App' : 'Auth');
+            }
         }, 3000)
     }
+
+
 
     //확인용
     linktest = () => {

@@ -4,12 +4,16 @@ import { StyleSheet, Text, ScrollView, View, TextInput, TouchableOpacity, Modal,
     Platform,
     AlertIOS} from 'react-native'
 
+
 // Crypto JS 모듈
 import CryptoJS from 'react-native-crypto-js';
 var AES = require("react-native-crypto-js").AES;
 
 // SecureStorage 모듈
 import SecureStorage from 'react-native-secure-storage'
+
+// AsyncStorage
+import { AsyncStorage } from 'react-native';
 
 // Clipboard 모듈 
 import Clipboard from '@react-native-community/clipboard'
@@ -201,6 +205,7 @@ export default class Signup extends React.Component {
     confirm = async () => {
         // 현재 password를 userToken을 키로 지정하여 사용될 수 있도록 저장
         await SecureStorage.setItem('userToken', this.state.password)
+        await AsyncStorage.setItem("userState", "Navigated")
         this.props.navigation.navigate('App')
     }
 
