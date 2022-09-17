@@ -443,6 +443,17 @@ export default class HappyCitizenship extends React.Component {
                             : null
                         }
 
+                        {
+                            <TouchableOpacity
+                            style={styles.searchContainer}
+                            onPress={() => {
+                                console.log("Deletion done")
+                            }}
+                               >
+                                <Text style={styles.searchTextStyle}>삭제</Text>
+                               </TouchableOpacity>
+                        }
+
                         {/*
                         <TouchableOpacity style={styles.searchContainer} onPress={() => {this.props.navigation.navigate('VPInfo', {cardKey: itemVCArray})}}>
                             <Text style={styles.searchTextStyle}>정보 제공 내역</Text>

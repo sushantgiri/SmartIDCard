@@ -100,6 +100,8 @@ export default class ScanScreen extends React.Component {
 		} else {
 			connectorUrl = "http" + e.data.substring(9,e.data.length)
 		}
+
+		console.log('ConnectionURL:' + connectorUrl)
 		
 		axios.get(connectorUrl).then(response => {
 			roomNo = response.data.data.no;
