@@ -31,6 +31,8 @@ target 'backup' do
 
 
 
+  pod 'RNSecureStorage', :path => '../node_modules/react-native-secure-storage'
+
   target 'backupTests' do
     inherit! :complete
     # Pods for testing

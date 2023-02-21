@@ -971,6 +971,10 @@ export default class Home extends React.Component {
  	componentDidMount(){
 		this.linktest();
 		this.setStateData();
+		this.focusListener = this.props.navigation.addListener('focus', () => {
+			this.loadData();
+			this.setStateData();
+		  });
 
 		// SecureStorage.removeItem('svca');
 		// this.props.navigation.push('CardScanning')

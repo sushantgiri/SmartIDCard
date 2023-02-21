@@ -3,7 +3,7 @@ import configData from './../static/config.json'
 
 export function fetchWeb3() {
     const Web3 = require('web3')
-    return new Web3(configData.PRIVATE_ETHEREUM_URL)
+    return new Web3(configData.L_UNIVERSE_CLOUD_SERVER_URL)
 }
 
 export const contractAddress = '0x76A2dd4228ed65129C4455769a0f09eA8E4EA9Ae';

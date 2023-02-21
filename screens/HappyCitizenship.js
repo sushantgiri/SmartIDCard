@@ -60,6 +60,8 @@ export default class HappyCitizenship extends React.Component {
         QRModalShow : false,
         PWModalShow : false,
         confirmCheckPassword:'',
+        deleteVC: false,
+        VCarray:[],
     }
 
     /*
@@ -120,6 +122,32 @@ export default class HappyCitizenship extends React.Component {
     setPWModalShow = () => {
 		this.setState({ PWModalShow:!this.state.PWModalShow })
 	}
+
+     deleteVC = async(vc) => {
+        //  this.state.VCarray.map((localVC, index) => {
+        //     console.log('Local VC', localVC.vc.credentialSubject.email )
+        //     console.log('vc', vc.credentialSubject.email )
+
+        //     if(localVC.vc.credentialSubject.email == vc.credentialSubject.email){
+               
+        //     }
+        //  })
+
+         var temp = this.state.VCarray.filter(function(localVC) { 
+            return localVC.vc.credentialSubject.email !== vc.credentialSubject.email
+        })
+        console.log('Temp', temp)
+
+         this.setState({VCarray: this.state.VCarray.filter(function(localVC) { 
+            return localVC.vc.credentialSubject.email !== vc.credentialSubject.email
+        })});
+
+        let cipherData = CryptoJS.AES.encrypt(JSON.stringify(this.state), this.state.dataKey).toString();
+        await SecureStorage.setItem(this.state.dataKey, cipherData); 
+        this.props.navigation.pop();
+    }
+
+    
 
     renderPWModal = () => {
         console.log("PWModalShow", this.state.PWModalShow);
@@ -448,6 +476,8 @@ export default class HappyCitizenship extends React.Component {
                             style={styles.searchContainer}
                             onPress={() => {
                                 console.log("Deletion done")
+                                this.setState({deleteVC: true})
+                                this.deleteVC(vc)
                             }}
                                >
                                 <Text style={styles.searchTextStyle}>삭제</Text>
