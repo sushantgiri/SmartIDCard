@@ -19,12 +19,14 @@ import Modal from 'react-native-modal' // Modal
 import CLoader from './common/Loader'; // Loader
 import CHeader from './common/Header'; // Header
 
+// Web3 Configuration
+import * as webConfig from './config/WebConfig'
+
 var AES = require("react-native-crypto-js").AES;
 import {DualDID} from '@estorm/dual-did';
 import {createIconSetFromFontello} from 'react-native-vector-icons';
 const didJWT = require('did-jwt')
-const Web3 = require('web3')
-const web3 = new Web3('http://182.162.89.51:4313')
+const web3 = webConfig.fetchWeb3()
 
 var imgCard = require('../screens/assets/images/png/ic_issue.png')
 var imgClose = require('../screens/assets/images/png/ic_btn_cls.png')
@@ -296,7 +298,7 @@ export default class VPREQ_VCsend extends React.Component {
 		const privateKey = this.state.privateKey;
 		const ethAccount = web3.eth.accounts.privateKeyToAccount(privateKey)
 		const dualSigner = createDualSigner(didJWT.SimpleSigner(privateKey.replace('0x','')), ethAccount)
-		const dualDid = new DualDID(dualSigner, 'Issuer(change later)', 'Dualauth.com(change later)',web3,'0x76A2dd4228ed65129C4455769a0f09eA8E4EA9Ae')
+		const dualDid = new DualDID(dualSigner, webConfig.issuerName, webConfig.serviceEndPoint,web3,webConfig.VPREQ_SVP_SIGN_VCSEND_ADDRESS)
 
 		const result = await dualDid.verifyVP(vpJwt, challenger);
 		//console.log('Result---->', result)
@@ -373,7 +375,7 @@ export default class VPREQ_VCsend extends React.Component {
 		const privateKey = this.state.privateKey;
     	const ethAccount = web3.eth.accounts.privateKeyToAccount(privateKey)
     	const dualSigner = createDualSigner(didJWT.SimpleSigner(privateKey.replace('0x','')), ethAccount)
-    	const dualDid = new DualDID(dualSigner, 'Issuer(change later)', 'Dualauth.com(change later)',web3,'0x3CF0CB3cD457b959F6027676dF79200C8EF19907')
+    	const dualDid = new DualDID(dualSigner, webConfig.issuerName, webConfig.serviceEndPoint,web3,webConfig.VPREQ_SVP_SIGN_VCSEND_ADDRESS_CREATE)
 
 		console.log(signDataOnUse);
 
@@ -422,7 +424,7 @@ export default class VPREQ_VCsend extends React.Component {
 		const privateKey = this.state.privateKey;
 		const ethAccount = web3.eth.accounts.privateKeyToAccount(privateKey)
 		const dualSigner = createDualSigner(didJWT.SimpleSigner(privateKey.replace('0x','')), ethAccount)
-		const dualDid = new DualDID(dualSigner, 'Issuer(change later)', 'Dualauth.com(change later)',web3,'0x76A2dd4228ed65129C4455769a0f09eA8E4EA9Ae')
+		const dualDid = new DualDID(dualSigner, webConfig.issuerName, webConfig.serviceEndPoint,web3,webConfig.VPREQ_SVP_SIGN_VCSEND_ADDRESS)
 		
 		const vp = await dualDid.createVP(vcjwtArray,nonce)
 		var key = CryptoJS.enc.Hex.parse(encryptionKeyOnUse)

@@ -3,12 +3,13 @@ import { StyleSheet, View,Text, Button,TextInput, TouchableOpacity, TouchableHig
 
 import CryptoJS from 'react-native-crypto-js';
 import SecureStorage from 'react-native-secure-storage'
+// Web3 Configuration
+import * as webConfig from './config/WebConfig'
 
 var AES = require("react-native-crypto-js").AES;
 import {DualDID} from '@estorm/dual-did';
 const didJWT = require('did-jwt')
-const Web3 = require('web3')
-const web3 = new Web3('http://182.162.89.51:4313')
+const web3 = webConfig.fetchWeb3()
 
 var socketRoom ='';
 var socketURL = '';

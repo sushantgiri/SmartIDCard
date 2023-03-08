@@ -14,10 +14,12 @@ import SecureStorage from 'react-native-secure-storage'
 import QRCode from 'react-native-qrcode-svg';
 import {DualDID} from '@estorm/dual-did';
 import TimerCountdown from './TimerCountdown';
-
+// Web3 Configuration
+import * as webConfig from './config/WebConfig'
 const didJWT = require('did-jwt')
-const Web3 = require('web3')
-const web3 = new Web3('http://182.162.89.51:4313')
+
+
+const web3 = webConfig.fetchWeb3()
 
 // TTA TEMP
 import CryptoJS from 'react-native-crypto-js';
@@ -58,6 +60,8 @@ export default class HappyCitizenship extends React.Component {
         QRModalShow : false,
         PWModalShow : false,
         confirmCheckPassword:'',
+        deleteVC: false,
+        VCarray:[],
     }
 
     /*
@@ -118,6 +122,32 @@ export default class HappyCitizenship extends React.Component {
     setPWModalShow = () => {
 		this.setState({ PWModalShow:!this.state.PWModalShow })
 	}
+
+     deleteVC = async(vc) => {
+        //  this.state.VCarray.map((localVC, index) => {
+        //     console.log('Local VC', localVC.vc.credentialSubject.email )
+        //     console.log('vc', vc.credentialSubject.email )
+
+        //     if(localVC.vc.credentialSubject.email == vc.credentialSubject.email){
+               
+        //     }
+        //  })
+
+         var temp = this.state.VCarray.filter(function(localVC) { 
+            return localVC.vc.credentialSubject.email !== vc.credentialSubject.email
+        })
+        console.log('Temp', temp)
+
+         this.setState({VCarray: this.state.VCarray.filter(function(localVC) { 
+            return localVC.vc.credentialSubject.email !== vc.credentialSubject.email
+        })});
+
+        let cipherData = CryptoJS.AES.encrypt(JSON.stringify(this.state), this.state.dataKey).toString();
+        await SecureStorage.setItem(this.state.dataKey, cipherData); 
+        this.props.navigation.pop();
+    }
+
+    
 
     renderPWModal = () => {
         console.log("PWModalShow", this.state.PWModalShow);
@@ -244,7 +274,7 @@ export default class HappyCitizenship extends React.Component {
         const privateKey = this.state.privateKey;
 		const ethAccount = web3.eth.accounts.privateKeyToAccount(privateKey)
 		const dualSigner = createDualSigner(didJWT.SimpleSigner(privateKey.replace('0x','')), ethAccount)
-		const dualDid = new DualDID(dualSigner, 'Issuer(change later)', 'Dualauth.com(change later)',web3,'0x76A2dd4228ed65129C4455769a0f09eA8E4EA9Ae')	
+		const dualDid = new DualDID(dualSigner, webConfig.issuerName, webConfig.serviceEndPoint,web3,webConfig.contractAddress)	
 		const vp = await dualDid.createVP(vc,nonce)
 
         var data = {nonce: nonce, vp: vp};
@@ -439,6 +469,19 @@ export default class HappyCitizenship extends React.Component {
                                 <Text style={styles.searchTextStyle}>QR 코드 생성</Text>
                             </TouchableOpacity>
                             : null
+                        }
+
+                        {
+                            <TouchableOpacity
+                            style={styles.searchContainer}
+                            onPress={() => {
+                                console.log("Deletion done")
+                                this.setState({deleteVC: true})
+                                this.deleteVC(vc)
+                            }}
+                               >
+                                <Text style={styles.searchTextStyle}>삭제</Text>
+                               </TouchableOpacity>
                         }
 
                         {/*

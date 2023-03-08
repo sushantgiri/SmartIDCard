@@ -3,12 +3,13 @@ import { StyleSheet, View,Text, Button,TextInput, TouchableOpacity, TouchableHig
 
 import CryptoJS from 'react-native-crypto-js';
 import SecureStorage from 'react-native-secure-storage'
+// Web3 Configuration
+import * as webConfig from './config/WebConfig'
 
 var AES = require("react-native-crypto-js").AES;
 import {DualDID} from '@estorm/dual-did';
 const didJWT = require('did-jwt')
-const Web3 = require('web3')
-const web3 = new Web3('http://182.162.89.51:4313')
+const web3 = webConfig.fetchWeb3()
 
 var socketRoom ='';
 var socketURL = '';
@@ -107,7 +108,7 @@ export default class VPREQ_SVP_SIGN_NULLsend extends React.Component {
     const privateKey = this.state.privateKey;
     const ethAccount = web3.eth.accounts.privateKeyToAccount(privateKey)
     const dualSigner = createDualSigner(didJWT.SimpleSigner(privateKey.replace('0x','')), ethAccount)
-    const dualDid = new DualDID(dualSigner, 'Issuer(change later)', 'Dualauth.com(change later)',web3,'0x3CF0CB3cD457b959F6027676dF79200C8EF19907')
+    const dualDid = new DualDID(dualSigner, webConfig.issuerName, webConfig.serviceEndPoint,web3,webConfig.VPREQ_SIGN_NULL_SEND_ADDRESS)
     
     const signObj = {"data" : signDataOnUse};
     const signVC = await dualDid.createVC("http://www.smartidcard.com/vc/mobileSign",['VerifiableCredential', 'mobileSign'],"holderSign",signObj,{"type":"none"},parseInt(new Date().getTime()/1000) + 60 * 5,

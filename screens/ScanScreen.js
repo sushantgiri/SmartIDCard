@@ -9,7 +9,8 @@ import jwt_decode from "jwt-decode"
 import {DualDID} from '@estorm/dual-did';
 import SecureStorage from 'react-native-secure-storage'
 import CryptoJS from 'react-native-crypto-js';
-
+// Web3 Configuration
+import * as webConfig from './config/WebConfig'
 
 // global variables : 웹소켓 url, 웹소켓 room number, nonce, request type, issuer 의 url
 var socketUrl = '';
@@ -22,8 +23,7 @@ var signType = '';
 var signData = '';
 var encryptKey = '';
 const didJWT = require('did-jwt')
-const Web3 = require('web3')
-const web3 = new Web3('http://182.162.89.51:4313')
+const web3 = webConfig.fetchWeb3()
 
 function createDualSigner (jwtSigner, ethAccount) {
     return { jwtSigner, ethAccount }
@@ -55,7 +55,7 @@ export default class ScanScreen extends React.Component {
 		const privateKey = this.state.privateKey;
 		const ethAccount = web3.eth.accounts.privateKeyToAccount(privateKey)
 		const dualSigner = createDualSigner(didJWT.SimpleSigner(privateKey.replace('0x','')), ethAccount)
-		const dualDid = new DualDID(dualSigner, 'Issuer(change later)', 'Dualauth.com(change later)',web3,'0x76A2dd4228ed65129C4455769a0f09eA8E4EA9Ae')
+		const dualDid = new DualDID(dualSigner, webConfig.issuerName, webConfig.serviceEndPoint,web3,webConfig.contractAddress)
 
 		const result = await dualDid.verifyVP(vp, nonce);
 		console.log('Result---->', result)
@@ -100,6 +100,8 @@ export default class ScanScreen extends React.Component {
 		} else {
 			connectorUrl = "http" + e.data.substring(9,e.data.length)
 		}
+
+		console.log('ConnectionURL:' + connectorUrl)
 		
 		axios.get(connectorUrl).then(response => {
 			roomNo = response.data.data.no;

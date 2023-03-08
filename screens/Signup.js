@@ -4,6 +4,7 @@ import { StyleSheet, Text, ScrollView, View, TextInput, TouchableOpacity, Modal,
     Platform,
     AlertIOS} from 'react-native'
 
+
 // Crypto JS 모듈
 import CryptoJS from 'react-native-crypto-js';
 var AES = require("react-native-crypto-js").AES;
@@ -11,17 +12,22 @@ var AES = require("react-native-crypto-js").AES;
 // SecureStorage 모듈
 import SecureStorage from 'react-native-secure-storage'
 
+// AsyncStorage
+import { AsyncStorage } from 'react-native';
+
 // Clipboard 모듈 
 import Clipboard from '@react-native-community/clipboard'
 
 import CLoader from './common/Loader'; // Loader
 
+// Web3 Configuration
+import * as webConfig from './config/WebConfig'
+
 // JWT / Web3 모듈 적용
 const didJWT = require('did-jwt');
 const Web3Utils = require('web3-utils');
 
-const Web3 = require('web3')
-const web3 = new Web3('http://182.162.89.51:4313')
+const web3 = webConfig.fetchWeb3();
 
 // Core _ ethereum 모듈 ( 임도형 이사님 제공 )
 const { DualDID } = require('@estorm/dual-did')
@@ -103,7 +109,7 @@ async function did () {
 	const ethAccount = web3.eth.accounts.privateKeyToAccount(privateKey)
 	const dualSigner = createDualSigner(didJWT.SimpleSigner(privateKey.replace('0x','')), ethAccount)
 
-	const dualDid = new DualDID(dualSigner, 'Issuer(change later)', 'Dualauth.com(change later)',web3,smartContractAddress)
+	const dualDid = new DualDID(dualSigner, webConfig.issuerName, webConfig.serviceEndPoint,web3,webConfig.signUpContractAddress)
 	
 	const did = await dualDid.createDid()
 
@@ -199,6 +205,7 @@ export default class Signup extends React.Component {
     confirm = async () => {
         // 현재 password를 userToken을 키로 지정하여 사용될 수 있도록 저장
         await SecureStorage.setItem('userToken', this.state.password)
+        await AsyncStorage.setItem("userState", "Navigated")
         this.props.navigation.navigate('App')
     }
 
