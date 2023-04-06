@@ -87,6 +87,37 @@ export default class Home extends React.Component {
 
 	}
 
+	resetState = () =>{
+		this.setState({
+			
+			password: '',
+			dataKey: '',
+			address: '',
+			privateKey:'',
+			mnemonic:'',
+			VCarray:[],
+			VCjwtArray:[],
+			
+			ViewMode : 0,
+			ModalShow : false,
+			//ModalMode : 0,
+			detailArray : [],
+			confirmCheckPassword:'',
+	
+			index: 0,
+			routes: [
+			  { key: 'first', title: 'ID' },
+			  { key: 'second', title: '쿠폰' },
+			],
+	
+			idSelection: true,
+			isSettingsSelected: false,
+	
+	
+	
+		})
+	}
+
 
 	//비밀번호 확인 input control
 	handleConfirmPWchange = confirmCheckPassword => {
@@ -201,6 +232,10 @@ export default class Home extends React.Component {
 		return key;
 	}
 
+	refresh() {
+		this.setStateData()
+	}
+
 	
 	setStateData = async() => {
 		// Get password
@@ -234,13 +269,12 @@ export default class Home extends React.Component {
 		// VC Check
 		const {navigation} = this.props
 		const receivedVC = navigation.getParam('VCdata',"VCvalue")
-
-		LogBox.ignoreAllLogs(true)
-
-		if(receivedVC != "VCvalue"){
+		if(receivedVC != null){
+			this.props.navigation.setParams({'VCdata': null});
 			console.log('Test Pass')
 			const decodedVC = JSON.stringify(receivedVC).substring(28,JSON.stringify(receivedVC).length-2)
 			const VCform = jwt_decode(decodedVC)
+			console.log('VCForm')
 
 			var key = "6Le0DgMTAAAAANokdEEial"; //length=22
 			var iv  = "mHGFxENnZLbienLyANoi.e";	
@@ -271,14 +305,56 @@ export default class Home extends React.Component {
 				}
 			)
 			
-			/*
-			console.log('Test Pass')
-			console.log('VCForm', VCform);
 
-			console.log('VCarray', this.state.VCarray);
-			console.log('VCjwtArray', this.state.VCjwtArray);
-			*/
 		}
+		console.log('ReceivedVC',receivedVC)
+
+		LogBox.ignoreAllLogs(true)
+
+		// if(receivedVC != "VCvalue"){
+		// 	this.props.navigation.setParams({YOUR_PARAMS: null});
+		// 	console.log('Test Pass')
+		// 	const decodedVC = JSON.stringify(receivedVC).substring(28,JSON.stringify(receivedVC).length-2)
+		// 	const VCform = jwt_decode(decodedVC)
+		// 	console.log('VCForm')
+
+		// 	var key = "6Le0DgMTAAAAANokdEEial"; //length=22
+		// 	var iv  = "mHGFxENnZLbienLyANoi.e";	
+
+		// 	// var key = CryptoJS.enc.Hex.parse("000102030405060708090a0b0c0d0e0f");
+		// 	// var iv = CryptoJS.enc.Hex.parse("101112131415161718191a1b1c1d1e1f");
+		// 	// var encrypted = CryptoJS.AES.encrypt("Message", key, { iv: iv });
+
+		// 	key = CryptoJS.enc.Base64.parse(key); // length=16 bytes
+		// 	iv = CryptoJS.enc.Base64.parse(iv); // length=16 bytes
+
+		// 	var encrypted = CryptoJS.AES.encrypt(JSON.stringify(VCform), key, { iv: iv });
+
+		// 	/*
+		// 	console.log('Key--------->!', key.toString());
+		// 	console.log('IV--------->!', iv.toString());
+		// 	console.log('Encrypted Value', encrypted.toString());
+		// 	*/
+
+		// 	this.setState(
+		// 		{
+		// 			VCarray: this.state.VCarray.concat([VCform]),
+		// 			VCjwtArray: this.state.VCjwtArray.concat([receivedVC])
+		// 		},
+		// 		async function(){
+		// 			let cipherData = CryptoJS.AES.encrypt(JSON.stringify(this.state), this.state.dataKey).toString();
+		// 			await SecureStorage.setItem(this.state.dataKey, cipherData);  
+		// 		}
+		// 	)
+			
+		// 	/*
+		// 	console.log('Test Pass')
+		// 	console.log('VCForm', VCform);
+
+		// 	console.log('VCarray', this.state.VCarray);
+		// 	console.log('VCjwtArray', this.state.VCjwtArray);
+		// 	*/
+		// }
 
 		if(this.state.VCarray.length > 0){
 			this.setState(prevState => ({
@@ -330,6 +406,7 @@ export default class Home extends React.Component {
 
 	cardConfirm = (vc) => {
 		for (var i = 0; this.state.VCarray.length; i++){
+		console.log('VCArray',this.state.VCarray[i])
 			if(vc == this.state.VCarray[i]){
 				if(this.state.detailArray[i].mode == 2) this.state.detailArray[i].mode = 1;
 				else this.state.detailArray[i].mode = 2;
@@ -482,7 +559,7 @@ export default class Home extends React.Component {
 
 			return (
 				<TouchableOpacity onPress={() => {
-					this.props.navigation.push('HappyCitizenship', {vc: item.vc, item: item});
+					this.props.navigation.push('HappyCitizenship', {vc: item.vc, item: item, onGoBack: () => this.refresh(),});
 				}} style={cards.cardContainer}>
 					<View style={cards.cardContainer}>		
 						{/*	
@@ -515,7 +592,7 @@ export default class Home extends React.Component {
 		}else{		
 			return (
 				<TouchableOpacity onPress={() => {
-					this.props.navigation.push('HappyCitizenship', {vc: item.vc, item: item});
+					this.props.navigation.push('HappyCitizenship', {vc: item.vc, item: item, onGoBack: () => this.refresh(),});
 				}} style={cards.cardContainer}>
 					<View style={cards.cardContainer}>
 						{/*
@@ -971,10 +1048,19 @@ export default class Home extends React.Component {
  	componentDidMount(){
 		this.linktest();
 		this.setStateData();
-		this.focusListener = this.props.navigation.addListener('focus', () => {
-			this.loadData();
+		this._onFocusListener = this.props.navigation.addListener('didFocus', (payload) => {
+			// Update the component (API calls here)
+			// this.resetState();
+			
 			this.setStateData();
+			
+			console.log('Reset')
 		  });
+		// this.focusListener = this.props.navigation.addListener('focus', () => {
+		// 	// this.loadData();
+			
+		//   });
+
 
 		// SecureStorage.removeItem('svca');
 		// this.props.navigation.push('CardScanning')

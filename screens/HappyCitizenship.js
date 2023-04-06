@@ -47,6 +47,8 @@ function notifyMessage(msg) {
 }
 
 export default class HappyCitizenship extends React.Component {
+
+    
     state =  {
         password: '',
         dataKey: '',
@@ -124,28 +126,25 @@ export default class HappyCitizenship extends React.Component {
 	}
 
      deleteVC = async(vc) => {
-        //  this.state.VCarray.map((localVC, index) => {
-        //     console.log('Local VC', localVC.vc.credentialSubject.email )
-        //     console.log('vc', vc.credentialSubject.email )
+        console.log('VC',vc)
+        console.log('VCArray', this.state.VCarray)
 
-        //     if(localVC.vc.credentialSubject.email == vc.credentialSubject.email){
-               
-        //     }
-        //  })
-
-         var temp = this.state.VCarray.filter(function(localVC) { 
-            return localVC.vc.credentialSubject.email !== vc.credentialSubject.email
+        var selectedVC = this.state.VCarray.filter(function(localVC){
+            console.log('Local VC ID',  localVC.vc.id)
+            console.log('Selected ID', vc.id)
+            return localVC.vc.id != vc.id
         })
-        console.log('Temp', temp)
-
-         this.setState({VCarray: this.state.VCarray.filter(function(localVC) { 
-            return localVC.vc.credentialSubject.email !== vc.credentialSubject.email
-        })});
+        console.log('Selected VC', selectedVC)
+        this.state.VCarray = selectedVC
 
         let cipherData = CryptoJS.AES.encrypt(JSON.stringify(this.state), this.state.dataKey).toString();
         await SecureStorage.setItem(this.state.dataKey, cipherData); 
-        this.props.navigation.pop();
+        // this.props.route.params.onGoBack();
+        this.props.navigation.goBack();
+        this.props.navigation.getParam('onGoBack')
+        // this.props.navigation.pop();
     }
+
 
     
 
@@ -432,7 +431,7 @@ export default class HappyCitizenship extends React.Component {
             return(
                 <View style={styles.container}>
                     <View style={styles.header_background}>
-                        <TouchableOpacity onPress={() => { this.props.navigation.pop(); }}>
+                        <TouchableOpacity onPress={() => { this.props.navigation.goBack(); }}>
                             <Image style={styles.backButtonStyle} source={require('../screens/assets/images/png/back_icon.png')} />
                         </TouchableOpacity>
                         <Text style={styles.headerTitleStyle}>{vc.type[1]}</Text>
@@ -520,6 +519,7 @@ export default class HappyCitizenship extends React.Component {
 
     componentDidMount(){
         const vc = this.props.navigation.getParam('vc');
+
         console.log('ItemVCArray', vc);
 
         this.setStateData();
