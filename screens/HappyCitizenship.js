@@ -130,19 +130,25 @@ export default class HappyCitizenship extends React.Component {
         console.log('VCArray', this.state.VCarray)
 
         var selectedVC = this.state.VCarray.filter(function(localVC){
-            console.log('Local VC ID',  localVC.vc.id)
-            console.log('Selected ID', vc.id)
-            return localVC.vc.id != vc.id
+            console.log('Local VC ID',  localVC.vc.issuanceDate)
+            console.log('Selected ID', vc.issuanceDate)
+            return localVC.vc.issuanceDate == vc.issuanceDate
         })
-        console.log('Selected VC', selectedVC)
-        this.state.VCarray = selectedVC
+        this.state.VCarray.pop(selectedVC)
+        // console.log('Selected VC', selectedVC)
+        // this.state.VCarray = selectedVC
 
         let cipherData = CryptoJS.AES.encrypt(JSON.stringify(this.state), this.state.dataKey).toString();
         await SecureStorage.setItem(this.state.dataKey, cipherData); 
+
+        setTimeout(this.navigateBackToHome, 800);
         // this.props.route.params.onGoBack();
-        this.props.navigation.goBack();
+       
+    }
+
+    navigateBackToHome = () => {
         this.props.navigation.getParam('onGoBack')
-        // this.props.navigation.pop();
+        this.props.navigation.pop();
     }
 
 
