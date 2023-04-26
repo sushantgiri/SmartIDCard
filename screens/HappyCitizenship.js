@@ -132,9 +132,9 @@ export default class HappyCitizenship extends React.Component {
         var selectedVC = this.state.VCarray.filter(function(localVC){
             console.log('Local VC ID',  localVC.vc.issuanceDate)
             console.log('Selected ID', vc.issuanceDate)
-            return localVC.vc.issuanceDate == vc.issuanceDate
+            return localVC.vc.issuanceDate != vc.issuanceDate
         })
-        this.state.VCarray.pop(selectedVC)
+        this.state.VCarray = selectedVC
         // console.log('Selected VC', selectedVC)
         // this.state.VCarray = selectedVC
 
@@ -238,6 +238,7 @@ export default class HappyCitizenship extends React.Component {
                         <Text style={qrTimer.headerTitle}>QR코드</Text>
                         <TimerCountdown onCountDownFinished={() => {
                                 this.createVP(this.state.itemVCArray).then(data =>{ 
+                                    console.log('QR Value', data)
                                     this.setState({qrValue: data})
                                 });
                             }}
